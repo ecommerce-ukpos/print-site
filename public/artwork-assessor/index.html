@@ -27,7 +27,6 @@
   header a:hover { color: #2C2C2A; }
   header .sep { color: #D3D1C7; font-size: 14px; }
   header .current { font-size: 14px; font-weight: 500; color: #2C2C2A; }
-
   .layout {
     max-width: 960px;
     margin: 0 auto;
@@ -41,11 +40,8 @@
     .layout { grid-template-columns: 1fr; padding: 24px 20px 60px; }
     header { padding: 14px 20px; }
   }
-
   h1 { font-size: 24px; font-weight: 500; margin-bottom: 6px; letter-spacing: -0.02em; }
   .page-desc { font-size: 14px; color: #5F5E5A; margin-bottom: 28px; }
-
-  /* Drop zone */
   .drop-zone {
     border: 1.5px dashed #C8C6BC;
     border-radius: 10px;
@@ -55,118 +51,59 @@
     transition: border-color 0.15s, background 0.15s;
     background: #fff;
   }
-  .drop-zone:hover, .drop-zone.drag-over {
-    border-color: #7F77DD;
-    background: #FAFAFF;
-  }
+  .drop-zone:hover, .drop-zone.drag-over { border-color: #7F77DD; background: #FAFAFF; }
   .drop-zone .dz-icon { font-size: 28px; margin-bottom: 10px; }
   .drop-zone .dz-title { font-size: 15px; font-weight: 500; margin-bottom: 4px; }
   .drop-zone .dz-sub { font-size: 13px; color: #888780; }
   input[type=file] { display: none; }
-
   .file-bar {
-    display: flex;
-    align-items: center;
-    gap: 8px;
-    padding: 10px 14px;
-    background: #fff;
-    border: 1px solid #E8E6DE;
-    border-radius: 8px;
-    margin-top: 10px;
-    font-size: 13px;
-    color: #5F5E5A;
+    display: flex; align-items: center; gap: 8px;
+    padding: 10px 14px; background: #fff;
+    border: 1px solid #E8E6DE; border-radius: 8px;
+    margin-top: 10px; font-size: 13px; color: #5F5E5A;
   }
-  .file-bar .file-icon { font-size: 16px; }
+  .file-bar .file-type-badge {
+    font-size: 10px; font-weight: 600; padding: 2px 6px;
+    border-radius: 4px; text-transform: uppercase; flex-shrink: 0;
+  }
+  .file-type-badge.pdf { background: #FCEBEB; color: #A32D2D; }
+  .file-type-badge.eps { background: #EEEDFE; color: #534AB7; }
   .file-bar .file-name { flex: 1; font-weight: 500; color: #2C2C2A; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
   .file-bar .clear-btn { background: none; border: none; cursor: pointer; color: #888780; font-size: 18px; line-height: 1; padding: 0 2px; }
   .file-bar .clear-btn:hover { color: #2C2C2A; }
-
   .run-btn {
-    margin-top: 16px;
-    width: 100%;
-    padding: 11px 20px;
-    background: #534AB7;
-    color: #fff;
-    border: none;
-    border-radius: 8px;
-    font-size: 15px;
-    font-weight: 500;
-    cursor: pointer;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    gap: 8px;
+    margin-top: 16px; width: 100%;
+    padding: 11px 20px; background: #534AB7; color: #fff;
+    border: none; border-radius: 8px; font-size: 15px; font-weight: 500;
+    cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 8px;
     transition: opacity 0.15s;
   }
   .run-btn:hover { opacity: 0.88; }
   .run-btn:disabled { opacity: 0.4; cursor: not-allowed; }
-  .spinner {
-    width: 16px; height: 16px;
-    border: 2px solid rgba(255,255,255,0.3);
-    border-top-color: #fff;
-    border-radius: 50%;
-    animation: spin 0.6s linear infinite;
-    display: inline-block;
-  }
+  .spinner { width: 16px; height: 16px; border: 2px solid rgba(255,255,255,0.3); border-top-color: #fff; border-radius: 50%; animation: spin 0.6s linear infinite; display: inline-block; }
   @keyframes spin { to { transform: rotate(360deg); } }
-
-  /* Loading */
   .loading-wrap { margin-top: 24px; }
   .loading-bar { height: 3px; background: #E8E6DE; border-radius: 2px; overflow: hidden; margin-bottom: 10px; }
   .loading-fill { height: 100%; background: #534AB7; border-radius: 2px; animation: loadpulse 1.6s ease-in-out infinite; }
   @keyframes loadpulse { 0%{width:5%} 50%{width:75%} 100%{width:92%} }
   .loading-msg { font-size: 13px; color: #888780; }
-
-  /* Results */
   .results { margin-top: 28px; }
   .result-overall {
-    display: flex;
-    align-items: center;
-    gap: 10px;
-    padding: 14px 16px;
-    border-radius: 10px;
-    margin-bottom: 20px;
-    font-weight: 500;
-    font-size: 15px;
+    display: flex; align-items: center; gap: 10px;
+    padding: 14px 16px; border-radius: 10px; margin-bottom: 20px;
+    font-weight: 500; font-size: 15px;
   }
   .result-overall.pass { background: #EAF3DE; color: #27500A; }
   .result-overall.fail { background: #FCEBEB; color: #791F1F; }
   .result-overall.warn { background: #FAEEDA; color: #633806; }
   .result-overall .ov-icon { font-size: 20px; }
   .result-overall .ov-filename { font-size: 12px; font-weight: 400; margin-left: auto; opacity: 0.7; }
-
-  .meta-grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(130px, 1fr));
-    gap: 8px;
-    margin-bottom: 20px;
-  }
-  .meta-card {
-    background: #fff;
-    border: 1px solid #E8E6DE;
-    border-radius: 8px;
-    padding: 10px 12px;
-  }
+  .meta-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(130px, 1fr)); gap: 8px; margin-bottom: 20px; }
+  .meta-card { background: #fff; border: 1px solid #E8E6DE; border-radius: 8px; padding: 10px 12px; }
   .meta-card .mk { font-size: 11px; color: #888780; margin-bottom: 2px; text-transform: uppercase; letter-spacing: 0.04em; }
   .meta-card .mv { font-size: 14px; font-weight: 500; }
-
-  .checks-section-label {
-    font-size: 11px;
-    font-weight: 500;
-    text-transform: uppercase;
-    letter-spacing: 0.08em;
-    color: #888780;
-    margin-bottom: 10px;
-  }
-  .result-item {
-    display: flex;
-    align-items: flex-start;
-    gap: 10px;
-    padding: 11px 14px;
-    border-radius: 8px;
-    margin-bottom: 8px;
-    font-size: 14px;
-  }
+  .checks-section-label { font-size: 11px; font-weight: 500; text-transform: uppercase; letter-spacing: 0.08em; color: #888780; margin-bottom: 10px; }
+  .result-item { display: flex; align-items: flex-start; gap: 10px; padding: 11px 14px; border-radius: 8px; margin-bottom: 8px; font-size: 14px; }
   .result-item.pass { background: #EAF3DE; border: 1px solid #C0DD97; }
   .result-item.fail { background: #FCEBEB; border: 1px solid #F09595; }
   .result-item.warn { background: #FAEEDA; border: 1px solid #FAC775; }
@@ -174,19 +111,11 @@
   .ri-icon { font-size: 16px; flex-shrink: 0; margin-top: 1px; }
   .ri-body strong { font-weight: 500; display: block; margin-bottom: 2px; }
   .ri-body span { font-size: 13px; color: #5F5E5A; line-height: 1.5; }
-
-  /* Sidebar / settings */
   .sidebar { position: sticky; top: 24px; }
-  .sidebar-card {
-    background: #fff;
-    border: 1px solid #E8E6DE;
-    border-radius: 10px;
-    overflow: hidden;
-  }
+  .sidebar-card { background: #fff; border: 1px solid #E8E6DE; border-radius: 10px; overflow: hidden; }
   .sidebar-section { padding: 18px 20px; border-bottom: 1px solid #E8E6DE; }
   .sidebar-section:last-child { border-bottom: none; }
   .sidebar-section h3 { font-size: 12px; font-weight: 500; text-transform: uppercase; letter-spacing: 0.07em; color: #888780; margin-bottom: 14px; }
-
   .check-row { display: flex; align-items: center; gap: 10px; padding: 8px 0; border-bottom: 1px solid #F1EFE8; }
   .check-row:last-child { border-bottom: none; }
   .toggle { width: 34px; height: 19px; border-radius: 10px; background: #D3D1C7; cursor: pointer; position: relative; flex-shrink: 0; border: none; transition: background 0.15s; }
@@ -196,12 +125,7 @@
   .check-label { flex: 1; }
   .check-label strong { font-size: 13px; font-weight: 500; display: block; }
   .check-label span { font-size: 11px; color: #888780; }
-  .check-input {
-    width: 72px; font-size: 13px; padding: 4px 7px;
-    border: 1px solid #E8E6DE; border-radius: 6px;
-    background: #FAFAF8; color: #2C2C2A;
-  }
-
+  .check-input { width: 72px; font-size: 13px; padding: 4px 7px; border: 1px solid #E8E6DE; border-radius: 6px; background: #FAFAF8; color: #2C2C2A; }
   .custom-add { display: flex; gap: 6px; margin-top: 10px; }
   .custom-add input { flex: 1; font-size: 13px; padding: 6px 8px; border: 1px solid #E8E6DE; border-radius: 6px; background: #FAFAF8; }
   .custom-add button { padding: 6px 10px; font-size: 13px; border-radius: 6px; }
@@ -219,20 +143,19 @@
 </header>
 
 <div class="layout">
-  <!-- Main column -->
   <div>
     <h1>Artwork assessor</h1>
-    <p class="page-desc">Upload an EPS file or a ZIP containing one. Checked against your configured print standards.</p>
+    <p class="page-desc">Upload a PDF, EPS, or ZIP containing an EPS. Checked against your configured print standards.</p>
 
     <div class="drop-zone" id="dropZone" onclick="document.getElementById('fileInput').click()">
       <div class="dz-icon">📂</div>
-      <div class="dz-title">Drop EPS or ZIP here</div>
-      <div class="dz-sub">or click to browse &nbsp;·&nbsp; .eps and .zip accepted</div>
+      <div class="dz-title">Drop artwork file here</div>
+      <div class="dz-sub">or click to browse &nbsp;·&nbsp; .pdf, .eps and .zip accepted</div>
     </div>
-    <input type="file" id="fileInput" accept=".eps,.zip" onchange="handleFile(event)" />
+    <input type="file" id="fileInput" accept=".pdf,.eps,.zip" onchange="handleFile(event)" />
 
     <div id="fileBar" class="file-bar" style="display:none">
-      <span class="file-icon">📄</span>
+      <span class="file-type-badge" id="fileTypeBadge">PDF</span>
       <span class="file-name" id="fileBarName">—</span>
       <button class="clear-btn" onclick="clearFile()" title="Remove file">×</button>
     </div>
@@ -243,16 +166,14 @@
 
     <div id="loadingArea" style="display:none" class="loading-wrap">
       <div class="loading-bar"><div class="loading-fill"></div></div>
-      <div class="loading-msg" id="loadingMsg">Reading PostScript source…</div>
+      <div class="loading-msg" id="loadingMsg">Analysing artwork…</div>
     </div>
 
     <div id="resultsArea"></div>
   </div>
 
-  <!-- Sidebar settings -->
   <aside class="sidebar">
     <div class="sidebar-card">
-
       <div class="sidebar-section">
         <h3>Resolution</h3>
         <div class="check-row">
@@ -265,7 +186,6 @@
           <div class="check-label"><strong>Pixelation</strong><span>Upsampled / blocky images</span></div>
         </div>
       </div>
-
       <div class="sidebar-section">
         <h3>Dimensions</h3>
         <div class="check-row">
@@ -284,7 +204,6 @@
           <input class="check-input" id="val-doch" type="number" value="2000" />
         </div>
       </div>
-
       <div class="sidebar-section">
         <h3>Colour</h3>
         <div class="check-row">
@@ -297,7 +216,6 @@
           </select>
         </div>
       </div>
-
       <div class="sidebar-section">
         <h3>Visual checks</h3>
         <div class="check-row">
@@ -317,7 +235,6 @@
           <div class="check-label"><strong>Transparency</strong><span>Overprint / unflattened</span></div>
         </div>
       </div>
-
       <div class="sidebar-section">
         <h3>Custom checks</h3>
         <div id="customList"></div>
@@ -326,15 +243,13 @@
           <button onclick="addCustom()">+</button>
         </div>
       </div>
-
     </div>
   </aside>
 </div>
 
 <script>
-const S = { epsText: null, epsB64: null, fileName: '', customChecks: [] };
+const S = { b64: null, mediaType: null, fileName: '', fileType: '', customChecks: [] };
 
-// Drag and drop
 const dz = document.getElementById('dropZone');
 dz.addEventListener('dragover', e => { e.preventDefault(); dz.classList.add('drag-over'); });
 dz.addEventListener('dragleave', () => dz.classList.remove('drag-over'));
@@ -343,28 +258,38 @@ function handleFile(e) { const f = e.target.files[0]; if (f) loadFile(f); }
 
 async function loadFile(f) {
   const ext = f.name.split('.').pop().toLowerCase();
-  let epsText = null, fileName = f.name;
+  let b64 = null, mediaType = null, fileName = f.name, fileType = ext.toUpperCase();
 
-  if (ext === 'zip') {
-    if (typeof JSZip === 'undefined') { alert('JSZip not loaded — please refresh and try again.'); return; }
+  if (ext === 'pdf') {
+    const buf = await f.arrayBuffer();
+    b64 = btoa(String.fromCharCode(...new Uint8Array(buf)));
+    mediaType = 'application/pdf';
+  } else if (ext === 'eps') {
+    const text = await f.text();
+    b64 = btoa(unescape(encodeURIComponent(text)));
+    mediaType = 'text/plain';
+  } else if (ext === 'zip') {
+    if (typeof JSZip === 'undefined') { alert('JSZip not loaded — please refresh.'); return; }
     try {
       const zip = await JSZip.loadAsync(f);
       const entry = Object.values(zip.files).find(e => e.name.toLowerCase().endsWith('.eps') && !e.name.startsWith('__MACOSX'));
       if (!entry) { alert('No .eps file found inside the ZIP.'); return; }
-      epsText = await entry.async('text');
+      const text = await entry.async('text');
+      b64 = btoa(unescape(encodeURIComponent(text)));
+      mediaType = 'text/plain';
       fileName = entry.name.split('/').pop();
+      fileType = 'EPS';
     } catch(e) { alert('Could not read ZIP: ' + e.message); return; }
-  } else if (ext === 'eps') {
-    epsText = await f.text();
   } else {
-    alert('Please upload an .eps or .zip file.');
+    alert('Please upload a .pdf, .eps, or .zip file.');
     return;
   }
 
-  S.epsText = epsText;
-  S.epsB64 = btoa(unescape(encodeURIComponent(epsText)));
-  S.fileName = fileName;
+  S.b64 = b64; S.mediaType = mediaType; S.fileName = fileName; S.fileType = fileType;
 
+  const badge = document.getElementById('fileTypeBadge');
+  badge.textContent = fileType;
+  badge.className = 'file-type-badge ' + (fileType === 'PDF' ? 'pdf' : 'eps');
   document.getElementById('fileBarName').textContent = fileName + (ext === 'zip' ? ' (from ZIP)' : '') + ' · ' + Math.round(f.size / 1024) + ' KB';
   document.getElementById('fileBar').style.display = 'flex';
   document.getElementById('runBtn').disabled = false;
@@ -372,7 +297,7 @@ async function loadFile(f) {
 }
 
 function clearFile() {
-  S.epsText = null; S.epsB64 = null; S.fileName = '';
+  S.b64 = null; S.mediaType = null; S.fileName = ''; S.fileType = '';
   document.getElementById('fileBar').style.display = 'none';
   document.getElementById('runBtn').disabled = true;
   document.getElementById('fileInput').value = '';
@@ -395,80 +320,72 @@ function renderCustom() {
 function isOn(id) { return document.getElementById('tog-' + id)?.classList.contains('on'); }
 function val(id) { return document.getElementById('val-' + id)?.value || ''; }
 
-function parseEpsMeta(text) {
-  const meta = {};
-  const bb = text.match(/%%BoundingBox:\s*([\d.]+)\s+([\d.]+)\s+([\d.]+)\s+([\d.]+)/);
-  if (bb) {
-    const w = parseFloat(bb[3]) - parseFloat(bb[1]);
-    const h = parseFloat(bb[4]) - parseFloat(bb[2]);
-    meta.width_mm  = Math.round(w * 25.4 / 72 * 10) / 10;
-    meta.height_mm = Math.round(h * 25.4 / 72 * 10) / 10;
-  }
-  const cr = text.match(/%%Creator:\s*(.+)/); if (cr) meta.creator = cr[1].trim().substring(0, 30);
-  const fonts = [...text.matchAll(/%%(?:Document)?Fonts?:\s*(.+)/g)].map(m => m[1].trim()).join(' ').split(/\s+/).filter(f => f && !f.startsWith('%'));
-  meta.fonts = fonts;
-  if (/setcmykcolor|DeviceCMYK/i.test(text)) meta.colour = 'CMYK';
-  else if (/setrgbcolor|DeviceRGB/i.test(text)) meta.colour = 'RGB';
-  else meta.colour = 'unknown';
-  meta.hasRaster = /colorimage|\/image\b|BitsPerComponent/i.test(text);
-  return meta;
-}
-
-function buildPrompt(meta, cfg) {
+function buildPrompt(cfg) {
+  const isPDF = S.fileType === 'PDF';
+  const fileDesc = isPDF ? 'PDF artwork file' : 'EPS PostScript file';
   const checks = [];
-  if (isOn('dpi')) checks.push(`IMAGE RESOLUTION: If this EPS contains embedded raster images, assess whether they meet the ${val('dpi')} DPI minimum. Look for image dictionary entries (width, height, transformation matrix) and calculate effective DPI. If entirely vector, mark pass and note it. id: "dpi"`);
-  if (isOn('pixelation')) checks.push(`PIXELATION / UPSAMPLING: Check if any embedded raster images have pixel dimensions that are small relative to their output size in the transformation matrix — indicating upsampling from a low-res original. id: "pixelation"`);
+
+  if (isOn('dpi')) checks.push(isPDF
+    ? `IMAGE RESOLUTION: Check all embedded raster images. Minimum DPI is ${val('dpi')}. Report actual DPI found and pass/fail. If purely vector, note that and mark pass. id: "dpi"`
+    : `IMAGE RESOLUTION: If this EPS contains embedded raster images, assess whether they meet the ${val('dpi')} DPI minimum. Look for image dictionary entries and transformation matrix to calculate effective DPI. If entirely vector, mark pass. id: "dpi"`);
+
+  if (isOn('pixelation')) checks.push(isPDF
+    ? `PIXELATION / UPSAMPLING: Visually inspect all images for blocky pixel grid, jagged staircase edges on curves, or blurry areas suggesting upsampling from a low-res original. Distinct from DPI metadata — an image can report correct DPI but still look pixelated if upsampled. id: "pixelation"`
+    : `PIXELATION / UPSAMPLING: Check if any embedded raster images have pixel dimensions small relative to their output size in the transformation matrix — indicating upsampling. id: "pixelation"`);
+
   if (isOn('bleed')) {
     const bleedNote = cfg.w && cfg.h
-      ? `Expected trim is ${cfg.w}×${cfg.h}mm so document with ${val('bleed')}mm bleed should be ${(+cfg.w + +val('bleed')*2).toFixed(1)}×${(+cfg.h + +val('bleed')*2).toFixed(1)}mm.`
-      : `Expected ${val('bleed')}mm bleed on all sides. Document is ${meta.width_mm||'?'}×${meta.height_mm||'?'}mm.`;
+      ? `Expected trim is ${cfg.w}×${cfg.h}mm so with ${val('bleed')}mm bleed document should be ${(+cfg.w + +val('bleed')*2).toFixed(1)}×${(+cfg.h + +val('bleed')*2).toFixed(1)}mm.`
+      : `Expected ${val('bleed')}mm bleed on all sides.`;
     checks.push(`BLEED: ${bleedNote} Does the artwork include sufficient bleed? id: "bleed"`);
   }
-  if (isOn('docw') && cfg.w) checks.push(`DOCUMENT WIDTH: Expected trim width ${cfg.w}mm. Extracted: ${meta.width_mm||'?'}mm. Match within 1mm? id: "docw"`);
-  if (isOn('doch') && cfg.h) checks.push(`DOCUMENT HEIGHT: Expected trim height ${cfg.h}mm. Extracted: ${meta.height_mm||'?'}mm. Match within 1mm? id: "doch"`);
-  if (isOn('colour') && val('colour') !== 'either') checks.push(`COLOUR MODE: Expected ${val('colour')}. Header hint: ${meta.colour}. Confirm by checking PostScript operators. id: "colour"`);
-  if (isOn('whiteedge')) checks.push(`WHITE EDGE: Do the PostScript drawing commands fill or image to the BoundingBox edges, or do they stop short leaving implied white space at any edge? id: "white_edge"`);
-  if (isOn('safezone')) checks.push(`SAFE ZONE: Are any text or graphic elements within ~5mm of the trim edge (BoundingBox boundary)? id: "safe_zone"`);
-  if (isOn('fonts')) checks.push(`FONTS: Are fonts fully embedded or outlined? Declared: ${meta.fonts.join(', ') || 'none'}. Any unembedded, non-outlined fonts = FAIL. id: "fonts"`);
-  if (isOn('transparency')) checks.push(`TRANSPARENCY / OVERPRINT: Any transparency operators or overprint settings that could cause press issues? id: "transparency"`);
+
+  if (isOn('docw') && cfg.w) checks.push(`DOCUMENT WIDTH: Expected trim width ${cfg.w}mm. Report actual width and whether it matches within 1mm tolerance. id: "docw"`);
+  if (isOn('doch') && cfg.h) checks.push(`DOCUMENT HEIGHT: Expected trim height ${cfg.h}mm. Report actual height and whether it matches within 1mm tolerance. id: "doch"`);
+
+  if (isOn('colour') && val('colour') !== 'either') checks.push(isPDF
+    ? `COLOUR MODE: Expected ${val('colour')}. Inspect embedded images and colour spaces in the PDF. Report what's found. id: "colour"`
+    : `COLOUR MODE: Expected ${val('colour')}. Check for setcmykcolor/DeviceCMYK vs setrgbcolor/DeviceRGB operators. id: "colour"`);
+
+  if (isOn('whiteedge')) checks.push(isPDF
+    ? `WHITE EDGE / UNEXTENDED ARTWORK: Carefully inspect all four edges visually. Look for any thin white or very light strip at any edge where artwork hasn't been extended to the bleed line. Even 1–3mm is a FAIL. id: "white_edge"`
+    : `WHITE EDGE: Do the PostScript drawing commands fill to the BoundingBox edges, or do they stop short leaving implied white space at any edge? id: "white_edge"`);
+
+  if (isOn('safezone')) checks.push(`SAFE ZONE: Are any text, logos, or important elements within ~5mm of the trim edge, risking being cut off in production? id: "safe_zone"`);
+
+  if (isOn('fonts')) checks.push(isPDF
+    ? `FONTS: Are all fonts fully embedded or outlined/converted to paths in this PDF? Any missing or non-embedded fonts = FAIL. id: "fonts"`
+    : `FONTS: Are fonts fully embedded or outlined in the EPS? Any unembedded, non-outlined fonts = FAIL. id: "fonts"`);
+
+  if (isOn('transparency')) checks.push(`TRANSPARENCY / OVERPRINT: Any unflattened transparency or overprint settings that could cause unexpected results at print? id: "transparency"`);
+
   S.customChecks.forEach((c, i) => checks.push(`CUSTOM — ${c} id: "custom_${i}"`));
 
-  return `You are a print production specialist reviewing an EPS PostScript file for print readiness.
+  return `You are a professional print production specialist reviewing a ${fileDesc} for print readiness. Analyse it thoroughly and respond ONLY as a JSON array — no markdown, no preamble.
 
-EPS header metadata:
-- Dimensions: ${meta.width_mm||'?'} × ${meta.height_mm||'?'} mm
-- Colour hint: ${meta.colour}
-- Creator: ${meta.creator||'unknown'}
-- Fonts declared: ${meta.fonts.join(', ')||'none'}
-- Contains raster data: ${meta.hasRaster}
-
-Read the PostScript source and perform these checks. Respond ONLY as a JSON array — no markdown, no preamble.
-
-Each object: "id" (from check), "label" (human name), "status" (pass/fail/warn/info), "headline" (≤12 words), "detail" (1–3 sentences of specific findings).
+Each object must have: "id" (from check), "label" (human-readable name), "status" (pass/fail/warn/info), "headline" (≤12 words), "detail" (1–3 sentences of specific findings).
 
 Checks:
 ${checks.map((c, i) => `${i+1}. ${c}`).join('\n')}
 
-Add a final object: id "overall", label "Overall verdict", status based on any fails present, headline and brief detail.
+Add a final object: id "overall", label "Overall verdict", status based on any fails present, headline and brief detail summary.
 
 JSON array only.`;
 }
 
 async function runAssessment() {
-  if (!S.epsText) return;
+  if (!S.b64) return;
   const btn = document.getElementById('runBtn');
   const lbl = document.getElementById('runLabel');
   btn.disabled = true;
   lbl.innerHTML = '<span class="spinner"></span> Analysing…';
   document.getElementById('loadingArea').style.display = 'block';
-  document.getElementById('loadingMsg').textContent = 'Reading PostScript source and running checks…';
+  document.getElementById('loadingMsg').textContent = S.fileType === 'PDF' ? 'Inspecting PDF artwork…' : 'Reading PostScript source…';
   document.getElementById('resultsArea').innerHTML = '';
 
   const cfg = { w: isOn('docw') ? val('docw') : null, h: isOn('doch') ? val('doch') : null };
-  const meta = parseEpsMeta(S.epsText);
 
   try {
-    const prompt = buildPrompt(meta, cfg);
     const resp = await fetch('/api/assess', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
@@ -478,8 +395,8 @@ async function runAssessment() {
         messages: [{
           role: 'user',
           content: [
-            { type: 'document', source: { type: 'base64', media_type: 'text/plain', data: S.epsB64 } },
-            { type: 'text', text: prompt }
+            { type: 'document', source: { type: 'base64', media_type: S.mediaType, data: S.b64 } },
+            { type: 'text', text: buildPrompt(cfg) }
           ]
         }]
       })
@@ -488,7 +405,7 @@ async function runAssessment() {
     if (data.error) throw new Error(typeof data.error === 'object' ? data.error.message : data.error);
     const raw = (data.content || []).filter(b => b.type === 'text').map(b => b.text).join('');
     const results = JSON.parse(raw.replace(/```json|```/g, '').trim());
-    renderResults(results, meta);
+    renderResults(results);
   } catch (e) {
     document.getElementById('resultsArea').innerHTML = `
       <div class="result-item fail" style="margin-top:20px">
@@ -502,13 +419,12 @@ async function runAssessment() {
   lbl.textContent = 'Assess artwork';
 }
 
-function renderResults(results, meta) {
+function renderResults(results) {
   const overall = results.find(r => r.id === 'overall');
   const checks  = results.filter(r => r.id !== 'overall');
   const icons = { pass: '✅', fail: '❌', warn: '⚠️', info: 'ℹ️' };
 
   let html = '';
-
   if (overall) {
     html += `<div class="result-overall ${overall.status}">
       <span class="ov-icon">${icons[overall.status] || 'ℹ️'}</span>
@@ -516,16 +432,6 @@ function renderResults(results, meta) {
       <span class="ov-filename">${S.fileName}</span>
     </div>`;
   }
-
-  if (meta.width_mm || meta.colour || meta.creator) {
-    html += '<div class="meta-grid">';
-    if (meta.width_mm)    html += `<div class="meta-card"><div class="mk">Dimensions</div><div class="mv">${meta.width_mm} × ${meta.height_mm} mm</div></div>`;
-    if (meta.colour)      html += `<div class="meta-card"><div class="mk">Colour space</div><div class="mv">${meta.colour}</div></div>`;
-    if (meta.creator)     html += `<div class="meta-card"><div class="mk">Created with</div><div class="mv">${meta.creator}</div></div>`;
-    if (meta.fonts.length) html += `<div class="meta-card"><div class="mk">Fonts declared</div><div class="mv">${meta.fonts.slice(0,3).join(', ')}${meta.fonts.length > 3 ? '…' : ''}</div></div>`;
-    html += '</div>';
-  }
-
   html += '<div class="checks-section-label">Check results</div>';
   checks.forEach(r => {
     html += `<div class="result-item ${r.status}">
@@ -536,7 +442,6 @@ function renderResults(results, meta) {
       </div>
     </div>`;
   });
-
   document.getElementById('resultsArea').innerHTML = html;
 }
 </script>
