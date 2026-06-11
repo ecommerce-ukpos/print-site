@@ -246,13 +246,19 @@ function openJob(id) {
 }
 
 async function saveJob(jobData) {
-  const r = await fetch('/api/jobs', {
-    method: 'POST',
-    headers: {'Content-Type':'application/json'},
-    body: JSON.stringify(jobData)
-  });
-  const data = await r.json();
-  return Array.isArray(data) ? data[0] : data;
+  try {
+    const r = await fetch('/api/jobs', {
+      method: 'POST',
+      headers: {'Content-Type':'application/json'},
+      body: JSON.stringify(jobData)
+    });
+    const data = await r.json();
+    if (!r.ok) { console.error('saveJob error', data); return null; }
+    return Array.isArray(data) ? data[0] : data;
+  } catch(e) {
+    console.error('saveJob failed', e);
+    return null;
+  }
 }
 
 function getFileType(name) {
@@ -264,12 +270,18 @@ function makeReference(fileName) {
 }
 
 async function addFilesToQueue(files) {
-  for (const f of files) {
+  const validFiles = Array.from(files).filter(f => {
     const ext = f.name.split('.').pop().toLowerCase();
-    const allowed = ['pdf','eps','zip','png','jpg','jpeg'];
-    if (!allowed.includes(ext)) continue;
+    return ['pdf','eps','zip','png','jpg','jpeg'].includes(ext);
+  });
 
+  if (!validFiles.length) { showToast('No supported files found'); return; }
+  showToast(`Adding ${validFiles.length} file${validFiles.length > 1 ? 's' : ''}…`);
+
+  const promises = validFiles.map(async f => {
+    const ext = f.name.split('.').pop().toLowerCase();
     let fileName = f.name;
+
     if (ext === 'zip' && typeof JSZip !== 'undefined') {
       try {
         const zip = await JSZip.loadAsync(f);
@@ -278,7 +290,7 @@ async function addFilesToQueue(files) {
       } catch(e) {}
     }
 
-    const job = await saveJob({
+    return saveJob({
       reference: makeReference(fileName),
       file_name: fileName,
       file_type: getFileType(fileName),
@@ -286,13 +298,13 @@ async function addFilesToQueue(files) {
       customer_name: null,
       order_number: null
     });
+  });
 
-    if (job && job.id) {
-      jobs.unshift(job);
-      renderTable();
-      showToast(`${fileName} added to queue`);
-    }
-  }
+  const results = await Promise.all(promises);
+  const saved = results.filter(j => j && j.id);
+  saved.forEach(job => jobs.unshift(job));
+  renderTable();
+  showToast(`${saved.length} file${saved.length !== 1 ? 's' : ''} added to queue`);
 }
 
 async function handleCSV(e) {

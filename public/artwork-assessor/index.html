@@ -285,21 +285,28 @@ dz.addEventListener('dragleave', () => dz.classList.remove('drag-over'));
 dz.addEventListener('drop', e => { e.preventDefault(); dz.classList.remove('drag-over'); const f = e.dataTransfer.files[0]; if (f) loadFile(f); });
 function handleFile(e) { const f = e.target.files[0]; if (f) loadFile(f); }
 
+function bufToB64(buf) {
+  const bytes = new Uint8Array(buf);
+  let binary = '';
+  const chunk = 8192;
+  for (let i = 0; i < bytes.length; i += chunk) {
+    binary += String.fromCharCode(...bytes.subarray(i, i + chunk));
+  }
+  return btoa(binary);
+}
+
 async function loadFile(f) {
   const ext = f.name.split('.').pop().toLowerCase();
   let b64 = null, mediaType = null, fileName = f.name, fileType = ext.toUpperCase();
 
   if (ext === 'pdf') {
-    const buf = await f.arrayBuffer();
-    b64 = btoa(String.fromCharCode(...new Uint8Array(buf)));
+    b64 = bufToB64(await f.arrayBuffer());
     mediaType = 'application/pdf';
   } else if (ext === 'png') {
-    const buf = await f.arrayBuffer();
-    b64 = btoa(String.fromCharCode(...new Uint8Array(buf)));
+    b64 = bufToB64(await f.arrayBuffer());
     mediaType = 'image/png';
   } else if (ext === 'jpg' || ext === 'jpeg') {
-    const buf = await f.arrayBuffer();
-    b64 = btoa(String.fromCharCode(...new Uint8Array(buf)));
+    b64 = bufToB64(await f.arrayBuffer());
     mediaType = 'image/jpeg';
   } else if (ext === 'eps') {
     const text = await f.text();
