@@ -1,0 +1,358 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Dashboard — UKPOS Print Site</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
+<style>
+  *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+  body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",system-ui,sans-serif;background:#FAFAF8;color:#2C2C2A;min-height:100vh;font-size:14px}
+  header{border-bottom:1px solid #E8E6DE;padding:14px 32px;background:#fff;display:flex;align-items:center;gap:10px}
+  header .wordmark{font-size:14px;font-weight:500}
+  header .sep{color:#D3D1C7}
+  header .current{font-size:14px;font-weight:500}
+  header .spacer{flex:1}
+  .top-bar{padding:20px 32px 0;display:flex;align-items:center;gap:12px;flex-wrap:wrap}
+  .top-bar h1{font-size:20px;font-weight:500;letter-spacing:-0.01em;margin-right:auto}
+  .btn{padding:7px 14px;font-size:13px;border-radius:7px;cursor:pointer;border:1px solid #E8E6DE;background:#fff;color:#2C2C2A;white-space:nowrap;transition:background 0.12s}
+  .btn:hover{background:#F1EFE8}
+  .btn-primary{background:#534AB7;color:#fff;border-color:#534AB7}
+  .btn-primary:hover{opacity:0.88;background:#534AB7}
+  .drop-banner{margin:16px 32px;border:1.5px dashed #C8C6BC;border-radius:10px;padding:20px 24px;text-align:center;cursor:pointer;background:#fff;transition:border-color 0.15s,background 0.15s;display:flex;align-items:center;justify-content:center;gap:12px}
+  .drop-banner:hover,.drop-banner.drag-over{border-color:#7F77DD;background:#FAFAFF}
+  .drop-banner .db-icon{font-size:20px}
+  .drop-banner .db-text{font-size:14px;color:#5F5E5A}
+  .drop-banner .db-text strong{color:#2C2C2A}
+  .drop-banner .db-formats{font-size:12px;color:#888780;margin-left:4px}
+  input[type=file]{display:none}
+  .table-wrap{margin:0 32px 40px;overflow-x:auto}
+  table{width:100%;border-collapse:collapse;background:#fff;border:1px solid #E8E6DE;border-radius:10px;overflow:hidden;min-width:900px}
+  thead tr{background:#F7F6F2;border-bottom:1px solid #E8E6DE}
+  th{padding:9px 12px;text-align:left;font-size:11px;font-weight:500;text-transform:uppercase;letter-spacing:0.06em;color:#888780;white-space:nowrap}
+  td{padding:10px 12px;border-bottom:1px solid #F1EFE8;vertical-align:middle;font-size:13px}
+  tr:last-child td{border-bottom:none}
+  tr:hover td{background:#FAFAF8}
+  .badge{display:inline-block;font-size:10px;font-weight:600;padding:2px 7px;border-radius:4px;text-transform:uppercase;letter-spacing:0.03em}
+  .badge-pdf{background:#FCEBEB;color:#A32D2D}
+  .badge-eps{background:#EEEDFE;color:#534AB7}
+  .badge-png{background:#E1F5EE;color:#0F6E56}
+  .badge-jpg,.badge-jpeg{background:#FAEEDA;color:#854F0B}
+  .badge-manual{background:#F1EFE8;color:#5F5E5A}
+  .badge-csv{background:#E6F1FB;color:#185FA5}
+  .badge-api{background:#FBEAF0;color:#993556}
+  .score-cell{font-size:13px;font-weight:500}
+  .score-high{color:#27500A}
+  .score-mid{color:#633806}
+  .score-low{color:#791F1F}
+  .status-dot{display:inline-block;width:8px;height:8px;border-radius:50%;margin-right:5px}
+  .dot-pass{background:#639922}
+  .dot-warn{background:#EF9F27}
+  .dot-fail{background:#E24B4A}
+  .dot-pending{background:#B4B2A9}
+  .check-cell{text-align:center;font-size:14px}
+  .muted{color:#B4B2A9}
+  .view-btn{padding:5px 10px;font-size:12px;border-radius:6px;cursor:pointer;border:1px solid #E8E6DE;background:#fff;color:#534AB7;font-weight:500;white-space:nowrap}
+  .view-btn:hover{background:#EEEDFE;border-color:#AFA9EC}
+  .empty-state{padding:60px 32px;text-align:center;color:#888780}
+  .empty-state .es-icon{font-size:32px;margin-bottom:12px}
+  .empty-state p{font-size:14px}
+  .uploading-row td{opacity:0.6}
+  .col-toggle-bar{padding:8px 32px;display:flex;align-items:center;gap:8px;flex-wrap:wrap;border-bottom:1px solid #E8E6DE;background:#fff}
+  .col-toggle-bar span{font-size:11px;color:#888780;font-weight:500;text-transform:uppercase;letter-spacing:0.06em;margin-right:4px}
+  .col-pill{padding:3px 9px;font-size:11px;border-radius:20px;cursor:pointer;border:1px solid #E8E6DE;background:#F1EFE8;color:#5F5E5A;white-space:nowrap}
+  .col-pill.on{background:#EEEDFE;color:#534AB7;border-color:#AFA9EC}
+  .progress-bar{height:4px;background:#E8E6DE;border-radius:2px;overflow:hidden;margin-top:4px;width:80px}
+  .progress-fill{height:100%;border-radius:2px;transition:width 0.3s}
+  .ref-cell{font-weight:500;color:#2C2C2A;max-width:140px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+  .filename-cell{color:#5F5E5A;max-width:160px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+  .date-cell{color:#888780;white-space:nowrap}
+  .spinner-sm{display:inline-block;width:12px;height:12px;border:2px solid #D3D1C7;border-top-color:#534AB7;border-radius:50%;animation:spin 0.6s linear infinite}
+  @keyframes spin{to{transform:rotate(360deg)}}
+  .toast{position:fixed;bottom:24px;left:50%;transform:translateX(-50%);background:#2C2C2A;color:#fff;padding:10px 20px;border-radius:8px;font-size:13px;opacity:0;transition:opacity 0.2s;pointer-events:none;z-index:999}
+  .toast.show{opacity:1}
+</style>
+</head>
+<body>
+
+<header>
+  <span class="wordmark">UKPOS Print Site</span>
+  <span class="sep">/</span>
+  <span class="current">Dashboard</span>
+  <span class="spacer"></span>
+  <button class="btn" onclick="document.getElementById('csvInput').click()">Upload CSV</button>
+  <input type="file" id="csvInput" accept=".csv" onchange="handleCSV(event)" />
+  <button class="btn btn-primary" onclick="document.getElementById('fileInput').click()">+ Add files</button>
+  <input type="file" id="fileInput" accept=".pdf,.eps,.zip,.png,.jpg,.jpeg" multiple onchange="handleFiles(event)" />
+</header>
+
+<div class="top-bar">
+  <h1>Artwork jobs</h1>
+  <button class="btn" onclick="loadJobs()">↻ Refresh</button>
+</div>
+
+<div class="drop-banner" id="dropBanner">
+  <span class="db-icon">📂</span>
+  <span class="db-text"><strong>Drop artwork files here</strong> to add to the queue</span>
+  <span class="db-formats">PDF · EPS · ZIP · PNG · JPG</span>
+</div>
+
+<div class="col-toggle-bar">
+  <span>Checks:</span>
+  <button class="col-pill on" data-col="dpi" onclick="toggleCol(this)">DPI</button>
+  <button class="col-pill on" data-col="pixelation" onclick="toggleCol(this)">Pixelation</button>
+  <button class="col-pill on" data-col="bleed" onclick="toggleCol(this)">Bleed</button>
+  <button class="col-pill on" data-col="colour" onclick="toggleCol(this)">Colour</button>
+  <button class="col-pill on" data-col="white_edge" onclick="toggleCol(this)">White edge</button>
+  <button class="col-pill on" data-col="safe_zone" onclick="toggleCol(this)">Safe zone</button>
+  <button class="col-pill on" data-col="fonts" onclick="toggleCol(this)">Fonts</button>
+  <button class="col-pill on" data-col="transparency" onclick="toggleCol(this)">Transparency</button>
+</div>
+
+<div class="table-wrap">
+  <table id="jobTable">
+    <thead>
+      <tr>
+        <th>Reference</th>
+        <th>Customer</th>
+        <th>Order</th>
+        <th>File</th>
+        <th>Type</th>
+        <th>Source</th>
+        <th>Uploaded</th>
+        <th>Assessed</th>
+        <th>Score</th>
+        <th class="check-col" data-col="dpi">DPI</th>
+        <th class="check-col" data-col="pixelation">Pixelation</th>
+        <th class="check-col" data-col="bleed">Bleed</th>
+        <th class="check-col" data-col="colour">Colour</th>
+        <th class="check-col" data-col="white_edge">White edge</th>
+        <th class="check-col" data-col="safe_zone">Safe zone</th>
+        <th class="check-col" data-col="fonts">Fonts</th>
+        <th class="check-col" data-col="transparency">Transparency</th>
+        <th></th>
+      </tr>
+    </thead>
+    <tbody id="jobBody">
+      <tr><td colspan="18"><div class="empty-state"><div class="es-icon">⏳</div><p>Loading jobs…</p></div></td></tr>
+    </tbody>
+  </table>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+const CHECK_COLS = ['dpi','pixelation','bleed','colour','white_edge','safe_zone','fonts','transparency'];
+const CHECK_IDS  = { dpi:'dpi', pixelation:'pixelation', bleed:'bleed', colour:'colour', white_edge:'white_edge', safe_zone:'safe_zone', fonts:'fonts', transparency:'transparency' };
+let jobs = [];
+let hiddenCols = new Set();
+
+function toggleCol(btn) {
+  const col = btn.dataset.col;
+  btn.classList.toggle('on');
+  if (hiddenCols.has(col)) hiddenCols.delete(col); else hiddenCols.add(col);
+  applyColVisibility();
+}
+
+function applyColVisibility() {
+  document.querySelectorAll('.check-col').forEach(th => {
+    const col = th.dataset.col;
+    th.style.display = hiddenCols.has(col) ? 'none' : '';
+  });
+  document.querySelectorAll('.check-td').forEach(td => {
+    const col = td.dataset.col;
+    td.style.display = hiddenCols.has(col) ? 'none' : '';
+  });
+}
+
+function fmtDate(iso) {
+  if (!iso) return '—';
+  const d = new Date(iso);
+  return d.toLocaleDateString('en-GB', {day:'2-digit',month:'short'}) + ' ' + d.toLocaleTimeString('en-GB',{hour:'2-digit',minute:'2-digit'});
+}
+
+function checkIcon(results, id) {
+  if (!results) return '<span class="muted">—</span>';
+  const r = results.find(r => r.id === id || r.id === id.replace('_',''));
+  if (!r) return '<span class="muted">—</span>';
+  if (r.status === 'pass') return '✅';
+  if (r.status === 'fail') return '❌';
+  if (r.status === 'warn') return '⚠️';
+  return '<span class="muted">ℹ️</span>';
+}
+
+function scoreClass(pct) {
+  if (pct === null || pct === undefined) return '';
+  if (pct >= 80) return 'score-high';
+  if (pct >= 50) return 'score-mid';
+  return 'score-low';
+}
+
+function renderRow(job) {
+  const results = job.results || null;
+  const statusDot = job.overall_status === 'pass' ? 'dot-pass' : job.overall_status === 'fail' ? 'dot-fail' : job.overall_status === 'warn' ? 'dot-warn' : 'dot-pending';
+  const pct = job.score_pct;
+  const barColor = pct >= 80 ? '#639922' : pct >= 50 ? '#EF9F27' : '#E24B4A';
+  const scoreHtml = pct !== null && pct !== undefined
+    ? `<div class="score-cell ${scoreClass(pct)}">${pct}%</div><div class="progress-bar"><div class="progress-fill" style="width:${pct}%;background:${barColor}"></div></div>`
+    : job.assessed_at ? '<span class="muted">—</span>' : '<span class="spinner-sm"></span>';
+
+  const badgeType = 'badge-' + (job.file_type||'').toLowerCase();
+  const badgeSrc  = 'badge-' + (job.source||'manual').toLowerCase().replace(' ','');
+
+  let checkCells = CHECK_COLS.map(col => {
+    const display = hiddenCols.has(col) ? ' style="display:none"' : '';
+    return `<td class="check-cell check-td" data-col="${col}"${display}>${checkIcon(results, col)}</td>`;
+  }).join('');
+
+  return `<tr data-id="${job.id}">
+    <td><div class="ref-cell" title="${job.reference}"><span class="status-dot ${statusDot}"></span>${job.reference}</div></td>
+    <td>${job.customer_name || '<span class="muted">—</span>'}</td>
+    <td>${job.order_number || '<span class="muted">—</span>'}</td>
+    <td><div class="filename-cell" title="${job.file_name}">${job.file_name}</div></td>
+    <td><span class="badge ${badgeType}">${job.file_type||'?'}</span></td>
+    <td><span class="badge ${badgeSrc}">${job.source||'manual'}</span></td>
+    <td class="date-cell">${fmtDate(job.uploaded_at)}</td>
+    <td class="date-cell">${fmtDate(job.assessed_at)}</td>
+    <td>${scoreHtml}</td>
+    ${checkCells}
+    <td><button class="view-btn" onclick="openJob('${job.id}')">View →</button></td>
+  </tr>`;
+}
+
+function renderTable() {
+  const tbody = document.getElementById('jobBody');
+  if (!jobs.length) {
+    tbody.innerHTML = `<tr><td colspan="18"><div class="empty-state"><div class="es-icon">📭</div><p>No jobs yet — drop files above to get started</p></div></td></tr>`;
+    return;
+  }
+  tbody.innerHTML = jobs.map(renderRow).join('');
+  applyColVisibility();
+}
+
+async function loadJobs() {
+  try {
+    const r = await fetch('/api/jobs');
+    jobs = await r.json();
+    if (!Array.isArray(jobs)) jobs = [];
+    renderTable();
+  } catch(e) {
+    console.error('Failed to load jobs', e);
+  }
+}
+
+function openJob(id) {
+  window.location.href = `/artwork-assessor?job=${id}`;
+}
+
+async function saveJob(jobData) {
+  const r = await fetch('/api/jobs', {
+    method: 'POST',
+    headers: {'Content-Type':'application/json'},
+    body: JSON.stringify(jobData)
+  });
+  const data = await r.json();
+  return Array.isArray(data) ? data[0] : data;
+}
+
+function getFileType(name) {
+  return name.split('.').pop().toUpperCase();
+}
+
+function makeReference(fileName) {
+  return fileName.replace(/\.[^.]+$/, '').substring(0, 40);
+}
+
+async function addFilesToQueue(files) {
+  for (const f of files) {
+    const ext = f.name.split('.').pop().toLowerCase();
+    const allowed = ['pdf','eps','zip','png','jpg','jpeg'];
+    if (!allowed.includes(ext)) continue;
+
+    let fileName = f.name;
+    if (ext === 'zip' && typeof JSZip !== 'undefined') {
+      try {
+        const zip = await JSZip.loadAsync(f);
+        const entry = Object.values(zip.files).find(e => e.name.toLowerCase().endsWith('.eps') && !e.name.startsWith('__MACOSX'));
+        if (entry) fileName = entry.name.split('/').pop();
+      } catch(e) {}
+    }
+
+    const job = await saveJob({
+      reference: makeReference(fileName),
+      file_name: fileName,
+      file_type: getFileType(fileName),
+      source: 'Manual',
+      customer_name: null,
+      order_number: null
+    });
+
+    if (job && job.id) {
+      jobs.unshift(job);
+      renderTable();
+      showToast(`${fileName} added to queue`);
+    }
+  }
+}
+
+async function handleCSV(e) {
+  const f = e.target.files[0];
+  if (!f) return;
+  const text = await f.text();
+  const lines = text.trim().split('\n');
+  if (lines.length < 2) { showToast('CSV appears empty'); return; }
+
+  const headers = lines[0].split(',').map(h => h.trim().toLowerCase().replace(/[^a-z_]/g,''));
+  const rows = lines.slice(1);
+  let added = 0;
+
+  for (const line of rows) {
+    const vals = line.split(',').map(v => v.trim().replace(/^"|"$/g,''));
+    const row = {};
+    headers.forEach((h,i) => row[h] = vals[i] || '');
+
+    const fileName = row['file_name'] || row['filename'] || row['file'] || '';
+    if (!fileName) continue;
+
+    const job = await saveJob({
+      reference: row['reference'] || row['ref'] || makeReference(fileName),
+      file_name: fileName,
+      file_type: getFileType(fileName),
+      source: 'CSV',
+      customer_name: row['customer_name'] || row['customer'] || null,
+      order_number: row['order_number'] || row['order'] || row['order_no'] || null
+    });
+
+    if (job && job.id) { jobs.unshift(job); added++; }
+  }
+
+  renderTable();
+  showToast(`${added} job${added !== 1 ? 's' : ''} added from CSV`);
+  e.target.value = '';
+}
+
+function handleFiles(e) {
+  addFilesToQueue(Array.from(e.target.files));
+  e.target.value = '';
+}
+
+function showToast(msg) {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.classList.add('show');
+  setTimeout(() => t.classList.remove('show'), 2500);
+}
+
+const banner = document.getElementById('dropBanner');
+banner.addEventListener('dragover', e => { e.preventDefault(); banner.classList.add('drag-over'); });
+banner.addEventListener('dragleave', () => banner.classList.remove('drag-over'));
+banner.addEventListener('drop', e => {
+  e.preventDefault(); banner.classList.remove('drag-over');
+  addFilesToQueue(Array.from(e.dataTransfer.files));
+});
+banner.addEventListener('click', () => document.getElementById('fileInput').click());
+
+loadJobs();
+</script>
+</body>
+</html>
