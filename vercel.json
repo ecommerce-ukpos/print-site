@@ -1,12 +1,6 @@
 {
   "version": 2,
-  "buildCommand": "",
   "outputDirectory": "public",
-  "functions": {
-    "api/assess.js": {
-      "runtime": "nodejs20.x"
-    }
-  },
   "routes": [
     {
       "src": "/api/(.*)",
