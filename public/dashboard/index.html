@@ -8,31 +8,49 @@
 <style>
   *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
   body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",system-ui,sans-serif;background:#FAFAF8;color:#2C2C2A;min-height:100vh;font-size:14px}
-  header{border-bottom:1px solid #E8E6DE;padding:14px 32px;background:#fff;display:flex;align-items:center;gap:10px}
-  header .wordmark{font-size:14px;font-weight:500}
-  header .sep{color:#D3D1C7}
-  header .current{font-size:14px;font-weight:500}
-  header .spacer{flex:1}
-  .top-bar{padding:20px 32px 0;display:flex;align-items:center;gap:12px;flex-wrap:wrap}
-  .top-bar h1{font-size:20px;font-weight:500;letter-spacing:-0.01em;margin-right:auto}
+
+  /* Nav */
+  nav{border-bottom:1px solid #E8E6DE;padding:0 32px;background:#fff;display:flex;align-items:center;gap:0;height:48px}
+  .nav-logo{font-size:14px;font-weight:500;color:#2C2C2A;text-decoration:none;margin-right:24px;white-space:nowrap}
+  .nav-links{display:flex;align-items:stretch;gap:0;height:100%}
+  .nav-link{display:flex;align-items:center;padding:0 14px;font-size:13px;color:#5F5E5A;text-decoration:none;border-bottom:2px solid transparent;white-space:nowrap;transition:color 0.12s}
+  .nav-link:hover{color:#2C2C2A}
+  .nav-link.active{color:#534AB7;border-bottom-color:#534AB7;font-weight:500}
+  .nav-spacer{flex:1}
+  .nav-actions{display:flex;align-items:center;gap:8px}
+
   .btn{padding:7px 14px;font-size:13px;border-radius:7px;cursor:pointer;border:1px solid #E8E6DE;background:#fff;color:#2C2C2A;white-space:nowrap;transition:background 0.12s}
   .btn:hover{background:#F1EFE8}
   .btn-primary{background:#534AB7;color:#fff;border-color:#534AB7}
   .btn-primary:hover{opacity:0.88;background:#534AB7}
-  .drop-banner{margin:16px 32px;border:1.5px dashed #C8C6BC;border-radius:10px;padding:20px 24px;text-align:center;cursor:pointer;background:#fff;transition:border-color 0.15s,background 0.15s;display:flex;align-items:center;justify-content:center;gap:12px}
+  .btn-danger{background:#FCEBEB;color:#A32D2D;border-color:#F09595}
+  .btn-danger:hover{background:#F7C1C1}
+
+  .page-header{padding:20px 32px 0;display:flex;align-items:center;gap:12px;flex-wrap:wrap}
+  .page-header h1{font-size:20px;font-weight:500;letter-spacing:-0.01em;margin-right:auto}
+
+  .drop-banner{margin:16px 32px;border:1.5px dashed #C8C6BC;border-radius:10px;padding:18px 24px;text-align:center;cursor:pointer;background:#fff;transition:border-color 0.15s,background 0.15s;display:flex;align-items:center;justify-content:center;gap:12px}
   .drop-banner:hover,.drop-banner.drag-over{border-color:#7F77DD;background:#FAFAFF}
-  .drop-banner .db-icon{font-size:20px}
-  .drop-banner .db-text{font-size:14px;color:#5F5E5A}
+  .drop-banner .db-icon{font-size:18px}
+  .drop-banner .db-text{font-size:13px;color:#5F5E5A}
   .drop-banner .db-text strong{color:#2C2C2A}
-  .drop-banner .db-formats{font-size:12px;color:#888780;margin-left:4px}
+  .drop-banner .db-formats{font-size:11px;color:#B4B2A9;margin-left:4px}
   input[type=file]{display:none}
-  .table-wrap{margin:0 32px 40px;overflow-x:auto}
+
+  .controls-bar{margin:0 32px 0;display:flex;align-items:center;gap:8px;flex-wrap:wrap;padding:10px 0;border-bottom:1px solid #E8E6DE}
+  .controls-bar .label{font-size:11px;color:#888780;font-weight:500;text-transform:uppercase;letter-spacing:0.06em;margin-right:2px}
+  .col-pill{padding:3px 9px;font-size:11px;border-radius:20px;cursor:pointer;border:1px solid #E8E6DE;background:#F1EFE8;color:#5F5E5A;white-space:nowrap}
+  .col-pill.on{background:#EEEDFE;color:#534AB7;border-color:#AFA9EC}
+  .controls-sep{width:1px;height:20px;background:#E8E6DE;margin:0 4px}
+
+  .table-wrap{margin:0 32px;overflow-x:auto}
   table{width:100%;border-collapse:collapse;background:#fff;border:1px solid #E8E6DE;border-radius:10px;overflow:hidden;min-width:900px}
   thead tr{background:#F7F6F2;border-bottom:1px solid #E8E6DE}
   th{padding:9px 12px;text-align:left;font-size:11px;font-weight:500;text-transform:uppercase;letter-spacing:0.06em;color:#888780;white-space:nowrap}
-  td{padding:10px 12px;border-bottom:1px solid #F1EFE8;vertical-align:middle;font-size:13px}
+  td{padding:9px 12px;border-bottom:1px solid #F1EFE8;vertical-align:middle;font-size:13px}
   tr:last-child td{border-bottom:none}
   tr:hover td{background:#FAFAF8}
+
   .badge{display:inline-block;font-size:10px;font-weight:600;padding:2px 7px;border-radius:4px;text-transform:uppercase;letter-spacing:0.03em}
   .badge-pdf{background:#FCEBEB;color:#A32D2D}
   .badge-eps{background:#EEEDFE;color:#534AB7}
@@ -41,52 +59,75 @@
   .badge-manual{background:#F1EFE8;color:#5F5E5A}
   .badge-csv{background:#E6F1FB;color:#185FA5}
   .badge-api{background:#FBEAF0;color:#993556}
+
   .score-cell{font-size:13px;font-weight:500}
-  .score-high{color:#27500A}
-  .score-mid{color:#633806}
-  .score-low{color:#791F1F}
-  .status-dot{display:inline-block;width:8px;height:8px;border-radius:50%;margin-right:5px}
-  .dot-pass{background:#639922}
-  .dot-warn{background:#EF9F27}
-  .dot-fail{background:#E24B4A}
-  .dot-pending{background:#B4B2A9}
-  .check-cell{text-align:center;font-size:14px}
+  .score-high{color:#27500A} .score-mid{color:#633806} .score-low{color:#791F1F}
+  .status-dot{display:inline-block;width:7px;height:7px;border-radius:50%;margin-right:5px;flex-shrink:0}
+  .dot-pass{background:#639922} .dot-warn{background:#EF9F27} .dot-fail{background:#E24B4A} .dot-pending{background:#B4B2A9}
+  .check-cell{text-align:center;font-size:13px}
   .muted{color:#B4B2A9}
-  .view-btn{padding:5px 10px;font-size:12px;border-radius:6px;cursor:pointer;border:1px solid #E8E6DE;background:#fff;color:#534AB7;font-weight:500;white-space:nowrap}
+  .progress-bar{height:3px;background:#E8E6DE;border-radius:2px;overflow:hidden;margin-top:3px;width:70px}
+  .progress-fill{height:100%;border-radius:2px}
+  .ref-cell{display:flex;align-items:center;font-weight:500;color:#2C2C2A;max-width:140px}
+  .ref-text{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+  .filename-cell{color:#5F5E5A;max-width:160px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+  .date-cell{color:#888780;white-space:nowrap;font-size:12px}
+  .spinner-sm{display:inline-block;width:12px;height:12px;border:2px solid #D3D1C7;border-top-color:#534AB7;border-radius:50%;animation:spin 0.6s linear infinite}
+  @keyframes spin{to{transform:rotate(360deg)}}
+
+  .actions-cell{display:flex;align-items:center;gap:6px;white-space:nowrap}
+  .view-btn{padding:4px 10px;font-size:12px;border-radius:6px;cursor:pointer;border:1px solid #E8E6DE;background:#fff;color:#534AB7;font-weight:500}
   .view-btn:hover{background:#EEEDFE;border-color:#AFA9EC}
+  .del-btn{padding:4px 8px;font-size:12px;border-radius:6px;cursor:pointer;border:1px solid #F09595;background:#fff;color:#A32D2D;font-weight:500}
+  .del-btn:hover{background:#FCEBEB}
+
+  /* Pagination */
+  .pagination{margin:16px 32px 40px;display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+  .pagination .pg-info{font-size:13px;color:#888780;margin-right:auto}
+  .pagination .pg-size{display:flex;align-items:center;gap:6px;font-size:13px;color:#5F5E5A}
+  .pagination .pg-size select{font-size:13px;padding:4px 8px;border:1px solid #E8E6DE;border-radius:6px;background:#fff;cursor:pointer}
+  .pg-btn{padding:5px 10px;font-size:13px;border-radius:6px;cursor:pointer;border:1px solid #E8E6DE;background:#fff;color:#2C2C2A}
+  .pg-btn:hover{background:#F1EFE8}
+  .pg-btn:disabled{opacity:0.4;cursor:not-allowed}
+  .pg-btn.active{background:#534AB7;color:#fff;border-color:#534AB7}
+
   .empty-state{padding:60px 32px;text-align:center;color:#888780}
   .empty-state .es-icon{font-size:32px;margin-bottom:12px}
   .empty-state p{font-size:14px}
-  .uploading-row td{opacity:0.6}
-  .col-toggle-bar{padding:8px 32px;display:flex;align-items:center;gap:8px;flex-wrap:wrap;border-bottom:1px solid #E8E6DE;background:#fff}
-  .col-toggle-bar span{font-size:11px;color:#888780;font-weight:500;text-transform:uppercase;letter-spacing:0.06em;margin-right:4px}
-  .col-pill{padding:3px 9px;font-size:11px;border-radius:20px;cursor:pointer;border:1px solid #E8E6DE;background:#F1EFE8;color:#5F5E5A;white-space:nowrap}
-  .col-pill.on{background:#EEEDFE;color:#534AB7;border-color:#AFA9EC}
-  .progress-bar{height:4px;background:#E8E6DE;border-radius:2px;overflow:hidden;margin-top:4px;width:80px}
-  .progress-fill{height:100%;border-radius:2px;transition:width 0.3s}
-  .ref-cell{font-weight:500;color:#2C2C2A;max-width:140px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
-  .filename-cell{color:#5F5E5A;max-width:160px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
-  .date-cell{color:#888780;white-space:nowrap}
-  .spinner-sm{display:inline-block;width:12px;height:12px;border:2px solid #D3D1C7;border-top-color:#534AB7;border-radius:50%;animation:spin 0.6s linear infinite}
-  @keyframes spin{to{transform:rotate(360deg)}}
-  .toast{position:fixed;bottom:24px;left:50%;transform:translateX(-50%);background:#2C2C2A;color:#fff;padding:10px 20px;border-radius:8px;font-size:13px;opacity:0;transition:opacity 0.2s;pointer-events:none;z-index:999}
+
+  /* Delete modal */
+  .modal-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,0.45);z-index:100;align-items:center;justify-content:center}
+  .modal-overlay.show{display:flex}
+  .modal{background:#fff;border-radius:12px;padding:28px;width:380px;max-width:90vw}
+  .modal h2{font-size:17px;font-weight:500;margin-bottom:8px}
+  .modal p{font-size:13px;color:#5F5E5A;margin-bottom:16px;line-height:1.5}
+  .modal .modal-ref{font-weight:500;color:#2C2C2A}
+  .modal input{width:100%;font-size:14px;padding:8px 10px;border:1px solid #E8E6DE;border-radius:7px;margin-bottom:16px;letter-spacing:0.05em}
+  .modal input.error{border-color:#E24B4A}
+  .modal-actions{display:flex;gap:8px;justify-content:flex-end}
+
+  .toast{position:fixed;bottom:24px;left:50%;transform:translateX(-50%);background:#2C2C2A;color:#fff;padding:10px 20px;border-radius:8px;font-size:13px;opacity:0;transition:opacity 0.2s;pointer-events:none;z-index:999;white-space:nowrap}
   .toast.show{opacity:1}
 </style>
 </head>
 <body>
 
-<header>
-  <span class="wordmark">UKPOS Print Site</span>
-  <span class="sep">/</span>
-  <span class="current">Dashboard</span>
-  <span class="spacer"></span>
-  <button class="btn" onclick="document.getElementById('csvInput').click()">Upload CSV</button>
-  <input type="file" id="csvInput" accept=".csv" onchange="handleCSV(event)" />
-  <button class="btn btn-primary" onclick="document.getElementById('fileInput').click()">+ Add files</button>
-  <input type="file" id="fileInput" accept=".pdf,.eps,.zip,.png,.jpg,.jpeg" multiple onchange="handleFiles(event)" />
-</header>
+<nav>
+  <a class="nav-logo" href="/">UKPOS Print Site</a>
+  <div class="nav-links">
+    <a class="nav-link active" href="/dashboard">Dashboard</a>
+    <a class="nav-link" href="/artwork-assessor">Artwork assessor</a>
+  </div>
+  <span class="nav-spacer"></span>
+  <div class="nav-actions">
+    <button class="btn" onclick="document.getElementById('csvInput').click()">Upload CSV</button>
+    <input type="file" id="csvInput" accept=".csv" onchange="handleCSV(event)" />
+    <button class="btn btn-primary" onclick="document.getElementById('fileInput').click()">+ Add files</button>
+    <input type="file" id="fileInput" accept=".pdf,.eps,.zip,.png,.jpg,.jpeg" multiple onchange="handleFiles(event)" />
+  </div>
+</nav>
 
-<div class="top-bar">
+<div class="page-header">
   <h1>Artwork jobs</h1>
   <button class="btn" onclick="loadJobs()">↻ Refresh</button>
 </div>
@@ -97,8 +138,8 @@
   <span class="db-formats">PDF · EPS · ZIP · PNG · JPG</span>
 </div>
 
-<div class="col-toggle-bar">
-  <span>Checks:</span>
+<div class="controls-bar">
+  <span class="label">Checks:</span>
   <button class="col-pill on" data-col="dpi" onclick="toggleCol(this)">DPI</button>
   <button class="col-pill on" data-col="pixelation" onclick="toggleCol(this)">Pixelation</button>
   <button class="col-pill on" data-col="bleed" onclick="toggleCol(this)">Bleed</button>
@@ -134,41 +175,71 @@
       </tr>
     </thead>
     <tbody id="jobBody">
-      <tr><td colspan="18"><div class="empty-state"><div class="es-icon">⏳</div><p>Loading jobs…</p></div></td></tr>
+      <tr><td colspan="19"><div class="empty-state"><div class="es-icon">⏳</div><p>Loading…</p></div></td></tr>
     </tbody>
   </table>
+</div>
+
+<div class="pagination" id="paginationBar">
+  <span class="pg-info" id="pgInfo"></span>
+  <div class="pg-size">
+    <span>Show</span>
+    <select id="pgSize" onchange="changePageSize(this.value)">
+      <option value="50">50</option>
+      <option value="100">100</option>
+      <option value="250">250</option>
+    </select>
+    <span>per page</span>
+  </div>
+  <button class="pg-btn" id="pgPrev" onclick="changePage(-1)" disabled>← Prev</button>
+  <span id="pgPages" style="font-size:13px;color:#5F5E5A"></span>
+  <button class="pg-btn" id="pgNext" onclick="changePage(1)">Next →</button>
+</div>
+
+<!-- Delete confirmation modal -->
+<div class="modal-overlay" id="deleteModal">
+  <div class="modal">
+    <h2>Delete job</h2>
+    <p>This will permanently remove <span class="modal-ref" id="deleteRef"></span> from the queue. Type <strong>DELETE</strong> to confirm.</p>
+    <input type="text" id="deleteConfirmInput" placeholder="Type DELETE to confirm" oninput="validateDeleteInput(this)" />
+    <div class="modal-actions">
+      <button class="btn" onclick="closeDeleteModal()">Cancel</button>
+      <button class="btn btn-danger" id="deleteConfirmBtn" onclick="confirmDelete()" disabled>Delete</button>
+    </div>
+  </div>
 </div>
 
 <div class="toast" id="toast"></div>
 
 <script>
 const CHECK_COLS = ['dpi','pixelation','bleed','colour','white_edge','safe_zone','fonts','transparency'];
-const CHECK_IDS  = { dpi:'dpi', pixelation:'pixelation', bleed:'bleed', colour:'colour', white_edge:'white_edge', safe_zone:'safe_zone', fonts:'fonts', transparency:'transparency' };
-let jobs = [];
+let allJobs = [];
 let hiddenCols = new Set();
+let currentPage = 1;
+let pageSize = 50;
+let pendingDeleteId = null;
 
 function toggleCol(btn) {
   const col = btn.dataset.col;
   btn.classList.toggle('on');
-  if (hiddenCols.has(col)) hiddenCols.delete(col); else hiddenCols.add(col);
+  hiddenCols.has(col) ? hiddenCols.delete(col) : hiddenCols.add(col);
   applyColVisibility();
 }
 
 function applyColVisibility() {
   document.querySelectorAll('.check-col').forEach(th => {
-    const col = th.dataset.col;
-    th.style.display = hiddenCols.has(col) ? 'none' : '';
+    th.style.display = hiddenCols.has(th.dataset.col) ? 'none' : '';
   });
   document.querySelectorAll('.check-td').forEach(td => {
-    const col = td.dataset.col;
-    td.style.display = hiddenCols.has(col) ? 'none' : '';
+    td.style.display = hiddenCols.has(td.dataset.col) ? 'none' : '';
   });
 }
 
 function fmtDate(iso) {
   if (!iso) return '—';
   const d = new Date(iso);
-  return d.toLocaleDateString('en-GB', {day:'2-digit',month:'short'}) + ' ' + d.toLocaleTimeString('en-GB',{hour:'2-digit',minute:'2-digit'});
+  return d.toLocaleDateString('en-GB', {day:'2-digit',month:'short'}) + ' ' +
+         d.toLocaleTimeString('en-GB', {hour:'2-digit',minute:'2-digit'});
 }
 
 function checkIcon(results, id) {
@@ -181,69 +252,146 @@ function checkIcon(results, id) {
   return '<span class="muted">ℹ️</span>';
 }
 
-function scoreClass(pct) {
-  if (pct === null || pct === undefined) return '';
-  if (pct >= 80) return 'score-high';
-  if (pct >= 50) return 'score-mid';
-  return 'score-low';
-}
-
 function renderRow(job) {
   const results = job.results || null;
-  const statusDot = job.overall_status === 'pass' ? 'dot-pass' : job.overall_status === 'fail' ? 'dot-fail' : job.overall_status === 'warn' ? 'dot-warn' : 'dot-pending';
+  const statusDot = {pass:'dot-pass',fail:'dot-fail',warn:'dot-warn'}[job.overall_status] || 'dot-pending';
   const pct = job.score_pct;
   const barColor = pct >= 80 ? '#639922' : pct >= 50 ? '#EF9F27' : '#E24B4A';
   const scoreHtml = pct !== null && pct !== undefined
-    ? `<div class="score-cell ${scoreClass(pct)}">${pct}%</div><div class="progress-bar"><div class="progress-fill" style="width:${pct}%;background:${barColor}"></div></div>`
+    ? `<div class="score-cell ${pct >= 80 ? 'score-high' : pct >= 50 ? 'score-mid' : 'score-low'}">${pct}%</div>
+       <div class="progress-bar"><div class="progress-fill" style="width:${pct}%;background:${barColor}"></div></div>`
     : job.assessed_at ? '<span class="muted">—</span>' : '<span class="spinner-sm"></span>';
 
   const badgeType = 'badge-' + (job.file_type||'').toLowerCase();
-  const badgeSrc  = 'badge-' + (job.source||'manual').toLowerCase().replace(' ','');
+  const badgeSrc  = 'badge-' + (job.source||'manual').toLowerCase().replace(/\s/g,'');
+  const ref = (job.reference||'').replace(/</g,'&lt;');
+  const fname = (job.file_name||'').replace(/</g,'&lt;');
 
-  let checkCells = CHECK_COLS.map(col => {
-    const display = hiddenCols.has(col) ? ' style="display:none"' : '';
-    return `<td class="check-cell check-td" data-col="${col}"${display}>${checkIcon(results, col)}</td>`;
+  const checkCells = CHECK_COLS.map(col => {
+    const hidden = hiddenCols.has(col) ? ' style="display:none"' : '';
+    return `<td class="check-cell check-td" data-col="${col}"${hidden}>${checkIcon(results, col)}</td>`;
   }).join('');
 
   return `<tr data-id="${job.id}">
-    <td><div class="ref-cell" title="${job.reference}"><span class="status-dot ${statusDot}"></span>${job.reference}</div></td>
+    <td><div class="ref-cell"><span class="status-dot ${statusDot}"></span><span class="ref-text" title="${ref}">${ref}</span></div></td>
     <td>${job.customer_name || '<span class="muted">—</span>'}</td>
-    <td>${job.order_number || '<span class="muted">—</span>'}</td>
-    <td><div class="filename-cell" title="${job.file_name}">${job.file_name}</div></td>
+    <td>${job.order_number  || '<span class="muted">—</span>'}</td>
+    <td><div class="filename-cell" title="${fname}">${fname}</div></td>
     <td><span class="badge ${badgeType}">${job.file_type||'?'}</span></td>
     <td><span class="badge ${badgeSrc}">${job.source||'manual'}</span></td>
     <td class="date-cell">${fmtDate(job.uploaded_at)}</td>
     <td class="date-cell">${fmtDate(job.assessed_at)}</td>
     <td>${scoreHtml}</td>
     ${checkCells}
-    <td><button class="view-btn" onclick="openJob('${job.id}')">View →</button></td>
+    <td><div class="actions-cell">
+      <button class="view-btn" onclick="openJob('${job.id}')">View →</button>
+      <button class="del-btn"  onclick="openDeleteModal('${job.id}','${ref}')">✕</button>
+    </div></td>
   </tr>`;
 }
 
 function renderTable() {
   const tbody = document.getElementById('jobBody');
-  if (!jobs.length) {
-    tbody.innerHTML = `<tr><td colspan="18"><div class="empty-state"><div class="es-icon">📭</div><p>No jobs yet — drop files above to get started</p></div></td></tr>`;
-    return;
+  const total = allJobs.length;
+  const totalPages = Math.max(1, Math.ceil(total / pageSize));
+  if (currentPage > totalPages) currentPage = totalPages;
+
+  const start = (currentPage - 1) * pageSize;
+  const pageJobs = allJobs.slice(start, start + pageSize);
+
+  if (!total) {
+    tbody.innerHTML = `<tr><td colspan="19"><div class="empty-state"><div class="es-icon">📭</div><p>No jobs yet — drop files above to get started</p></div></td></tr>`;
+  } else {
+    tbody.innerHTML = pageJobs.map(renderRow).join('');
   }
-  tbody.innerHTML = jobs.map(renderRow).join('');
   applyColVisibility();
+
+  // Pagination controls
+  const showing = total ? `${start + 1}–${Math.min(start + pageSize, total)} of ${total} jobs` : '0 jobs';
+  document.getElementById('pgInfo').textContent = showing;
+  document.getElementById('pgPages').textContent = `Page ${currentPage} of ${totalPages}`;
+  document.getElementById('pgPrev').disabled = currentPage <= 1;
+  document.getElementById('pgNext').disabled = currentPage >= totalPages;
+}
+
+function changePage(dir) {
+  currentPage += dir;
+  renderTable();
+  window.scrollTo(0, 0);
+}
+
+function changePageSize(val) {
+  pageSize = parseInt(val);
+  currentPage = 1;
+  renderTable();
 }
 
 async function loadJobs() {
+  document.getElementById('jobBody').innerHTML =
+    `<tr><td colspan="19"><div class="empty-state"><div class="es-icon">⏳</div><p>Loading…</p></div></td></tr>`;
   try {
     const r = await fetch('/api/jobs');
-    jobs = await r.json();
-    if (!Array.isArray(jobs)) jobs = [];
+    const data = await r.json();
+    allJobs = Array.isArray(data) ? data : [];
+    currentPage = 1;
     renderTable();
   } catch(e) {
-    console.error('Failed to load jobs', e);
+    console.error('loadJobs failed', e);
   }
 }
 
-function openJob(id) {
-  window.location.href = `/artwork-assessor?job=${id}`;
+function openJob(id) { window.location.href = `/artwork-assessor?job=${id}`; }
+
+// Delete modal
+function openDeleteModal(id, ref) {
+  pendingDeleteId = id;
+  document.getElementById('deleteRef').textContent = ref;
+  document.getElementById('deleteConfirmInput').value = '';
+  document.getElementById('deleteConfirmInput').classList.remove('error');
+  document.getElementById('deleteConfirmBtn').disabled = true;
+  document.getElementById('deleteModal').classList.add('show');
+  setTimeout(() => document.getElementById('deleteConfirmInput').focus(), 50);
 }
+
+function closeDeleteModal() {
+  document.getElementById('deleteModal').classList.remove('show');
+  pendingDeleteId = null;
+}
+
+function validateDeleteInput(inp) {
+  const ok = inp.value.trim() === 'DELETE';
+  document.getElementById('deleteConfirmBtn').disabled = !ok;
+  inp.classList.toggle('error', inp.value.length > 0 && !ok);
+}
+
+async function confirmDelete() {
+  if (!pendingDeleteId) return;
+  const id = pendingDeleteId;
+  closeDeleteModal();
+  try {
+    const r = await fetch(`/api/job?id=${id}`, { method: 'DELETE' });
+    if (r.ok) {
+      allJobs = allJobs.filter(j => j.id !== id);
+      renderTable();
+      showToast('Job deleted');
+    } else {
+      showToast('Delete failed — try again');
+    }
+  } catch(e) {
+    showToast('Delete failed: ' + e.message);
+  }
+}
+
+// Close modal on overlay click
+document.getElementById('deleteModal').addEventListener('click', function(e) {
+  if (e.target === this) closeDeleteModal();
+});
+
+// Keyboard: Escape closes modal, Enter confirms if valid
+document.addEventListener('keydown', e => {
+  if (e.key === 'Escape') closeDeleteModal();
+  if (e.key === 'Enter' && !document.getElementById('deleteConfirmBtn').disabled) confirmDelete();
+});
 
 async function saveJob(jobData) {
   try {
@@ -261,107 +409,74 @@ async function saveJob(jobData) {
   }
 }
 
-function getFileType(name) {
-  return name.split('.').pop().toUpperCase();
-}
-
-function makeReference(fileName) {
-  return fileName.replace(/\.[^.]+$/, '').substring(0, 40);
-}
+function getFileType(name) { return name.split('.').pop().toUpperCase(); }
+function makeReference(fileName) { return fileName.replace(/\.[^.]+$/, '').substring(0, 40); }
 
 async function addFilesToQueue(files) {
   const validFiles = Array.from(files).filter(f => {
-    const ext = f.name.split('.').pop().toLowerCase();
-    return ['pdf','eps','zip','png','jpg','jpeg'].includes(ext);
+    return ['pdf','eps','zip','png','jpg','jpeg'].includes(f.name.split('.').pop().toLowerCase());
   });
-
   if (!validFiles.length) { showToast('No supported files found'); return; }
   showToast(`Adding ${validFiles.length} file${validFiles.length > 1 ? 's' : ''}…`);
 
   const promises = validFiles.map(async f => {
-    const ext = f.name.split('.').pop().toLowerCase();
     let fileName = f.name;
-
-    if (ext === 'zip' && typeof JSZip !== 'undefined') {
+    if (f.name.split('.').pop().toLowerCase() === 'zip' && typeof JSZip !== 'undefined') {
       try {
         const zip = await JSZip.loadAsync(f);
         const entry = Object.values(zip.files).find(e => e.name.toLowerCase().endsWith('.eps') && !e.name.startsWith('__MACOSX'));
         if (entry) fileName = entry.name.split('/').pop();
       } catch(e) {}
     }
-
-    return saveJob({
-      reference: makeReference(fileName),
-      file_name: fileName,
-      file_type: getFileType(fileName),
-      source: 'Manual',
-      customer_name: null,
-      order_number: null
-    });
+    return saveJob({ reference: makeReference(fileName), file_name: fileName, file_type: getFileType(fileName), source: 'Manual', customer_name: null, order_number: null });
   });
 
   const results = await Promise.all(promises);
   const saved = results.filter(j => j && j.id);
-  saved.forEach(job => jobs.unshift(job));
+  saved.forEach(job => allJobs.unshift(job));
   renderTable();
-  showToast(`${saved.length} file${saved.length !== 1 ? 's' : ''} added to queue`);
+  showToast(`${saved.length} file${saved.length !== 1 ? 's' : ''} added`);
 }
 
 async function handleCSV(e) {
-  const f = e.target.files[0];
-  if (!f) return;
+  const f = e.target.files[0]; if (!f) return;
   const text = await f.text();
   const lines = text.trim().split('\n');
   if (lines.length < 2) { showToast('CSV appears empty'); return; }
-
   const headers = lines[0].split(',').map(h => h.trim().toLowerCase().replace(/[^a-z_]/g,''));
-  const rows = lines.slice(1);
   let added = 0;
-
-  for (const line of rows) {
+  const promises = lines.slice(1).map(async line => {
     const vals = line.split(',').map(v => v.trim().replace(/^"|"$/g,''));
-    const row = {};
-    headers.forEach((h,i) => row[h] = vals[i] || '');
-
-    const fileName = row['file_name'] || row['filename'] || row['file'] || '';
-    if (!fileName) continue;
-
-    const job = await saveJob({
+    const row = {}; headers.forEach((h,i) => row[h] = vals[i] || '');
+    const fileName = row['file_name'] || row['filename'] || row['file'] || ''; if (!fileName) return null;
+    return saveJob({
       reference: row['reference'] || row['ref'] || makeReference(fileName),
-      file_name: fileName,
-      file_type: getFileType(fileName),
-      source: 'CSV',
+      file_name: fileName, file_type: getFileType(fileName), source: 'CSV',
       customer_name: row['customer_name'] || row['customer'] || null,
       order_number: row['order_number'] || row['order'] || row['order_no'] || null
     });
-
-    if (job && job.id) { jobs.unshift(job); added++; }
-  }
-
+  });
+  const results = await Promise.all(promises);
+  const saved = results.filter(j => j && j.id);
+  saved.forEach(job => allJobs.unshift(job));
+  added = saved.length;
   renderTable();
   showToast(`${added} job${added !== 1 ? 's' : ''} added from CSV`);
   e.target.value = '';
 }
 
-function handleFiles(e) {
-  addFilesToQueue(Array.from(e.target.files));
-  e.target.value = '';
-}
+function handleFiles(e) { addFilesToQueue(Array.from(e.target.files)); e.target.value = ''; }
 
 function showToast(msg) {
   const t = document.getElementById('toast');
-  t.textContent = msg;
-  t.classList.add('show');
+  t.textContent = msg; t.classList.add('show');
   setTimeout(() => t.classList.remove('show'), 2500);
 }
 
 const banner = document.getElementById('dropBanner');
 banner.addEventListener('dragover', e => { e.preventDefault(); banner.classList.add('drag-over'); });
 banner.addEventListener('dragleave', () => banner.classList.remove('drag-over'));
-banner.addEventListener('drop', e => {
-  e.preventDefault(); banner.classList.remove('drag-over');
-  addFilesToQueue(Array.from(e.dataTransfer.files));
-});
+banner.addEventListener('drop', e => { e.preventDefault(); banner.classList.remove('drag-over'); addFilesToQueue(Array.from(e.dataTransfer.files)); });
 banner.addEventListener('click', () => document.getElementById('fileInput').click());
 
 loadJobs();
