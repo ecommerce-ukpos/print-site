@@ -1,0 +1,186 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Print Site — UKPOS</title>
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", system-ui, sans-serif;
+    background: #FAFAF8;
+    color: #2C2C2A;
+    min-height: 100vh;
+  }
+  header {
+    border-bottom: 1px solid #E8E6DE;
+    padding: 20px 40px;
+    background: #fff;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+  }
+  header .wordmark {
+    font-size: 15px;
+    font-weight: 500;
+    color: #2C2C2A;
+    letter-spacing: -0.01em;
+  }
+  header .divider { color: #D3D1C7; }
+  header .subtitle { font-size: 14px; color: #888780; }
+  main {
+    max-width: 860px;
+    margin: 0 auto;
+    padding: 56px 40px 80px;
+  }
+  h1 {
+    font-size: 28px;
+    font-weight: 500;
+    margin-bottom: 8px;
+    letter-spacing: -0.02em;
+  }
+  .intro {
+    font-size: 15px;
+    color: #5F5E5A;
+    margin-bottom: 48px;
+    line-height: 1.6;
+  }
+  .section-label {
+    font-size: 11px;
+    font-weight: 500;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    color: #888780;
+    margin-bottom: 16px;
+  }
+  .tools-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+    gap: 16px;
+    margin-bottom: 48px;
+  }
+  .tool-card {
+    background: #fff;
+    border: 1px solid #E8E6DE;
+    border-radius: 10px;
+    padding: 20px 22px;
+    text-decoration: none;
+    color: inherit;
+    display: block;
+    transition: border-color 0.15s, box-shadow 0.15s;
+  }
+  .tool-card:hover {
+    border-color: #AFA9EC;
+    box-shadow: 0 2px 12px rgba(83,74,183,0.08);
+  }
+  .tool-card .icon {
+    width: 36px;
+    height: 36px;
+    border-radius: 8px;
+    background: #EEEDFE;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-bottom: 14px;
+    font-size: 18px;
+  }
+  .tool-card .name {
+    font-size: 15px;
+    font-weight: 500;
+    margin-bottom: 4px;
+  }
+  .tool-card .desc {
+    font-size: 13px;
+    color: #5F5E5A;
+    line-height: 1.5;
+  }
+  .tool-card .badge {
+    display: inline-block;
+    font-size: 10px;
+    font-weight: 500;
+    padding: 2px 7px;
+    border-radius: 20px;
+    background: #EAF3DE;
+    color: #3B6D11;
+    margin-top: 10px;
+  }
+  .tool-card .badge.wip {
+    background: #FAEEDA;
+    color: #854F0B;
+  }
+  .coming-soon {
+    opacity: 0.5;
+    pointer-events: none;
+    cursor: default;
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <span class="wordmark">UKPOS</span>
+  <span class="divider">/</span>
+  <span class="subtitle">Print Site</span>
+</header>
+
+<main>
+  <h1>Print Site</h1>
+  <p class="intro">Internal tools for the print workflow — artwork validation, specification reference, and production utilities.</p>
+
+  <div class="section-label">Stage 1 — Artwork capture &amp; validation</div>
+  <div class="tools-grid">
+    <a href="/artwork-assessor" class="tool-card">
+      <div class="icon">🔍</div>
+      <div class="name">Artwork assessor</div>
+      <div class="desc">Upload an EPS or ZIP and check it against print standards — DPI, bleed, colour mode, pixelation, white edges, and more.</div>
+      <span class="badge">Live</span>
+    </a>
+    <div class="tool-card coming-soon">
+      <div class="icon">✏️</div>
+      <div class="name">AI artwork generator</div>
+      <div class="desc">Journey A — generate print-ready artwork from a customer prompt, constrained to SKU template dimensions.</div>
+      <span class="badge wip">Coming soon</span>
+    </div>
+    <div class="tool-card coming-soon">
+      <div class="icon">🖼️</div>
+      <div class="name">AI artwork composer</div>
+      <div class="desc">Journey B — compose artwork from customer-uploaded assets, fitted and validated against the SKU template.</div>
+      <span class="badge wip">Coming soon</span>
+    </div>
+  </div>
+
+  <div class="section-label">Stage 2 — Validation &amp; order processing</div>
+  <div class="tools-grid">
+    <div class="tool-card coming-soon">
+      <div class="icon">📋</div>
+      <div class="name">SKU specification lookup</div>
+      <div class="desc">Browse or search the full SKU print specification database — dimensions, DPI, pixel sizes, colour profiles, bleed requirements.</div>
+      <span class="badge wip">Coming soon</span>
+    </div>
+    <div class="tool-card coming-soon">
+      <div class="icon">📄</div>
+      <div class="name">Workflow specification</div>
+      <div class="desc">The four-stage print workflow specification document — process design, validation rules, and stage definitions.</div>
+      <span class="badge wip">Coming soon</span>
+    </div>
+  </div>
+
+  <div class="section-label">Stage 3 — Pre-production</div>
+  <div class="tools-grid">
+    <div class="tool-card coming-soon">
+      <div class="icon">🎨</div>
+      <div class="name">Vinyl pink converter</div>
+      <div class="desc">Apply the white-to-pink conversion for vinyl print jobs, where the RIP treats pure white as no-ink.</div>
+      <span class="badge wip">Coming soon</span>
+    </div>
+    <div class="tool-card coming-soon">
+      <div class="icon">✂️</div>
+      <div class="name">Cut line tool</div>
+      <div class="desc">Add cut lines to artwork for applicable SKUs, with per-SKU offset and colour rules applied automatically.</div>
+      <span class="badge wip">Coming soon</span>
+    </div>
+  </div>
+</main>
+
+</body>
+</html>
