@@ -393,6 +393,85 @@ document.addEventListener('keydown', e => {
   if (e.key === 'Enter' && !document.getElementById('deleteConfirmBtn').disabled) confirmDelete();
 });
 
+// ── Utilities ────────────────────────────────────────────────────────────────
+
+function bufToB64(buf) {
+  const bytes = new Uint8Array(buf);
+  let binary = '';
+  const chunk = 8192;
+  for (let i = 0; i < bytes.length; i += chunk) {
+    binary += String.fromCharCode(...bytes.subarray(i, i + chunk));
+  }
+  return btoa(binary);
+}
+
+function getFileType(name) { return name.split('.').pop().toUpperCase(); }
+function makeReference(fileName) { return fileName.replace(/\.[^.]+$/, '').substring(0, 40); }
+
+async function encodeFile(f) {
+  const ext = f.name.split('.').pop().toLowerCase();
+  if (ext === 'pdf')  return { b64: bufToB64(await f.arrayBuffer()), mediaType: 'application/pdf', fileType: 'PDF', fileName: f.name };
+  if (ext === 'png')  return { b64: bufToB64(await f.arrayBuffer()), mediaType: 'image/png',        fileType: 'PNG', fileName: f.name };
+  if (ext === 'jpg' || ext === 'jpeg') return { b64: bufToB64(await f.arrayBuffer()), mediaType: 'image/jpeg', fileType: 'JPG', fileName: f.name };
+  if (ext === 'eps')  {
+    const text = await f.text();
+    return { b64: btoa(unescape(encodeURIComponent(text))), mediaType: 'text/plain', fileType: 'EPS', fileName: f.name };
+  }
+  if (ext === 'zip' && typeof JSZip !== 'undefined') {
+    const zip = await JSZip.loadAsync(f);
+    const entry = Object.values(zip.files).find(e => e.name.toLowerCase().endsWith('.eps') && !e.name.startsWith('__MACOSX'));
+    if (!entry) throw new Error('No EPS found in ZIP');
+    const text = await entry.async('text');
+    const fileName = entry.name.split('/').pop();
+    return { b64: btoa(unescape(encodeURIComponent(text))), mediaType: 'text/plain', fileType: 'EPS', fileName };
+  }
+  throw new Error('Unsupported file type: ' + ext);
+}
+
+function buildAssessmentPrompt(fileType) {
+  const isPDF = fileType === 'PDF';
+  const isImage = ['PNG','JPG','JPEG'].includes(fileType);
+  const fileDesc = isPDF ? 'PDF artwork file' : isImage ? `${fileType} image file` : 'EPS PostScript file';
+
+  const checks = [
+    isPDF  ? `IMAGE RESOLUTION: Check all embedded raster images. Minimum DPI is 300. Report actual DPI and pass/fail. If purely vector mark pass. id: "dpi"`
+    : isImage ? `IMAGE RESOLUTION: Assess pixel dimensions relative to expected print output. Minimum 300 DPI. id: "dpi"`
+    : `IMAGE RESOLUTION: Check embedded raster images meet 300 DPI minimum via image dictionary entries. If entirely vector mark pass. id: "dpi"`,
+
+    `PIXELATION / UPSAMPLING: Inspect for blocky pixel grid, jagged staircase edges, or blurry areas suggesting upsampling from a low-res original. id: "pixelation"`,
+
+    `BLEED: Expected 3mm bleed on all sides beyond trim. Does the artwork include sufficient bleed? id: "bleed"`,
+
+    isPDF  ? `COLOUR MODE: Inspect embedded images and colour spaces. Flag if RGB found (CMYK expected for print). id: "colour"`
+    : isImage ? `COLOUR MODE: PNG/JPG are typically RGB — flag this as a warning since CMYK is expected for print. id: "colour"`
+    : `COLOUR MODE: Check for setcmykcolor/DeviceCMYK vs setrgbcolor/DeviceRGB. Flag if RGB found. id: "colour"`,
+
+    isPDF  ? `WHITE EDGE: Visually inspect all four edges for any thin white or light strip — artwork not extended to the bleed line. Even 1–3mm is a FAIL. id: "white_edge"`
+    : isImage ? `WHITE EDGE: Inspect all four edges for any thin white or light strip not extending to the bleed line. id: "white_edge"`
+    : `WHITE EDGE: Do PostScript drawing commands fill to the BoundingBox edges, or stop short leaving implied white space? id: "white_edge"`,
+
+    `SAFE ZONE: Are any text, logos, or important elements within ~5mm of the trim edge, risking being cut off? id: "safe_zone"`,
+
+    isPDF  ? `FONTS: Are all fonts fully embedded or outlined in this PDF? Any missing fonts = FAIL. id: "fonts"`
+    : isImage ? `FONTS: Does visible text appear sharp and clean, or show rasterisation artefacts? Note embedding cannot be checked in raster files. id: "fonts"`
+    : `FONTS: Are fonts fully embedded or outlined in the EPS? Any unembedded non-outlined fonts = FAIL. id: "fonts"`,
+
+    isImage ? `TRANSPARENCY: Does this image contain transparent areas (alpha channel)? Transparency can cause unexpected backgrounds on press. id: "transparency"`
+    : `TRANSPARENCY / OVERPRINT: Any unflattened transparency or overprint settings that could cause unexpected results at print? id: "transparency"`,
+  ];
+
+  return `You are a professional print production specialist reviewing a ${fileDesc} for print readiness. Analyse it thoroughly and respond ONLY as a JSON array — no markdown, no preamble.
+
+Each object must have: "id" (from check), "label" (human-readable name), "status" (pass/fail/warn/info), "headline" (≤12 words), "detail" (1–3 sentences of specific findings).
+
+Checks:
+${checks.map((c, i) => `${i+1}. ${c}`).join('\n')}
+
+Add a final object: id "overall", label "Overall verdict", status based on any fails present, headline and brief detail summary.
+
+JSON array only.`;
+}
+
 async function saveJob(jobData) {
   try {
     const r = await fetch('/api/jobs', {
@@ -409,8 +488,51 @@ async function saveJob(jobData) {
   }
 }
 
-function getFileType(name) { return name.split('.').pop().toUpperCase(); }
-function makeReference(fileName) { return fileName.replace(/\.[^.]+$/, '').substring(0, 40); }
+async function assessAndPatch(jobId, encoded) {
+  try {
+    const isImage = ['PNG','JPG','JPEG'].includes(encoded.fileType);
+    const contentBlock = isImage
+      ? { type: 'image',    source: { type: 'base64', media_type: encoded.mediaType, data: encoded.b64 } }
+      : { type: 'document', source: { type: 'base64', media_type: encoded.mediaType, data: encoded.b64 } };
+
+    const resp = await fetch('/api/assess', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        model: 'claude-sonnet-4-5',
+        max_tokens: 1500,
+        messages: [{ role: 'user', content: [contentBlock, { type: 'text', text: buildAssessmentPrompt(encoded.fileType) }] }]
+      })
+    });
+    const data = await resp.json();
+    if (data.error) throw new Error(data.error.message || JSON.stringify(data.error));
+    const raw = (data.content || []).filter(b => b.type === 'text').map(b => b.text).join('');
+    const results = JSON.parse(raw.replace(/```json|```/g, '').trim());
+
+    const overall = results.find(r => r.id === 'overall');
+    const checks  = results.filter(r => r.id !== 'overall');
+    const passCount = checks.filter(r => r.status === 'pass').length;
+    const scorePct = checks.length ? Math.round(passCount / checks.length * 100) : null;
+
+    await fetch(`/api/job?id=${jobId}`, {
+      method: 'PATCH',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        assessed_at: new Date().toISOString(),
+        results,
+        score_pct: scorePct,
+        overall_status: overall ? overall.status : null,
+        file_name: encoded.fileName,
+        file_type: encoded.fileType
+      })
+    });
+
+    return { results, scorePct, overallStatus: overall ? overall.status : null };
+  } catch(e) {
+    console.error('assessAndPatch failed', e);
+    return null;
+  }
+}
 
 async function addFilesToQueue(files) {
   const validFiles = Array.from(files).filter(f => {
@@ -419,23 +541,44 @@ async function addFilesToQueue(files) {
   if (!validFiles.length) { showToast('No supported files found'); return; }
   showToast(`Adding ${validFiles.length} file${validFiles.length > 1 ? 's' : ''}…`);
 
-  const promises = validFiles.map(async f => {
-    let fileName = f.name;
-    if (f.name.split('.').pop().toLowerCase() === 'zip' && typeof JSZip !== 'undefined') {
-      try {
-        const zip = await JSZip.loadAsync(f);
-        const entry = Object.values(zip.files).find(e => e.name.toLowerCase().endsWith('.eps') && !e.name.startsWith('__MACOSX'));
-        if (entry) fileName = entry.name.split('/').pop();
-      } catch(e) {}
-    }
-    return saveJob({ reference: makeReference(fileName), file_name: fileName, file_type: getFileType(fileName), source: 'Manual', customer_name: null, order_number: null });
-  });
+  // Encode all files first (fast, local)
+  const encodedFiles = await Promise.all(validFiles.map(async f => {
+    try { return await encodeFile(f); }
+    catch(e) { console.error('encodeFile failed', f.name, e); return null; }
+  }));
 
-  const results = await Promise.all(promises);
-  const saved = results.filter(j => j && j.id);
-  saved.forEach(job => allJobs.unshift(job));
+  // Save all job records immediately so they appear in the table
+  const jobRecords = await Promise.all(encodedFiles.map((enc) => {
+    if (!enc) return null;
+    return saveJob({
+      reference: makeReference(enc.fileName),
+      file_name: enc.fileName,
+      file_type: enc.fileType,
+      source: 'Manual',
+      customer_name: null,
+      order_number: null
+    });
+  }));
+
+  // Add to table straight away (with spinning score while assessing)
+  const pairs = jobRecords.map((job, i) => ({ job, enc: encodedFiles[i] })).filter(p => p.job && p.job.id && p.enc);
+  pairs.forEach(({ job }) => allJobs.unshift(job));
   renderTable();
-  showToast(`${saved.length} file${saved.length !== 1 ? 's' : ''} added`);
+  showToast(`Assessing ${pairs.length} file${pairs.length !== 1 ? 's' : ''}…`);
+
+  // Assess each in parallel, updating the row as results come in
+  await Promise.all(pairs.map(async ({ job, enc }) => {
+    const assessment = await assessAndPatch(job.id, enc);
+    if (assessment) {
+      const idx = allJobs.findIndex(j => j.id === job.id);
+      if (idx !== -1) {
+        allJobs[idx] = { ...allJobs[idx], results: assessment.results, score_pct: assessment.scorePct, overall_status: assessment.overallStatus, assessed_at: new Date().toISOString() };
+        renderTable();
+      }
+    }
+  }));
+
+  showToast(`${pairs.length} file${pairs.length !== 1 ? 's' : ''} assessed`);
 }
 
 async function handleCSV(e) {
