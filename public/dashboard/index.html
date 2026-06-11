@@ -534,6 +534,30 @@ async function assessAndPatch(jobId, encoded) {
   }
 }
 
+async function uploadToStorage(encoded, jobId) {
+  const extMap = { PDF:'pdf', PNG:'png', JPG:'jpg', JPEG:'jpg', EPS:'eps' };
+  const ext = extMap[encoded.fileType] || 'bin';
+  const path = `${jobId}.${ext}`;
+  try {
+    const r = await fetch('/api/upload', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ path, mediaType: encoded.mediaType, data: encoded.b64 })
+    });
+    const data = await r.json();
+    if (!r.ok) { console.error('upload failed', data); return null; }
+    await fetch(`/api/job?id=${jobId}`, {
+      method: 'PATCH',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ storage_path: path })
+    });
+    return path;
+  } catch(e) {
+    console.error('uploadToStorage failed', e);
+    return null;
+  }
+}
+
 async function addFilesToQueue(files) {
   const validFiles = Array.from(files).filter(f => {
     return ['pdf','eps','zip','png','jpg','jpeg'].includes(f.name.split('.').pop().toLowerCase());
@@ -541,33 +565,29 @@ async function addFilesToQueue(files) {
   if (!validFiles.length) { showToast('No supported files found'); return; }
   showToast(`Adding ${validFiles.length} file${validFiles.length > 1 ? 's' : ''}…`);
 
-  // Encode all files first (fast, local)
+  // Encode all files locally first
   const encodedFiles = await Promise.all(validFiles.map(async f => {
     try { return await encodeFile(f); }
     catch(e) { console.error('encodeFile failed', f.name, e); return null; }
   }));
 
-  // Save all job records immediately so they appear in the table
-  const jobRecords = await Promise.all(encodedFiles.map((enc) => {
+  // Save job records immediately — rows appear in table with spinning indicator
+  const jobRecords = await Promise.all(encodedFiles.map(enc => {
     if (!enc) return null;
-    return saveJob({
-      reference: makeReference(enc.fileName),
-      file_name: enc.fileName,
-      file_type: enc.fileType,
-      source: 'Manual',
-      customer_name: null,
-      order_number: null
-    });
+    return saveJob({ reference: makeReference(enc.fileName), file_name: enc.fileName, file_type: enc.fileType, source: 'Manual', customer_name: null, order_number: null });
   }));
 
-  // Add to table straight away (with spinning score while assessing)
   const pairs = jobRecords.map((job, i) => ({ job, enc: encodedFiles[i] })).filter(p => p.job && p.job.id && p.enc);
   pairs.forEach(({ job }) => allJobs.unshift(job));
   renderTable();
-  showToast(`Assessing ${pairs.length} file${pairs.length !== 1 ? 's' : ''}…`);
+  showToast(`Uploading and assessing ${pairs.length} file${pairs.length !== 1 ? 's' : ''}…`);
 
-  // Assess each in parallel, updating the row as results come in
+  // Upload to storage + assess in parallel
   await Promise.all(pairs.map(async ({ job, enc }) => {
+    // Upload to storage (fire and don't block assessment)
+    uploadToStorage(enc, job.id).catch(e => console.error('storage upload error', e));
+
+    // Run assessment
     const assessment = await assessAndPatch(job.id, enc);
     if (assessment) {
       const idx = allJobs.findIndex(j => j.id === job.id);

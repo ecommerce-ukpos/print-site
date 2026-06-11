@@ -2,9 +2,11 @@
   "version": 2,
   "outputDirectory": "public",
   "routes": [
-    { "src": "/api/jobs", "dest": "/api/jobs" },
-    { "src": "/api/job",  "dest": "/api/job"  },
-    { "src": "/api/(.*)", "dest": "/api/$1"   },
-    { "src": "/(.*)",     "dest": "/public/$1" }
+    { "src": "/api/jobs",   "dest": "/api/jobs"   },
+    { "src": "/api/job",    "dest": "/api/job"    },
+    { "src": "/api/assess", "dest": "/api/assess" },
+    { "src": "/api/upload", "dest": "/api/upload" },
+    { "src": "/api/file",   "dest": "/api/file"   },
+    { "src": "/(.*)",       "dest": "/public/$1"  }
   ]
 }

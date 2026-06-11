@@ -6,198 +6,171 @@
 <title>Artwork Assessor — UKPOS Print Site</title>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
 <style>
-  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-  body {
-    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", system-ui, sans-serif;
-    background: #FAFAF8;
-    color: #2C2C2A;
-    min-height: 100vh;
-    font-size: 15px;
-    line-height: 1.6;
-  }
-  header {
-    border-bottom: 1px solid #E8E6DE;
-    padding: 16px 40px;
-    background: #fff;
-    display: flex;
-    align-items: center;
-    gap: 10px;
-  }
-  header a { text-decoration: none; color: #5F5E5A; font-size: 14px; }
-  header a:hover { color: #2C2C2A; }
-  header .sep { color: #D3D1C7; font-size: 14px; }
-  header .current { font-size: 14px; font-weight: 500; color: #2C2C2A; }
-  .layout {
-    max-width: 960px;
-    margin: 0 auto;
-    padding: 40px 40px 80px;
-    display: grid;
-    grid-template-columns: 1fr 300px;
-    gap: 40px;
-    align-items: start;
-  }
-  @media (max-width: 720px) {
-    .layout { grid-template-columns: 1fr; padding: 24px 20px 60px; }
-    header { padding: 14px 20px; }
-  }
-  h1 { font-size: 24px; font-weight: 500; margin-bottom: 6px; letter-spacing: -0.02em; }
-  .page-desc { font-size: 14px; color: #5F5E5A; margin-bottom: 28px; }
-  .drop-zone {
-    border: 1.5px dashed #C8C6BC;
-    border-radius: 10px;
-    padding: 40px 24px;
-    text-align: center;
-    cursor: pointer;
-    transition: border-color 0.15s, background 0.15s;
-    background: #fff;
-  }
-  .drop-zone:hover, .drop-zone.drag-over { border-color: #7F77DD; background: #FAFAFF; }
-  .drop-zone .dz-icon { font-size: 28px; margin-bottom: 10px; }
-  .drop-zone .dz-title { font-size: 15px; font-weight: 500; margin-bottom: 4px; }
-  .drop-zone .dz-sub { font-size: 13px; color: #888780; }
-  input[type=file] { display: none; }
-  .file-bar {
-    display: flex; align-items: center; gap: 8px;
-    padding: 10px 14px; background: #fff;
-    border: 1px solid #E8E6DE; border-radius: 8px;
-    margin-top: 10px; font-size: 13px; color: #5F5E5A;
-  }
-  .file-bar .file-type-badge {
-    font-size: 10px; font-weight: 600; padding: 2px 6px;
-    border-radius: 4px; text-transform: uppercase; flex-shrink: 0;
-  }
-  .file-type-badge.pdf { background: #FCEBEB; color: #A32D2D; }
-  .file-type-badge.eps { background: #EEEDFE; color: #534AB7; }
-  .file-type-badge.png { background: #E1F5EE; color: #0F6E56; }
-  .file-type-badge.jpg, .file-type-badge.jpeg { background: #FAEEDA; color: #854F0B; }
-  .job-context { display:none; align-items:center; gap:16px; padding:10px 16px; background:#EEEDFE; border-radius:8px; margin-bottom:16px; font-size:13px; color:#3C3489; }
-  .job-context .jc-item { display:flex; gap:4px; }
-  .job-context .jc-label { font-weight:500; }
-  .job-context a { color:#534AB7; text-decoration:none; font-size:12px; margin-left:auto; }
-  .job-context a:hover { text-decoration:underline; }
-  .file-bar .file-name { flex: 1; font-weight: 500; color: #2C2C2A; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-  .file-bar .clear-btn { background: none; border: none; cursor: pointer; color: #888780; font-size: 18px; line-height: 1; padding: 0 2px; }
-  .file-bar .clear-btn:hover { color: #2C2C2A; }
-  .run-btn {
-    margin-top: 16px; width: 100%;
-    padding: 11px 20px; background: #534AB7; color: #fff;
-    border: none; border-radius: 8px; font-size: 15px; font-weight: 500;
-    cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 8px;
-    transition: opacity 0.15s;
-  }
-  .run-btn:hover { opacity: 0.88; }
-  .run-btn:disabled { opacity: 0.4; cursor: not-allowed; }
-  .spinner { width: 16px; height: 16px; border: 2px solid rgba(255,255,255,0.3); border-top-color: #fff; border-radius: 50%; animation: spin 0.6s linear infinite; display: inline-block; }
-  @keyframes spin { to { transform: rotate(360deg); } }
-  .loading-wrap { margin-top: 24px; }
-  .loading-bar { height: 3px; background: #E8E6DE; border-radius: 2px; overflow: hidden; margin-bottom: 10px; }
-  .loading-fill { height: 100%; background: #534AB7; border-radius: 2px; animation: loadpulse 1.6s ease-in-out infinite; }
-  @keyframes loadpulse { 0%{width:5%} 50%{width:75%} 100%{width:92%} }
-  .loading-msg { font-size: 13px; color: #888780; }
-  .results { margin-top: 28px; }
-  .result-overall {
-    display: flex; align-items: center; gap: 10px;
-    padding: 14px 16px; border-radius: 10px; margin-bottom: 20px;
-    font-weight: 500; font-size: 15px;
-  }
-  .result-overall.pass { background: #EAF3DE; color: #27500A; }
-  .result-overall.fail { background: #FCEBEB; color: #791F1F; }
-  .result-overall.warn { background: #FAEEDA; color: #633806; }
-  .result-overall .ov-icon { font-size: 20px; }
-  .result-overall .ov-filename { font-size: 12px; font-weight: 400; margin-left: auto; opacity: 0.7; }
-  .meta-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(130px, 1fr)); gap: 8px; margin-bottom: 20px; }
-  .meta-card { background: #fff; border: 1px solid #E8E6DE; border-radius: 8px; padding: 10px 12px; }
-  .meta-card .mk { font-size: 11px; color: #888780; margin-bottom: 2px; text-transform: uppercase; letter-spacing: 0.04em; }
-  .meta-card .mv { font-size: 14px; font-weight: 500; }
-  .checks-section-label { font-size: 11px; font-weight: 500; text-transform: uppercase; letter-spacing: 0.08em; color: #888780; margin-bottom: 10px; }
-  .result-item { display: flex; align-items: flex-start; gap: 10px; padding: 11px 14px; border-radius: 8px; margin-bottom: 8px; font-size: 14px; }
-  .result-item.pass { background: #EAF3DE; border: 1px solid #C0DD97; }
-  .result-item.fail { background: #FCEBEB; border: 1px solid #F09595; }
-  .result-item.warn { background: #FAEEDA; border: 1px solid #FAC775; }
-  .result-item.info { background: #fff; border: 1px solid #E8E6DE; }
-  .ri-icon { font-size: 16px; flex-shrink: 0; margin-top: 1px; }
-  .ri-body strong { font-weight: 500; display: block; margin-bottom: 2px; }
-  .ri-body span { font-size: 13px; color: #5F5E5A; line-height: 1.5; }
-  .sidebar { position: sticky; top: 24px; }
-  .sidebar-card { background: #fff; border: 1px solid #E8E6DE; border-radius: 10px; overflow: hidden; }
-  .sidebar-section { padding: 18px 20px; border-bottom: 1px solid #E8E6DE; }
-  .sidebar-section:last-child { border-bottom: none; }
-  .sidebar-section h3 { font-size: 12px; font-weight: 500; text-transform: uppercase; letter-spacing: 0.07em; color: #888780; margin-bottom: 14px; }
-  .check-row { display: flex; align-items: center; gap: 10px; padding: 8px 0; border-bottom: 1px solid #F1EFE8; }
-  .check-row:last-child { border-bottom: none; }
-  .toggle { width: 34px; height: 19px; border-radius: 10px; background: #D3D1C7; cursor: pointer; position: relative; flex-shrink: 0; border: none; transition: background 0.15s; }
-  .toggle.on { background: #534AB7; }
-  .toggle::after { content:''; position:absolute; width:13px; height:13px; border-radius:7px; background:#fff; top:3px; left:3px; transition:left 0.15s; }
-  .toggle.on::after { left:18px; }
-  .check-label { flex: 1; }
-  .check-label strong { font-size: 13px; font-weight: 500; display: block; }
-  .check-label span { font-size: 11px; color: #888780; }
-  .check-input { width: 72px; font-size: 13px; padding: 4px 7px; border: 1px solid #E8E6DE; border-radius: 6px; background: #FAFAF8; color: #2C2C2A; }
-  .custom-add { display: flex; gap: 6px; margin-top: 10px; }
-  .custom-add input { flex: 1; font-size: 13px; padding: 6px 8px; border: 1px solid #E8E6DE; border-radius: 6px; background: #FAFAF8; }
-  .custom-add button { padding: 6px 10px; font-size: 13px; border-radius: 6px; }
-  .custom-item { display: flex; align-items: center; gap: 6px; font-size: 13px; padding: 6px 0; border-bottom: 1px solid #F1EFE8; }
-  .custom-item span { flex: 1; color: #5F5E5A; }
-  .custom-item button { background: none; border: none; cursor: pointer; color: #888780; font-size: 16px; }
+  *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+  body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",system-ui,sans-serif;background:#FAFAF8;color:#2C2C2A;min-height:100vh;font-size:15px;line-height:1.6}
+  nav{border-bottom:1px solid #E8E6DE;padding:0 40px;background:#fff;display:flex;align-items:center;gap:0;height:48px}
+  .nav-logo{font-size:14px;font-weight:500;color:#2C2C2A;text-decoration:none;margin-right:24px}
+  .nav-link{display:flex;align-items:center;padding:0 14px;height:100%;font-size:13px;color:#5F5E5A;text-decoration:none;border-bottom:2px solid transparent}
+  .nav-link:hover{color:#2C2C2A}
+  .nav-link.active{color:#534AB7;font-weight:500;border-bottom-color:#534AB7}
+  .layout{max-width:960px;margin:0 auto;padding:32px 40px 80px;display:grid;grid-template-columns:1fr 300px;gap:40px;align-items:start}
+  @media(max-width:720px){.layout{grid-template-columns:1fr;padding:20px 20px 60px}nav{padding:0 20px}}
+  h1{font-size:22px;font-weight:500;margin-bottom:4px;letter-spacing:-0.02em}
+  .page-desc{font-size:14px;color:#5F5E5A;margin-bottom:20px}
+
+  /* Job context banner */
+  .job-banner{display:none;background:#EEEDFE;border-radius:8px;padding:12px 16px;margin-bottom:20px;gap:20px;flex-wrap:wrap;align-items:center}
+  .job-banner.show{display:flex}
+  .jb-item{display:flex;flex-direction:column;gap:1px}
+  .jb-label{font-size:11px;color:#7F77DD;font-weight:500;text-transform:uppercase;letter-spacing:0.05em}
+  .jb-val{font-size:13px;font-weight:500;color:#3C3489}
+  .jb-back{margin-left:auto;font-size:13px;color:#534AB7;text-decoration:none;white-space:nowrap}
+  .jb-back:hover{text-decoration:underline}
+
+  /* File area */
+  .file-area{margin-bottom:20px}
+  .drop-zone{border:1.5px dashed #C8C6BC;border-radius:10px;padding:32px 24px;text-align:center;cursor:pointer;transition:border-color 0.15s,background 0.15s;background:#fff}
+  .drop-zone:hover,.drop-zone.drag-over{border-color:#7F77DD;background:#FAFAFF}
+  .drop-zone .dz-icon{font-size:26px;margin-bottom:8px}
+  .drop-zone .dz-title{font-size:14px;font-weight:500;margin-bottom:3px}
+  .drop-zone .dz-sub{font-size:12px;color:#888780}
+  input[type=file]{display:none}
+  .file-bar{display:flex;align-items:center;gap:8px;padding:10px 14px;background:#fff;border:1px solid #E8E6DE;border-radius:8px;margin-top:8px;font-size:13px;color:#5F5E5A}
+  .file-type-badge{font-size:10px;font-weight:600;padding:2px 6px;border-radius:4px;text-transform:uppercase;flex-shrink:0}
+  .badge-pdf{background:#FCEBEB;color:#A32D2D}
+  .badge-eps{background:#EEEDFE;color:#534AB7}
+  .badge-png{background:#E1F5EE;color:#0F6E56}
+  .badge-jpg,.badge-jpeg{background:#FAEEDA;color:#854F0B}
+  .file-name{flex:1;font-weight:500;color:#2C2C2A;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .clear-btn{background:none;border:none;cursor:pointer;color:#888780;font-size:18px;line-height:1}
+  .clear-btn:hover{color:#2C2C2A}
+
+  /* Storage badge */
+  .storage-badge{display:inline-flex;align-items:center;gap:5px;font-size:11px;color:#0F6E56;background:#E1F5EE;padding:3px 8px;border-radius:20px;margin-top:6px}
+
+  /* Run button */
+  .run-btn{margin-top:12px;width:100%;padding:11px 20px;background:#534AB7;color:#fff;border:none;border-radius:8px;font-size:14px;font-weight:500;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:8px;transition:opacity 0.15s}
+  .run-btn:hover{opacity:0.88}
+  .run-btn:disabled{opacity:0.4;cursor:not-allowed}
+  .spinner{width:16px;height:16px;border:2px solid rgba(255,255,255,0.3);border-top-color:#fff;border-radius:50%;animation:spin 0.6s linear infinite;display:inline-block}
+  @keyframes spin{to{transform:rotate(360deg)}}
+
+  /* Progress */
+  .progress-area{margin-top:16px;display:none}
+  .progress-area.show{display:block}
+  .progress-bar{height:3px;background:#E8E6DE;border-radius:2px;overflow:hidden;margin-bottom:8px}
+  .progress-fill{height:100%;background:#534AB7;border-radius:2px;animation:loadpulse 1.6s ease-in-out infinite}
+  @keyframes loadpulse{0%{width:5%}50%{width:75%}100%{width:92%}}
+  .progress-msg{font-size:13px;color:#888780}
+
+  /* Results */
+  .results-area{margin-top:24px}
+  .result-overall{display:flex;align-items:center;gap:10px;padding:14px 16px;border-radius:10px;margin-bottom:16px;font-weight:500;font-size:15px}
+  .result-overall.pass{background:#EAF3DE;color:#27500A}
+  .result-overall.fail{background:#FCEBEB;color:#791F1F}
+  .result-overall.warn{background:#FAEEDA;color:#633806}
+  .ov-icon{font-size:20px}
+  .ov-meta{font-size:12px;font-weight:400;margin-left:auto;color:inherit;opacity:0.7;text-align:right;line-height:1.4}
+  .checks-label{font-size:11px;font-weight:500;text-transform:uppercase;letter-spacing:0.08em;color:#888780;margin-bottom:8px}
+  .result-item{display:flex;align-items:flex-start;gap:10px;padding:11px 14px;border-radius:8px;margin-bottom:7px;font-size:14px}
+  .result-item.pass{background:#EAF3DE;border:1px solid #C0DD97}
+  .result-item.fail{background:#FCEBEB;border:1px solid #F09595}
+  .result-item.warn{background:#FAEEDA;border:1px solid #FAC775}
+  .result-item.info{background:#fff;border:1px solid #E8E6DE}
+  .ri-icon{font-size:15px;flex-shrink:0;margin-top:2px}
+  .ri-body strong{font-weight:500;display:block;margin-bottom:2px;font-size:13px}
+  .ri-body span{font-size:12px;color:#5F5E5A;line-height:1.5}
+  .assessed-note{font-size:12px;color:#888780;margin-top:12px;text-align:center}
+
+  /* Sidebar */
+  .sidebar{position:sticky;top:24px}
+  .sidebar-card{background:#fff;border:1px solid #E8E6DE;border-radius:10px;overflow:hidden}
+  .sidebar-section{padding:16px 18px;border-bottom:1px solid #E8E6DE}
+  .sidebar-section:last-child{border-bottom:none}
+  .sidebar-section h3{font-size:11px;font-weight:500;text-transform:uppercase;letter-spacing:0.07em;color:#888780;margin-bottom:12px}
+  .check-row{display:flex;align-items:center;gap:8px;padding:7px 0;border-bottom:1px solid #F1EFE8}
+  .check-row:last-child{border-bottom:none}
+  .toggle{width:34px;height:19px;border-radius:10px;background:#D3D1C7;cursor:pointer;position:relative;flex-shrink:0;border:none;transition:background 0.15s}
+  .toggle.on{background:#534AB7}
+  .toggle::after{content:'';position:absolute;width:13px;height:13px;border-radius:7px;background:#fff;top:3px;left:3px;transition:left 0.15s}
+  .toggle.on::after{left:18px}
+  .check-label{flex:1}
+  .check-label strong{font-size:12px;font-weight:500;display:block}
+  .check-label span{font-size:11px;color:#888780}
+  .check-input{width:68px;font-size:12px;padding:3px 6px;border:1px solid #E8E6DE;border-radius:5px;background:#FAFAF8;color:#2C2C2A}
+  .custom-add{display:flex;gap:6px;margin-top:8px}
+  .custom-add input{flex:1;font-size:12px;padding:5px 7px;border:1px solid #E8E6DE;border-radius:5px;background:#FAFAF8}
+  .custom-add button{padding:5px 9px;font-size:12px;border-radius:5px}
+  .custom-item{display:flex;align-items:center;gap:6px;font-size:12px;padding:5px 0;border-bottom:1px solid #F1EFE8}
+  .custom-item span{flex:1;color:#5F5E5A}
+  .custom-item button{background:none;border:none;cursor:pointer;color:#888780;font-size:15px}
 </style>
 </head>
 <body>
 
-<nav style="border-bottom:1px solid #E8E6DE;padding:0 40px;background:#fff;display:flex;align-items:center;gap:0;height:48px">
-  <a style="font-size:14px;font-weight:500;color:#2C2C2A;text-decoration:none;margin-right:24px" href="/">UKPOS Print Site</a>
-  <a style="display:flex;align-items:center;padding:0 14px;height:100%;font-size:13px;color:#5F5E5A;text-decoration:none;border-bottom:2px solid transparent" href="/dashboard">Dashboard</a>
-  <a style="display:flex;align-items:center;padding:0 14px;height:100%;font-size:13px;color:#534AB7;font-weight:500;text-decoration:none;border-bottom:2px solid #534AB7" href="/artwork-assessor">Artwork assessor</a>
+<nav>
+  <a class="nav-logo" href="/">UKPOS Print Site</a>
+  <a class="nav-link" href="/dashboard">Dashboard</a>
+  <a class="nav-link active" href="/artwork-assessor">Artwork assessor</a>
 </nav>
 
 <div class="layout">
   <div>
     <h1>Artwork assessor</h1>
-    <p class="page-desc">Upload a PDF, EPS, or ZIP containing an EPS. Checked against your configured print standards.</p>
+    <p class="page-desc">Assess print-readiness of PDF, EPS, PNG, or JPG artwork files.</p>
 
-    <div id="jobContext" class="job-context">
-      <div class="jc-item"><span class="jc-label">Ref:</span><span id="jobRef">—</span></div>
-      <div class="jc-item"><span class="jc-label">Customer:</span><span id="jobCustomer">—</span></div>
-      <div class="jc-item"><span class="jc-label">Order:</span><span id="jobOrder">—</span></div>
-      <a href="/dashboard">← Back to dashboard</a>
+    <!-- Job context (when opened from dashboard) -->
+    <div class="job-banner" id="jobBanner">
+      <div class="jb-item"><span class="jb-label">Reference</span><span class="jb-val" id="jbRef">—</span></div>
+      <div class="jb-item"><span class="jb-label">Customer</span><span class="jb-val" id="jbCustomer">—</span></div>
+      <div class="jb-item"><span class="jb-label">Order</span><span class="jb-val" id="jbOrder">—</span></div>
+      <a class="jb-back" href="/dashboard">← Back to dashboard</a>
     </div>
 
-    <div class="drop-zone" id="dropZone" onclick="document.getElementById('fileInput').click()">
-      <div class="dz-icon">📂</div>
-      <div class="dz-title">Drop artwork file here</div>
-      <div class="dz-sub">or click to browse &nbsp;·&nbsp; .pdf, .eps, .zip, .png, .jpg accepted</div>
-    </div>
-    <input type="file" id="fileInput" accept=".pdf,.eps,.zip,.png,.jpg,.jpeg" onchange="handleFile(event)" />
+    <!-- File upload area -->
+    <div class="file-area">
+      <div class="drop-zone" id="dropZone" onclick="document.getElementById('fileInput').click()">
+        <div class="dz-icon">📂</div>
+        <div class="dz-title" id="dzTitle">Drop artwork file here</div>
+        <div class="dz-sub">PDF · EPS · ZIP · PNG · JPG — or click to browse</div>
+      </div>
+      <input type="file" id="fileInput" accept=".pdf,.eps,.zip,.png,.jpg,.jpeg" onchange="handleFile(event)" />
 
-    <div id="fileBar" class="file-bar" style="display:none">
-      <span class="file-type-badge" id="fileTypeBadge">PDF</span>
-      <span class="file-name" id="fileBarName">—</span>
-      <button class="clear-btn" onclick="clearFile()" title="Remove file">×</button>
+      <div id="fileBar" class="file-bar" style="display:none">
+        <span class="file-type-badge" id="fileTypeBadge">PDF</span>
+        <span class="file-name" id="fileBarName">—</span>
+        <button class="clear-btn" onclick="clearFile()" title="Remove">×</button>
+      </div>
+      <div id="storageBadge" style="display:none" class="storage-badge">
+        ✓ File stored — re-assess any time without re-uploading
+      </div>
     </div>
 
     <button class="run-btn" id="runBtn" onclick="runAssessment()" disabled>
       <span id="runLabel">Assess artwork</span>
     </button>
 
-    <div id="loadingArea" style="display:none" class="loading-wrap">
-      <div class="loading-bar"><div class="loading-fill"></div></div>
-      <div class="loading-msg" id="loadingMsg">Analysing artwork…</div>
+    <div class="progress-area" id="progressArea">
+      <div class="progress-bar"><div class="progress-fill"></div></div>
+      <div class="progress-msg" id="progressMsg">Analysing artwork…</div>
     </div>
 
-    <div id="resultsArea"></div>
+    <div class="results-area" id="resultsArea"></div>
   </div>
 
+  <!-- Sidebar settings -->
   <aside class="sidebar">
     <div class="sidebar-card">
       <div class="sidebar-section">
         <h3>Resolution</h3>
         <div class="check-row">
           <button class="toggle on" id="tog-dpi" onclick="this.classList.toggle('on')"></button>
-          <div class="check-label"><strong>Min image DPI</strong><span>Embedded raster images</span></div>
+          <div class="check-label"><strong>Min image DPI</strong><span>Embedded rasters</span></div>
           <input class="check-input" id="val-dpi" type="number" value="300" min="72" max="1200" />
         </div>
         <div class="check-row">
           <button class="toggle on" id="tog-pixelation" onclick="this.classList.toggle('on')"></button>
-          <div class="check-label"><strong>Pixelation</strong><span>Upsampled / blocky images</span></div>
+          <div class="check-label"><strong>Pixelation</strong><span>Upsampled / blocky</span></div>
         </div>
       </div>
       <div class="sidebar-section">
@@ -210,12 +183,12 @@
         <div class="check-row">
           <button class="toggle" id="tog-docw" onclick="this.classList.toggle('on')"></button>
           <div class="check-label"><strong>Width (mm)</strong><span>Trim width</span></div>
-          <input class="check-input" id="val-docw" type="number" value="1000" />
+          <input class="check-input" id="val-docw" type="number" value="" placeholder="any" />
         </div>
         <div class="check-row">
           <button class="toggle" id="tog-doch" onclick="this.classList.toggle('on')"></button>
           <div class="check-label"><strong>Height (mm)</strong><span>Trim height</span></div>
-          <input class="check-input" id="val-doch" type="number" value="2000" />
+          <input class="check-input" id="val-doch" type="number" value="" placeholder="any" />
         </div>
       </div>
       <div class="sidebar-section">
@@ -223,7 +196,7 @@
         <div class="check-row">
           <button class="toggle on" id="tog-colour" onclick="this.classList.toggle('on')"></button>
           <div class="check-label"><strong>Colour mode</strong><span>Expected space</span></div>
-          <select class="check-input" id="val-colour" style="width:72px;">
+          <select class="check-input" id="val-colour" style="width:68px">
             <option value="CMYK">CMYK</option>
             <option value="RGB">RGB</option>
             <option value="either">Either</option>
@@ -262,23 +235,67 @@
 </div>
 
 <script>
-const S = { b64: null, mediaType: null, fileName: '', fileType: '', customChecks: [], jobId: null };
+const S = { b64: null, mediaType: null, fileName: '', fileType: '', jobId: null, storagePath: null, customChecks: [] };
 
-// Pick up job ID from URL if opened from dashboard
-const _urlParams = new URLSearchParams(window.location.search);
-S.jobId = _urlParams.get('job') || null;
+// ── Initialise from URL param ─────────────────────────────────────────────────
+const _params = new URLSearchParams(window.location.search);
+S.jobId = _params.get('job') || null;
+
 if (S.jobId) {
-  fetch(`/api/job?id=${S.jobId}`).then(r => r.json()).then(job => {
-    if (job) {
-      document.getElementById('jobContext').style.display = 'flex';
-      document.getElementById('jobRef').textContent = job.reference || '—';
-      document.getElementById('jobCustomer').textContent = job.customer_name || '—';
-      document.getElementById('jobOrder').textContent = job.order_number || '—';
-      if (job.results) renderResults(job.results);
+  fetch(`/api/job?id=${S.jobId}`).then(r => r.json()).then(async job => {
+    if (!job) return;
+
+    // Show job banner
+    document.getElementById('jobBanner').classList.add('show');
+    document.getElementById('jbRef').textContent      = job.reference     || '—';
+    document.getElementById('jbCustomer').textContent = job.customer_name || '—';
+    document.getElementById('jbOrder').textContent    = job.order_number  || '—';
+
+    // If stored results exist, show them immediately
+    if (job.results) renderResults(job.results, job.assessed_at);
+
+    // If file is in storage, load it ready for re-assess
+    if (job.storage_path) {
+      setDropZoneState('stored', job.file_name, job.file_type, job.storage_path);
+      // Load file from storage into memory
+      try {
+        const r = await fetch(`/api/file?path=${encodeURIComponent(job.storage_path)}`);
+        if (r.ok) {
+          const { b64, mediaType } = await r.json();
+          S.b64 = b64; S.mediaType = mediaType;
+          S.fileName = job.file_name; S.fileType = job.file_type;
+          S.storagePath = job.storage_path;
+          document.getElementById('runBtn').disabled = false;
+        }
+      } catch(e) { console.error('failed to load stored file', e); }
+    } else if (job.assessed_at) {
+      // Assessed but no storage — show drop zone for re-upload
+      setDropZoneState('reassess', job.file_name, job.file_type, null);
+    } else {
+      // Not yet assessed and no storage — may still be processing
+      if (!job.assessed_at) {
+        showProgress('Assessment in progress…');
+        // Poll until results arrive (max 60s)
+        let attempts = 0;
+        const poll = setInterval(async () => {
+          attempts++;
+          if (attempts > 24) { clearInterval(poll); hideProgress(); return; }
+          const updated = await fetch(`/api/job?id=${S.jobId}`).then(r => r.json());
+          if (updated && updated.results) {
+            clearInterval(poll);
+            hideProgress();
+            renderResults(updated.results, updated.assessed_at);
+            if (updated.storage_path) {
+              document.getElementById('storageBadge').style.display = 'flex';
+            }
+          }
+        }, 2500);
+      }
     }
-  }).catch(() => {});
+  }).catch(e => console.error('job load failed', e));
 }
 
+// ── File drop / upload ────────────────────────────────────────────────────────
 const dz = document.getElementById('dropZone');
 dz.addEventListener('dragover', e => { e.preventDefault(); dz.classList.add('drag-over'); });
 dz.addEventListener('dragleave', () => dz.classList.remove('drag-over'));
@@ -287,69 +304,83 @@ function handleFile(e) { const f = e.target.files[0]; if (f) loadFile(f); }
 
 function bufToB64(buf) {
   const bytes = new Uint8Array(buf);
-  let binary = '';
-  const chunk = 8192;
-  for (let i = 0; i < bytes.length; i += chunk) {
-    binary += String.fromCharCode(...bytes.subarray(i, i + chunk));
-  }
-  return btoa(binary);
+  let bin = '';
+  for (let i = 0; i < bytes.length; i += 8192) bin += String.fromCharCode(...bytes.subarray(i, i + 8192));
+  return btoa(bin);
 }
 
 async function loadFile(f) {
   const ext = f.name.split('.').pop().toLowerCase();
-  let b64 = null, mediaType = null, fileName = f.name, fileType = ext.toUpperCase();
+  let b64, mediaType, fileName = f.name, fileType = ext.toUpperCase();
 
-  if (ext === 'pdf') {
-    b64 = bufToB64(await f.arrayBuffer());
-    mediaType = 'application/pdf';
-  } else if (ext === 'png') {
-    b64 = bufToB64(await f.arrayBuffer());
-    mediaType = 'image/png';
-  } else if (ext === 'jpg' || ext === 'jpeg') {
-    b64 = bufToB64(await f.arrayBuffer());
-    mediaType = 'image/jpeg';
-  } else if (ext === 'eps') {
-    const text = await f.text();
-    b64 = btoa(unescape(encodeURIComponent(text)));
-    mediaType = 'text/plain';
-  } else if (ext === 'zip') {
-    if (typeof JSZip === 'undefined') { alert('JSZip not loaded — please refresh.'); return; }
-    try {
-      const zip = await JSZip.loadAsync(f);
-      const entry = Object.values(zip.files).find(e => e.name.toLowerCase().endsWith('.eps') && !e.name.startsWith('__MACOSX'));
-      if (!entry) { alert('No .eps file found inside the ZIP.'); return; }
-      const text = await entry.async('text');
-      b64 = btoa(unescape(encodeURIComponent(text)));
-      mediaType = 'text/plain';
-      fileName = entry.name.split('/').pop();
-      fileType = 'EPS';
-    } catch(e) { alert('Could not read ZIP: ' + e.message); return; }
-  } else {
-    alert('Please upload a .pdf, .eps, .zip, .png, or .jpg file.');
-    return;
-  }
+  if (ext === 'pdf')  { b64 = bufToB64(await f.arrayBuffer()); mediaType = 'application/pdf'; }
+  else if (ext === 'png')  { b64 = bufToB64(await f.arrayBuffer()); mediaType = 'image/png'; }
+  else if (ext === 'jpg' || ext === 'jpeg') { b64 = bufToB64(await f.arrayBuffer()); mediaType = 'image/jpeg'; fileType = 'JPG'; }
+  else if (ext === 'eps')  { b64 = btoa(unescape(encodeURIComponent(await f.text()))); mediaType = 'text/plain'; }
+  else if (ext === 'zip') {
+    if (typeof JSZip === 'undefined') { alert('JSZip not loaded — refresh and try again.'); return; }
+    const zip = await JSZip.loadAsync(f);
+    const entry = Object.values(zip.files).find(e => e.name.toLowerCase().endsWith('.eps') && !e.name.startsWith('__MACOSX'));
+    if (!entry) { alert('No EPS found in ZIP.'); return; }
+    b64 = btoa(unescape(encodeURIComponent(await entry.async('text'))));
+    mediaType = 'text/plain'; fileType = 'EPS'; fileName = entry.name.split('/').pop();
+  } else { alert('Unsupported file type.'); return; }
 
   S.b64 = b64; S.mediaType = mediaType; S.fileName = fileName; S.fileType = fileType;
-
-  const badge = document.getElementById('fileTypeBadge');
-  badge.textContent = fileType;
-  const badgeColour = fileType === 'PDF' ? 'pdf' : (fileType === 'PNG') ? 'png' : (fileType === 'JPG' || fileType === 'JPEG') ? 'jpg' : 'eps';
-  badge.className = 'file-type-badge ' + badgeColour;
-  document.getElementById('fileBarName').textContent = fileName + (ext === 'zip' ? ' (from ZIP)' : '') + ' · ' + Math.round(f.size / 1024) + ' KB';
-  document.getElementById('fileBar').style.display = 'flex';
+  S.storagePath = null; // new file — not stored yet
+  document.getElementById('storageBadge').style.display = 'none';
+  setDropZoneState('loaded', fileName, fileType, null);
   document.getElementById('runBtn').disabled = false;
   document.getElementById('resultsArea').innerHTML = '';
 }
 
-function clearFile() {
-  S.b64 = null; S.mediaType = null; S.fileName = ''; S.fileType = '';
-  document.getElementById('fileBar').style.display = 'none';
-  document.getElementById('runBtn').disabled = true;
-  document.getElementById('fileInput').value = '';
-  document.getElementById('resultsArea').innerHTML = '';
-  document.getElementById('loadingArea').style.display = 'none';
+function setDropZoneState(state, fileName, fileType, storagePath) {
+  const bar = document.getElementById('fileBar');
+  const badge = document.getElementById('fileTypeBadge');
+  const nameEl = document.getElementById('fileBarName');
+  const sb = document.getElementById('storageBadge');
+  const dzTitle = document.getElementById('dzTitle');
+
+  if (state === 'stored') {
+    dzTitle.textContent = 'Drop a different file to replace';
+    bar.style.display = 'flex';
+    badge.textContent = fileType || '?';
+    badge.className = 'file-type-badge badge-' + (fileType||'').toLowerCase();
+    nameEl.textContent = fileName || '—';
+    sb.style.display = 'inline-flex';
+  } else if (state === 'loaded') {
+    dzTitle.textContent = 'Drop a different file to replace';
+    bar.style.display = 'flex';
+    badge.textContent = fileType || '?';
+    badge.className = 'file-type-badge badge-' + (fileType||'').toLowerCase();
+    nameEl.textContent = fileName || '—';
+  } else if (state === 'reassess') {
+    dzTitle.textContent = `Re-upload ${fileName} to re-assess`;
+    bar.style.display = 'none';
+  } else {
+    dzTitle.textContent = 'Drop artwork file here';
+    bar.style.display = 'none';
+    sb.style.display = 'none';
+  }
 }
 
+function clearFile() {
+  S.b64 = null; S.mediaType = null; S.fileName = ''; S.fileType = ''; S.storagePath = null;
+  document.getElementById('fileBar').style.display = 'none';
+  document.getElementById('storageBadge').style.display = 'none';
+  document.getElementById('fileInput').value = '';
+  document.getElementById('runBtn').disabled = true;
+  document.getElementById('dzTitle').textContent = 'Drop artwork file here';
+}
+
+function showProgress(msg) {
+  const pa = document.getElementById('progressArea');
+  pa.classList.add('show');
+  document.getElementById('progressMsg').textContent = msg || 'Analysing…';
+}
+function hideProgress() { document.getElementById('progressArea').classList.remove('show'); }
+
+// ── Custom checks ─────────────────────────────────────────────────────────────
 function addCustom() {
   const inp = document.getElementById('customInput');
   const t = inp.value.trim(); if (!t) return;
@@ -357,216 +388,176 @@ function addCustom() {
 }
 function removeCustom(i) { S.customChecks.splice(i, 1); renderCustom(); }
 function renderCustom() {
-  document.getElementById('customList').innerHTML = S.customChecks.map((c, i) => `
-    <div class="custom-item"><span>${c}</span><button onclick="removeCustom(${i})">×</button></div>
-  `).join('');
+  document.getElementById('customList').innerHTML = S.customChecks.map((c, i) =>
+    `<div class="custom-item"><span>${c}</span><button onclick="removeCustom(${i})">×</button></div>`
+  ).join('');
 }
 
 function isOn(id) { return document.getElementById('tog-' + id)?.classList.contains('on'); }
-function val(id) { return document.getElementById('val-' + id)?.value || ''; }
+function val(id)  { return document.getElementById('val-' + id)?.value || ''; }
 
-function buildPrompt(cfg) {
-  const isPDF = S.fileType === 'PDF';
-  const isImage = ['PNG','JPG','JPEG'].includes(S.fileType);
-  const fileDesc = isPDF ? 'PDF artwork file' : isImage ? `${S.fileType} image file` : 'EPS PostScript file';
+// ── Build prompt ──────────────────────────────────────────────────────────────
+function buildPrompt() {
+  const ft = S.fileType;
+  const isPDF   = ft === 'PDF';
+  const isImage = ['PNG','JPG','JPEG'].includes(ft);
+  const cfg = { w: isOn('docw') ? val('docw') : null, h: isOn('doch') ? val('doch') : null };
   const checks = [];
 
   if (isOn('dpi')) checks.push(isImage
-    ? `IMAGE RESOLUTION: This is a raster image file. Assess the pixel dimensions relative to the expected print output size. If trim dimensions are provided, calculate the effective DPI. Minimum acceptable is ${val('dpi')} DPI. id: "dpi"`
+    ? `IMAGE RESOLUTION: Assess pixel dimensions relative to expected print output. Minimum ${val('dpi')} DPI. id: "dpi"`
     : isPDF
-    ? `IMAGE RESOLUTION: Check all embedded raster images. Minimum DPI is ${val('dpi')}. Report actual DPI found and pass/fail. If purely vector, note that and mark pass. id: "dpi"`
-    : `IMAGE RESOLUTION: If this EPS contains embedded raster images, assess whether they meet the ${val('dpi')} DPI minimum. Look for image dictionary entries and transformation matrix to calculate effective DPI. If entirely vector, mark pass. id: "dpi"`);
+    ? `IMAGE RESOLUTION: Check all embedded raster images. Minimum ${val('dpi')} DPI. Report actual DPI. If purely vector mark pass. id: "dpi"`
+    : `IMAGE RESOLUTION: Check embedded raster images meet ${val('dpi')} DPI via image dictionary. If entirely vector mark pass. id: "dpi"`);
 
   if (isOn('pixelation')) checks.push(
-    `PIXELATION / UPSAMPLING: Visually inspect for blocky pixel grid, jagged staircase edges on curves, or blurry areas suggesting upsampling from a low-res original. id: "pixelation"`);
+    `PIXELATION / UPSAMPLING: Inspect for blocky pixel grid, jagged staircase edges, or blurry areas from upsampling. id: "pixelation"`);
 
   if (isOn('bleed')) {
-    const bleedNote = cfg.w && cfg.h
-      ? `Expected trim is ${cfg.w}×${cfg.h}mm so with ${val('bleed')}mm bleed the artwork should be ${(+cfg.w + +val('bleed')*2).toFixed(1)}×${(+cfg.h + +val('bleed')*2).toFixed(1)}mm.`
+    const note = cfg.w && cfg.h
+      ? `Expected trim ${cfg.w}×${cfg.h}mm, so with ${val('bleed')}mm bleed artwork should be ${(+cfg.w + +val('bleed')*2).toFixed(1)}×${(+cfg.h + +val('bleed')*2).toFixed(1)}mm.`
       : `Expected ${val('bleed')}mm bleed on all sides.`;
-    checks.push(`BLEED: ${bleedNote} Does the artwork include sufficient bleed? id: "bleed"`);
+    checks.push(`BLEED: ${note} Does artwork include sufficient bleed? id: "bleed"`);
   }
 
-  if (isOn('docw') && cfg.w) checks.push(`DOCUMENT WIDTH: Expected trim width ${cfg.w}mm. Report actual width and whether it matches within 1mm tolerance. id: "docw"`);
-  if (isOn('doch') && cfg.h) checks.push(`DOCUMENT HEIGHT: Expected trim height ${cfg.h}mm. Report actual height and whether it matches within 1mm tolerance. id: "doch"`);
+  if (isOn('docw') && cfg.w) checks.push(`DOCUMENT WIDTH: Expected trim width ${cfg.w}mm. Report actual width and match within 1mm. id: "docw"`);
+  if (isOn('doch') && cfg.h) checks.push(`DOCUMENT HEIGHT: Expected trim height ${cfg.h}mm. Report actual height and match within 1mm. id: "doch"`);
 
   if (isOn('colour') && val('colour') !== 'either') checks.push(isImage
-    ? `COLOUR MODE: Expected ${val('colour')}. Assess whether this image appears to be in ${val('colour')} colour space. Note that PNG/JPG files are typically RGB — flag if CMYK is expected. id: "colour"`
+    ? `COLOUR MODE: PNG/JPG are typically RGB — flag as warn since ${val('colour')} is expected for print. id: "colour"`
     : isPDF
-    ? `COLOUR MODE: Expected ${val('colour')}. Inspect embedded images and colour spaces in the PDF. id: "colour"`
-    : `COLOUR MODE: Expected ${val('colour')}. Check for setcmykcolor/DeviceCMYK vs setrgbcolor/DeviceRGB operators. id: "colour"`);
+    ? `COLOUR MODE: Expected ${val('colour')}. Inspect colour spaces in PDF. id: "colour"`
+    : `COLOUR MODE: Expected ${val('colour')}. Check PostScript colour operators. id: "colour"`);
 
   if (isOn('whiteedge')) checks.push(
-    `WHITE EDGE / UNEXTENDED ARTWORK: Carefully inspect all four edges. Look for any thin white or very light strip at any edge — artwork not extended to the bleed line. Even 1–3mm is a FAIL. id: "white_edge"`);
+    `WHITE EDGE: Inspect all four edges for thin white or light strip — artwork not extended to bleed line. Even 1–3mm is FAIL. id: "white_edge"`);
 
   if (isOn('safezone')) checks.push(
-    `SAFE ZONE: Are any text, logos, or important elements within ~5mm of the trim edge, risking being cut off in production? id: "safe_zone"`);
+    `SAFE ZONE: Any text, logos, or important elements within ~5mm of trim edge? id: "safe_zone"`);
 
   if (isOn('fonts')) checks.push(isImage
-    ? `FONTS: Inspect any visible text in the image. Does text appear sharp and clean, or does it show rasterisation artefacts suggesting low resolution? Note: embedding cannot be checked in raster files. id: "fonts"`
+    ? `FONTS: Does visible text appear sharp, or show rasterisation artefacts? id: "fonts"`
     : isPDF
-    ? `FONTS: Are all fonts fully embedded or outlined in this PDF? Any missing or non-embedded fonts = FAIL. id: "fonts"`
-    : `FONTS: Are fonts fully embedded or outlined in the EPS? Any unembedded, non-outlined fonts = FAIL. id: "fonts"`);
+    ? `FONTS: All fonts fully embedded or outlined in PDF? Missing = FAIL. id: "fonts"`
+    : `FONTS: Fonts fully embedded or outlined in EPS? Unembedded = FAIL. id: "fonts"`);
 
   if (isOn('transparency')) checks.push(isImage
-    ? `TRANSPARENCY: Does this image contain any transparent areas (alpha channel)? Transparency in print files can cause unexpected white or black backgrounds on press. id: "transparency"`
-    : `TRANSPARENCY / OVERPRINT: Any unflattened transparency or overprint settings that could cause unexpected results at print? id: "transparency"`);
+    ? `TRANSPARENCY: Any transparent areas (alpha channel)? Can cause unexpected backgrounds on press. id: "transparency"`
+    : `TRANSPARENCY / OVERPRINT: Any unflattened transparency or overprint that could cause press issues? id: "transparency"`);
 
   S.customChecks.forEach((c, i) => checks.push(`CUSTOM — ${c} id: "custom_${i}"`));
 
-  return `You are a professional print production specialist reviewing a ${fileDesc} for print readiness. Analyse it thoroughly and respond ONLY as a JSON array — no markdown, no preamble.
+  const fileDesc = isPDF ? 'PDF' : isImage ? ft : 'EPS PostScript';
+  return `You are a print production specialist reviewing a ${fileDesc} file for print readiness. Respond ONLY as a JSON array — no markdown, no preamble.
 
-Each object must have: "id" (from check), "label" (human-readable name), "status" (pass/fail/warn/info), "headline" (≤12 words), "detail" (1–3 sentences of specific findings).
+Each object: "id", "label" (human name), "status" (pass/fail/warn/info), "headline" (≤12 words), "detail" (1–3 sentences).
 
 Checks:
 ${checks.map((c, i) => `${i+1}. ${c}`).join('\n')}
 
-Add a final object: id "overall", label "Overall verdict", status based on any fails present, headline and brief detail summary.
+Final object: id "overall", label "Overall verdict", status from any fails, brief headline and detail.
 
 JSON array only.`;
 }
 
-  if (isOn('dpi')) checks.push(isPDF
-    ? `IMAGE RESOLUTION: Check all embedded raster images. Minimum DPI is ${val('dpi')}. Report actual DPI found and pass/fail. If purely vector, note that and mark pass. id: "dpi"`
-    : `IMAGE RESOLUTION: If this EPS contains embedded raster images, assess whether they meet the ${val('dpi')} DPI minimum. Look for image dictionary entries and transformation matrix to calculate effective DPI. If entirely vector, mark pass. id: "dpi"`);
-
-  if (isOn('pixelation')) checks.push(isPDF
-    ? `PIXELATION / UPSAMPLING: Visually inspect all images for blocky pixel grid, jagged staircase edges on curves, or blurry areas suggesting upsampling from a low-res original. Distinct from DPI metadata — an image can report correct DPI but still look pixelated if upsampled. id: "pixelation"`
-    : `PIXELATION / UPSAMPLING: Check if any embedded raster images have pixel dimensions small relative to their output size in the transformation matrix — indicating upsampling. id: "pixelation"`);
-
-  if (isOn('bleed')) {
-    const bleedNote = cfg.w && cfg.h
-      ? `Expected trim is ${cfg.w}×${cfg.h}mm so with ${val('bleed')}mm bleed document should be ${(+cfg.w + +val('bleed')*2).toFixed(1)}×${(+cfg.h + +val('bleed')*2).toFixed(1)}mm.`
-      : `Expected ${val('bleed')}mm bleed on all sides.`;
-    checks.push(`BLEED: ${bleedNote} Does the artwork include sufficient bleed? id: "bleed"`);
-  }
-
-  if (isOn('docw') && cfg.w) checks.push(`DOCUMENT WIDTH: Expected trim width ${cfg.w}mm. Report actual width and whether it matches within 1mm tolerance. id: "docw"`);
-  if (isOn('doch') && cfg.h) checks.push(`DOCUMENT HEIGHT: Expected trim height ${cfg.h}mm. Report actual height and whether it matches within 1mm tolerance. id: "doch"`);
-
-  if (isOn('colour') && val('colour') !== 'either') checks.push(isPDF
-    ? `COLOUR MODE: Expected ${val('colour')}. Inspect embedded images and colour spaces in the PDF. Report what's found. id: "colour"`
-    : `COLOUR MODE: Expected ${val('colour')}. Check for setcmykcolor/DeviceCMYK vs setrgbcolor/DeviceRGB operators. id: "colour"`);
-
-  if (isOn('whiteedge')) checks.push(isPDF
-    ? `WHITE EDGE / UNEXTENDED ARTWORK: Carefully inspect all four edges visually. Look for any thin white or very light strip at any edge where artwork hasn't been extended to the bleed line. Even 1–3mm is a FAIL. id: "white_edge"`
-    : `WHITE EDGE: Do the PostScript drawing commands fill to the BoundingBox edges, or do they stop short leaving implied white space at any edge? id: "white_edge"`);
-
-  if (isOn('safezone')) checks.push(`SAFE ZONE: Are any text, logos, or important elements within ~5mm of the trim edge, risking being cut off in production? id: "safe_zone"`);
-
-  if (isOn('fonts')) checks.push(isPDF
-    ? `FONTS: Are all fonts fully embedded or outlined/converted to paths in this PDF? Any missing or non-embedded fonts = FAIL. id: "fonts"`
-    : `FONTS: Are fonts fully embedded or outlined in the EPS? Any unembedded, non-outlined fonts = FAIL. id: "fonts"`);
-
-  if (isOn('transparency')) checks.push(`TRANSPARENCY / OVERPRINT: Any unflattened transparency or overprint settings that could cause unexpected results at print? id: "transparency"`);
-
-  S.customChecks.forEach((c, i) => checks.push(`CUSTOM — ${c} id: "custom_${i}"`));
-
-  return `You are a professional print production specialist reviewing a ${fileDesc} for print readiness. Analyse it thoroughly and respond ONLY as a JSON array — no markdown, no preamble.
-
-Each object must have: "id" (from check), "label" (human-readable name), "status" (pass/fail/warn/info), "headline" (≤12 words), "detail" (1–3 sentences of specific findings).
-
-Checks:
-${checks.map((c, i) => `${i+1}. ${c}`).join('\n')}
-
-Add a final object: id "overall", label "Overall verdict", status based on any fails present, headline and brief detail summary.
-
-JSON array only.`;
-}
-
+// ── Run assessment ────────────────────────────────────────────────────────────
 async function runAssessment() {
   if (!S.b64) return;
   const btn = document.getElementById('runBtn');
-  const lbl = document.getElementById('runLabel');
   btn.disabled = true;
-  lbl.innerHTML = '<span class="spinner"></span> Analysing…';
-  document.getElementById('loadingArea').style.display = 'block';
-  document.getElementById('loadingMsg').textContent = ['PNG','JPG','JPEG'].includes(S.fileType) ? 'Inspecting image…' : S.fileType === 'PDF' ? 'Inspecting PDF artwork…' : 'Reading PostScript source…';
+  document.getElementById('runLabel').innerHTML = '<span class="spinner"></span> Assessing…';
+  showProgress(['PNG','JPG','JPEG'].includes(S.fileType) ? 'Inspecting image…' : S.fileType === 'PDF' ? 'Inspecting PDF…' : 'Reading PostScript…');
   document.getElementById('resultsArea').innerHTML = '';
 
-  const cfg = { w: isOn('docw') ? val('docw') : null, h: isOn('doch') ? val('doch') : null };
-
-  const isImage = ['PNG','JPG','JPEG'].includes(S.fileType);
-  const contentBlock = isImage
-    ? { type: 'image', source: { type: 'base64', media_type: S.mediaType, data: S.b64 } }
-    : { type: 'document', source: { type: 'base64', media_type: S.mediaType, data: S.b64 } };
-
   try {
+    const isImage = ['PNG','JPG','JPEG'].includes(S.fileType);
+    const contentBlock = isImage
+      ? { type: 'image',    source: { type: 'base64', media_type: S.mediaType, data: S.b64 } }
+      : { type: 'document', source: { type: 'base64', media_type: S.mediaType, data: S.b64 } };
+
     const resp = await fetch('/api/assess', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
         model: 'claude-sonnet-4-5',
         max_tokens: 1500,
-        messages: [{
-          role: 'user',
-          content: [ contentBlock, { type: 'text', text: buildPrompt(cfg) } ]
-        }]
+        messages: [{ role: 'user', content: [contentBlock, { type: 'text', text: buildPrompt() }] }]
       })
     });
     const data = await resp.json();
-    if (data.error) throw new Error(typeof data.error === 'object' ? data.error.message : data.error);
+    if (data.error) throw new Error(data.error.message || JSON.stringify(data.error));
     const raw = (data.content || []).filter(b => b.type === 'text').map(b => b.text).join('');
     const results = JSON.parse(raw.replace(/```json|```/g, '').trim());
 
-    const overall = results.find(r => r.id === 'overall');
-    const checks  = results.filter(r => r.id !== 'overall');
-    const passCount = checks.filter(r => r.status === 'pass').length;
-    const scorePct = checks.length ? Math.round(passCount / checks.length * 100) : null;
+    const now = new Date().toISOString();
+    renderResults(results, now);
 
+    // If this is a job, upload to storage (if not already stored) then patch results
     if (S.jobId) {
-      fetch(`/api/job?id=${S.jobId}`, {
-        method: 'PATCH',
-        headers: {'Content-Type':'application/json'},
-        body: JSON.stringify({
-          assessed_at: new Date().toISOString(),
-          results: results,
-          score_pct: scorePct,
-          overall_status: overall ? overall.status : null,
-          file_name: S.fileName,
-          file_type: S.fileType
-        })
-      }).catch(() => {});
-    }
+      const overall   = results.find(r => r.id === 'overall');
+      const checks    = results.filter(r => r.id !== 'overall');
+      const scorePct  = checks.length ? Math.round(checks.filter(r => r.status === 'pass').length / checks.length * 100) : null;
+      const patch = { assessed_at: now, results, score_pct: scorePct, overall_status: overall?.status || null, file_name: S.fileName, file_type: S.fileType };
 
-    renderResults(results);
-  } catch (e) {
-    document.getElementById('resultsArea').innerHTML = `
-      <div class="result-item fail" style="margin-top:20px">
-        <span class="ri-icon">⚠️</span>
-        <div class="ri-body"><strong>Assessment failed</strong><span>${e.message}</span></div>
-      </div>`;
+      // Upload to storage if not already there
+      if (!S.storagePath) {
+        const extMap = { PDF:'pdf', PNG:'png', JPG:'jpg', JPEG:'jpg', EPS:'eps' };
+        const path = `${S.jobId}.${extMap[S.fileType] || 'bin'}`;
+        try {
+          const ur = await fetch('/api/upload', {
+            method: 'POST', headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ path, mediaType: S.mediaType, data: S.b64 })
+          });
+          if (ur.ok) { patch.storage_path = path; S.storagePath = path; document.getElementById('storageBadge').style.display = 'inline-flex'; }
+        } catch(e) { console.error('storage upload failed', e); }
+      }
+
+      await fetch(`/api/job?id=${S.jobId}`, {
+        method: 'PATCH', headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(patch)
+      });
+    }
+  } catch(e) {
+    document.getElementById('resultsArea').innerHTML =
+      `<div class="result-item fail"><span class="ri-icon">❌</span><div class="ri-body"><strong>Assessment failed</strong><span>${e.message}</span></div></div>`;
   }
 
-  document.getElementById('loadingArea').style.display = 'none';
+  hideProgress();
   btn.disabled = false;
-  lbl.textContent = 'Assess artwork';
+  document.getElementById('runLabel').textContent = 'Re-assess';
 }
 
-function renderResults(results) {
+// ── Render results ────────────────────────────────────────────────────────────
+function renderResults(results, assessedAt) {
   const overall = results.find(r => r.id === 'overall');
   const checks  = results.filter(r => r.id !== 'overall');
-  const icons = { pass: '✅', fail: '❌', warn: '⚠️', info: 'ℹ️' };
-
+  const icons   = { pass:'✅', fail:'❌', warn:'⚠️', info:'ℹ️' };
   let html = '';
+
   if (overall) {
+    const pct = checks.length ? Math.round(checks.filter(r => r.status === 'pass').length / checks.length * 100) : null;
     html += `<div class="result-overall ${overall.status}">
-      <span class="ov-icon">${icons[overall.status] || 'ℹ️'}</span>
+      <span class="ov-icon">${icons[overall.status]||'ℹ️'}</span>
       <span>${overall.headline}</span>
-      <span class="ov-filename">${S.fileName}</span>
+      <span class="ov-meta">${pct !== null ? pct + '% passed' : ''}${assessedAt ? '<br>' + new Date(assessedAt).toLocaleString('en-GB',{day:'2-digit',month:'short',hour:'2-digit',minute:'2-digit'}) : ''}</span>
     </div>`;
   }
-  html += '<div class="checks-section-label">Check results</div>';
+
+  if (overall?.detail) {
+    html += `<p style="font-size:13px;color:#5F5E5A;margin-bottom:14px;line-height:1.6">${overall.detail}</p>`;
+  }
+
+  html += '<div class="checks-label">Check results</div>';
   checks.forEach(r => {
     html += `<div class="result-item ${r.status}">
-      <span class="ri-icon">${icons[r.status] || 'ℹ️'}</span>
-      <div class="ri-body">
-        <strong>${r.label}</strong>
-        <span>${r.headline}${r.detail ? ' — ' + r.detail : ''}</span>
-      </div>
+      <span class="ri-icon">${icons[r.status]||'ℹ️'}</span>
+      <div class="ri-body"><strong>${r.label}</strong><span>${r.headline}${r.detail ? ' — ' + r.detail : ''}</span></div>
     </div>`;
   });
+
   document.getElementById('resultsArea').innerHTML = html;
+  document.getElementById('runLabel').textContent = 'Re-assess';
+  document.getElementById('runBtn').disabled = !S.b64;
 }
 </script>
 </body>
