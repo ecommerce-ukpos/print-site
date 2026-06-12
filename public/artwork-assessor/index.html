@@ -48,6 +48,17 @@
   /* Storage badge */
   .storage-badge{display:inline-flex;align-items:center;gap:5px;font-size:11px;color:#0F6E56;background:#E1F5EE;padding:3px 8px;border-radius:20px;margin-top:6px}
 
+  /* SKU strip */
+  .sku-strip{display:none;align-items:center;gap:10px;padding:9px 14px;background:#EEEDFE;border:1px solid #AFA9EC;border-radius:8px;margin-top:8px;font-size:13px}
+  .sku-strip.show{display:flex}
+  .sku-code{font-size:11px;font-weight:700;background:#534AB7;color:#fff;padding:2px 7px;border-radius:4px;letter-spacing:0.04em;flex-shrink:0}
+  .sku-strip-desc{flex:1;color:#2C2C2A;font-size:13px}
+  .sku-strip-dims{font-size:11px;color:#7F77DD}
+  .sku-strip-flags{display:flex;gap:5px;flex-wrap:wrap;margin-top:2px}
+  .sku-flag{font-size:10px;font-weight:500;padding:2px 6px;border-radius:3px;background:#DDD9F5;color:#534AB7}
+  .sku-change{background:none;border:none;font-size:12px;color:#534AB7;cursor:pointer;flex-shrink:0;text-decoration:underline}
+  .sku-change:hover{color:#3C3489}
+
   /* Run button */
   .run-btn{margin-top:12px;width:100%;padding:11px 20px;background:#534AB7;color:#fff;border:none;border-radius:8px;font-size:14px;font-weight:500;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:8px;transition:opacity 0.15s}
   .run-btn:hover{opacity:0.88}
@@ -104,9 +115,74 @@
   .custom-item{display:flex;align-items:center;gap:6px;font-size:12px;padding:5px 0;border-bottom:1px solid #F1EFE8}
   .custom-item span{flex:1;color:#5F5E5A}
   .custom-item button{background:none;border:none;cursor:pointer;color:#888780;font-size:15px}
+
+  /* SKU modal */
+  .modal-overlay{display:none;position:fixed;inset:0;background:rgba(20,20,18,0.5);z-index:100;align-items:center;justify-content:center;padding:20px;backdrop-filter:blur(2px)}
+  .modal-overlay.show{display:flex}
+  .modal{background:#fff;border-radius:12px;box-shadow:0 20px 60px rgba(0,0,0,0.15),0 4px 16px rgba(0,0,0,0.08);padding:28px;width:100%;max-width:460px;animation:modal-in 0.16s ease}
+  @keyframes modal-in{from{opacity:0;transform:translateY(-6px) scale(0.985)}to{opacity:1;transform:none}}
+  .modal-eyebrow{font-size:11px;font-weight:600;color:#534AB7;text-transform:uppercase;letter-spacing:0.08em;margin-bottom:8px}
+  .modal h2{font-size:18px;font-weight:500;letter-spacing:-0.02em;margin-bottom:6px}
+  .modal-sub{font-size:13px;color:#5F5E5A;margin-bottom:18px;line-height:1.55}
+  .modal-file-chip{display:inline-flex;align-items:center;gap:6px;background:#F1EFE8;border-radius:5px;padding:3px 9px;font-size:12px;margin-bottom:18px;color:#5F5E5A}
+  .modal-file-chip .fchip-type{font-size:10px;font-weight:700;color:#888780;text-transform:uppercase}
+  .sku-field{position:relative;margin-bottom:6px}
+  .sku-field input{width:100%;font-size:14px;padding:9px 12px;border:1.5px solid #E8E6DE;border-radius:8px;background:#fff;font-family:inherit;transition:border-color 0.15s}
+  .sku-field input:focus{outline:none;border-color:#534AB7}
+  .sku-dropdown{display:none;position:absolute;top:calc(100% + 4px);left:0;right:0;background:#fff;border:1px solid #E8E6DE;border-radius:8px;box-shadow:0 4px 16px rgba(0,0,0,0.08);max-height:220px;overflow-y:auto;z-index:110}
+  .sku-dropdown.show{display:block}
+  .sku-opt{display:flex;align-items:baseline;gap:10px;padding:8px 12px;cursor:pointer;font-size:13px}
+  .sku-opt:hover,.sku-opt.hi{background:#FAFAF8}
+  .sku-opt .opt-code{font-weight:600;color:#2C2C2A;min-width:72px;font-size:12px;font-variant-numeric:tabular-nums}
+  .sku-opt .opt-label{color:#5F5E5A;flex:1}
+  .sku-opt .opt-dims{font-size:11px;color:#B4B2A9;white-space:nowrap}
+  .sku-no-results{padding:12px;font-size:13px;color:#888780;text-align:center}
+  .sku-preview{display:none;padding:12px 14px;background:#EEEDFE;border:1px solid #AFA9EC;border-radius:8px;margin-bottom:18px;font-size:13px}
+  .sku-preview.show{display:block}
+  .sku-preview-top{display:flex;align-items:center;gap:8px;margin-bottom:6px}
+  .sku-preview-code{font-weight:700;font-size:12px;background:#534AB7;color:#fff;padding:2px 7px;border-radius:4px}
+  .sku-preview-name{color:#2C2C2A;font-size:13px}
+  .sku-preview-specs{display:flex;flex-wrap:wrap;gap:10px;font-size:12px;color:#5F5E5A;margin-bottom:6px}
+  .sku-preview-specs b{color:#2C2C2A;font-weight:500}
+  .sku-preview-flags{display:flex;gap:5px;flex-wrap:wrap}
+  .sku-preview-flag{font-size:10px;font-weight:500;padding:2px 6px;border-radius:3px;background:#DDD9F5;color:#534AB7}
+  .sku-preview-note{font-size:11px;color:#7F77DD;margin-top:6px}
+  .modal-actions{display:flex;gap:8px;justify-content:flex-end;margin-top:4px}
+  .mbtn{padding:8px 16px;border-radius:7px;font-size:13px;font-weight:500;cursor:pointer;border:1px solid #E8E6DE;background:#fff;color:#2C2C2A}
+  .mbtn:hover{background:#F1EFE8}
+  .mbtn-primary{background:#534AB7;color:#fff;border-color:#534AB7}
+  .mbtn-primary:hover{opacity:0.88}
+  .mbtn-primary:disabled{background:#D3D1C7;border-color:#D3D1C7;color:#888780;cursor:not-allowed;opacity:1}
 </style>
 </head>
 <body>
+
+<!-- ── SKU selection modal ─────────────────────────────────────────────── -->
+<div class="modal-overlay" id="skuModal">
+  <div class="modal">
+    <div class="modal-eyebrow">Before assessing</div>
+    <h2>Which SKU is this for?</h2>
+    <p class="modal-sub">The assessment checks your artwork against the print specification for the product it will be printed on — dimensions, DPI, colour profile, and bleed.</p>
+    <div class="modal-file-chip"><span class="fchip-type" id="mFileType"></span><span id="mFileName"></span></div>
+    <div class="sku-field">
+      <input type="text" id="skuInput" placeholder="Type SKU code or product name…" autocomplete="off" spellcheck="false" />
+      <div class="sku-dropdown" id="skuDropdown"></div>
+    </div>
+    <div class="sku-preview" id="skuPreview">
+      <div class="sku-preview-top">
+        <span class="sku-preview-code" id="spCode"></span>
+        <span class="sku-preview-name" id="spName"></span>
+      </div>
+      <div class="sku-preview-specs" id="spSpecs"></div>
+      <div class="sku-preview-flags" id="spFlags"></div>
+      <div class="sku-preview-note" id="spNote"></div>
+    </div>
+    <div class="modal-actions">
+      <button class="mbtn" onclick="cancelSkuModal()">Cancel</button>
+      <button class="mbtn mbtn-primary" id="skuConfirmBtn" disabled onclick="confirmSku()">Confirm &amp; load file</button>
+    </div>
+  </div>
+</div>
 
 <nav>
   <a class="nav-logo" href="/">UKPOS Print Site</a>
@@ -136,6 +212,17 @@
       </div>
       <input type="file" id="fileInput" accept=".pdf,.eps,.zip,.png,.jpg,.jpeg" onchange="handleFile(event)" />
 
+      <!-- SKU strip — shown after SKU confirmed -->
+      <div class="sku-strip" id="skuStrip">
+        <span class="sku-code" id="stripCode"></span>
+        <div style="flex:1;min-width:0">
+          <div class="sku-strip-desc" id="stripDesc"></div>
+          <div class="sku-strip-dims" id="stripDims"></div>
+          <div class="sku-strip-flags" id="stripFlags"></div>
+        </div>
+        <button class="sku-change" onclick="openSkuModal(S._pendingFileForChange, true)">Change SKU</button>
+      </div>
+
       <div id="fileBar" class="file-bar" style="display:none">
         <span class="file-type-badge" id="fileTypeBadge">PDF</span>
         <span class="file-name" id="fileBarName">—</span>
@@ -158,7 +245,7 @@
     <div class="results-area" id="resultsArea"></div>
   </div>
 
-  <!-- Sidebar settings -->
+  <!-- Sidebar settings — unchanged from original -->
   <aside class="sidebar">
     <div class="sidebar-card">
       <div class="sidebar-section">
@@ -235,7 +322,188 @@
 </div>
 
 <script>
-const S = { b64: null, mediaType: null, fileName: '', fileType: '', jobId: null, storagePath: null, customChecks: [] };
+// ── SKU specifications ────────────────────────────────────────────────────────
+// future_flags is the hook for Stage 3 pre-production requirements.
+// Current values: cut_lines, vinyl_colour, double_sided
+// These are surfaced in the modal and strip now; they will drive routing logic later.
+const SKU_SPECS = {
+  'AS1-A0':  { label:'Acrylic Poster Holder — A0',  w:841,  h:1189, dpi:150, colour:'CMYK', sides:1, bleed:3,  notes:'', future_flags:[] },
+  'AS1-A1':  { label:'Acrylic Poster Holder — A1',  w:594,  h:841,  dpi:200, colour:'CMYK', sides:1, bleed:3,  notes:'', future_flags:[] },
+  'AS1-A2':  { label:'Acrylic Poster Holder — A2',  w:420,  h:594,  dpi:200, colour:'CMYK', sides:1, bleed:3,  notes:'', future_flags:[] },
+  'AS1-A3':  { label:'Acrylic Poster Holder — A3',  w:297,  h:420,  dpi:300, colour:'CMYK', sides:1, bleed:3,  notes:'', future_flags:[] },
+  'AS1-A4':  { label:'Acrylic Poster Holder — A4',  w:210,  h:297,  dpi:300, colour:'CMYK', sides:1, bleed:3,  notes:'', future_flags:[] },
+  'AS1-A5':  { label:'Acrylic Poster Holder — A5',  w:148,  h:210,  dpi:300, colour:'CMYK', sides:1, bleed:3,  notes:'', future_flags:[] },
+  'WPG1':    { label:'Waterproof Pavement Sign — WPG1',  w:450, h:600, dpi:150, colour:'CMYK', sides:2, bleed:5, notes:'Double-sided.', future_flags:['cut_lines','double_sided'] },
+  'WPG2':    { label:'Waterproof Pavement Sign — WPG2',  w:450, h:600, dpi:150, colour:'CMYK', sides:2, bleed:5, notes:'Double-sided.', future_flags:['cut_lines','double_sided'] },
+  'WPG3':    { label:'Waterproof Pavement Sign — WPG3',  w:500, h:700, dpi:150, colour:'CMYK', sides:2, bleed:5, notes:'', future_flags:['cut_lines','double_sided'] },
+  'WPG4':    { label:'Waterproof Pavement Sign — WPG4',  w:500, h:700, dpi:150, colour:'CMYK', sides:2, bleed:5, notes:'', future_flags:['cut_lines','double_sided'] },
+  'WPG5':    { label:'Waterproof Pavement Sign — WPG5',  w:500, h:700, dpi:150, colour:'CMYK', sides:1, bleed:5, notes:'', future_flags:['cut_lines'] },
+  'WPG6':    { label:'Waterproof Pavement Sign — WPG6',  w:500, h:700, dpi:150, colour:'CMYK', sides:1, bleed:5, notes:'', future_flags:['cut_lines'] },
+  'WPG7':    { label:'Waterproof Pavement Sign — WPG7',  w:594, h:841, dpi:150, colour:'CMYK', sides:1, bleed:5, notes:'Shared A1 template.', future_flags:['cut_lines'] },
+  'WPG8':    { label:'Waterproof Pavement Sign — WPG8',  w:594, h:841, dpi:150, colour:'CMYK', sides:2, bleed:5, notes:'Double-sided A1.', future_flags:['cut_lines','double_sided'] },
+  'WPG9':    { label:'Waterproof Pavement Sign — WPG9',  w:594, h:841, dpi:150, colour:'CMYK', sides:1, bleed:5, notes:'Shared A1 template.', future_flags:['cut_lines'] },
+  'WPG10':   { label:'Waterproof Pavement Sign — WPG10', w:450, h:600, dpi:150, colour:'CMYK', sides:2, bleed:5, notes:'Verify dimensions — suspected copy-paste error in template visual area field.', future_flags:['cut_lines','double_sided'] },
+  'WPG11':   { label:'Waterproof Pavement Sign — WPG11', w:450, h:600, dpi:150, colour:'CMYK', sides:2, bleed:5, notes:'', future_flags:['cut_lines','double_sided'] },
+  'WPG12':   { label:'Waterproof Pavement Sign — WPG12', w:450, h:600, dpi:150, colour:'CMYK', sides:1, bleed:5, notes:'', future_flags:['cut_lines'] },
+  'WPG13':   { label:'Waterproof Pavement Sign — WPG13', w:594, h:841, dpi:150, colour:'CMYK', sides:2, bleed:5, notes:'', future_flags:['cut_lines','double_sided'] },
+  'WPG14':   { label:'Waterproof Pavement Sign — WPG14', w:594, h:841, dpi:150, colour:'CMYK', sides:2, bleed:5, notes:'', future_flags:['cut_lines','double_sided'] },
+  'WPG15':   { label:'Waterproof Pavement Sign — WPG15', w:594, h:841, dpi:150, colour:'CMYK', sides:1, bleed:5, notes:'', future_flags:['cut_lines'] },
+  'WPG16':   { label:'Waterproof Pavement Sign — WPG16', w:594, h:841, dpi:150, colour:'CMYK', sides:1, bleed:5, notes:'', future_flags:['cut_lines'] },
+  'WPG17':   { label:'Waterproof Pavement Sign — WPG17', w:594, h:841, dpi:150, colour:'CMYK', sides:2, bleed:5, notes:'', future_flags:['cut_lines','double_sided'] },
+  'WPG18':   { label:'Waterproof Pavement Sign — WPG18', w:594, h:841, dpi:150, colour:'CMYK', sides:2, bleed:5, notes:'', future_flags:['cut_lines','double_sided'] },
+  'ABG1':    { label:'Aluminium Pavement Sign — ABG1',   w:594, h:841, dpi:150, colour:'CMYK', sides:2, bleed:5, notes:'Shared A1 template.', future_flags:['cut_lines','double_sided'] },
+  'ABG9':    { label:'Aluminium Pavement Sign — ABG9',   w:594, h:841, dpi:150, colour:'CMYK', sides:2, bleed:5, notes:'Shared A1 template.', future_flags:['cut_lines','double_sided'] },
+  'ABG10':   { label:'Aluminium Pavement Sign — ABG10',  w:594, h:841, dpi:150, colour:'CMYK', sides:2, bleed:5, notes:'Shared A1 template.', future_flags:['cut_lines','double_sided'] },
+  'ABG12':   { label:'Aluminium Pavement Sign — ABG12',  w:594, h:841, dpi:150, colour:'CMYK', sides:2, bleed:5, notes:'Shared A1 template.', future_flags:['cut_lines','double_sided'] },
+  'ABG13':   { label:'Aluminium Pavement Sign — ABG13',  w:594, h:841, dpi:150, colour:'CMYK', sides:2, bleed:5, notes:'Shared A1 template.', future_flags:['cut_lines','double_sided'] },
+  'ABM2A1':  { label:'Aluminium Pavement Sign — ABM2A1', w:594, h:841, dpi:150, colour:'CMYK', sides:2, bleed:5, notes:'Shared A1 template.', future_flags:['cut_lines','double_sided'] },
+  'PABG':    { label:'Pavement Sign — PABG',             w:594, h:841, dpi:150, colour:'CMYK', sides:2, bleed:5, notes:'Shared A1 template.', future_flags:['cut_lines','double_sided'] },
+  'BOLL05':  { label:'Bollard Sign — BOLL05', w:300, h:300, dpi:300, colour:'CMYK', sides:1, bleed:3, notes:'Circular print. Artwork must be centred within safe zone.', future_flags:['cut_lines'] },
+  'SF-A0':   { label:'Snap Frame Print — A0', w:841, h:1189, dpi:150, colour:'CMYK', sides:1, bleed:0, notes:'No bleed required — snapped behind frame lip.', future_flags:[] },
+  'SF-A1':   { label:'Snap Frame Print — A1', w:594, h:841,  dpi:200, colour:'CMYK', sides:1, bleed:0, notes:'No bleed required.', future_flags:[] },
+  'SF-A2':   { label:'Snap Frame Print — A2', w:420, h:594,  dpi:200, colour:'CMYK', sides:1, bleed:0, notes:'No bleed required.', future_flags:[] },
+  'SF-A3':   { label:'Snap Frame Print — A3', w:297, h:420,  dpi:300, colour:'CMYK', sides:1, bleed:0, notes:'No bleed required.', future_flags:[] },
+  'SF-A4':   { label:'Snap Frame Print — A4', w:210, h:297,  dpi:300, colour:'CMYK', sides:1, bleed:0, notes:'No bleed required.', future_flags:[] },
+  'VINYL':   { label:'Vinyl Banner (custom size)', w:null, h:null, dpi:100, colour:'CMYK', sides:1, bleed:50, notes:'Custom size — confirm with order. White areas require pink substitution (C:0 M:100 Y:0 K:0) before RIP.', future_flags:['vinyl_colour'] },
+};
+
+const FLAG_LABELS = { cut_lines:'Cut lines required', vinyl_colour:'White→pink conversion', double_sided:'Double-sided' };
+
+// ── State ─────────────────────────────────────────────────────────────────────
+const S = {
+  b64: null, mediaType: null, fileName: '', fileType: '', jobId: null, storagePath: null,
+  customChecks: [],
+  sku: null,            // confirmed SKU code
+  _pendingFile: null,   // File object waiting for SKU confirmation
+  _pendingFileForChange: null  // used by "Change SKU" button
+};
+
+// ── SKU modal ─────────────────────────────────────────────────────────────────
+function openSkuModal(file, isChange) {
+  S._pendingFile = file;
+  S._pendingFileForChange = file;
+  const ext = (file && file.name ? file.name.split('.').pop().toUpperCase() : '');
+  document.getElementById('mFileType').textContent = ext;
+  document.getElementById('mFileName').textContent = file ? file.name : '';
+  const inp = document.getElementById('skuInput');
+  inp.value = isChange && S.sku ? S.sku : '';
+  document.getElementById('skuDropdown').classList.remove('show');
+  if (isChange && S.sku) { selectSku(S.sku); } else { hideSp(); document.getElementById('skuConfirmBtn').disabled = true; }
+  document.getElementById('skuModal').classList.add('show');
+  setTimeout(() => inp.focus(), 80);
+}
+
+function cancelSkuModal() {
+  document.getElementById('skuModal').classList.remove('show');
+  S._pendingFile = null;
+}
+
+function confirmSku() {
+  if (!S.sku || !S._pendingFile) return;
+  document.getElementById('skuModal').classList.remove('show');
+  applySkuToSidebar(S.sku);
+  updateSkuStrip();
+  loadFile(S._pendingFile);
+  S._pendingFile = null;
+}
+
+// Dropdown
+const skuInp = document.getElementById('skuInput');
+const skuDd  = document.getElementById('skuDropdown');
+
+skuInp.addEventListener('input', () => {
+  const q = skuInp.value.trim().toLowerCase();
+  renderDd(q);
+  skuDd.classList.toggle('show', q.length > 0);
+  const exact = Object.keys(SKU_SPECS).find(k => k.toLowerCase() === q);
+  if (exact) selectSku(exact);
+  else { S.sku = null; document.getElementById('skuConfirmBtn').disabled = true; hideSp(); }
+});
+
+skuInp.addEventListener('keydown', e => {
+  const opts = [...skuDd.querySelectorAll('.sku-opt')];
+  const hi = skuDd.querySelector('.hi');
+  if (e.key === 'ArrowDown') { e.preventDefault(); const nx = hi ? hi.nextElementSibling : opts[0]; if (hi) hi.classList.remove('hi'); nx?.classList.add('hi'); }
+  else if (e.key === 'ArrowUp') { e.preventDefault(); const pv = hi ? hi.previousElementSibling : opts[opts.length-1]; if (hi) hi.classList.remove('hi'); pv?.classList.add('hi'); }
+  else if (e.key === 'Enter') { e.preventDefault(); const hc = skuDd.querySelector('.hi')?.dataset.code; if (hc) { selectSku(hc); skuDd.classList.remove('show'); } else if (S.sku) confirmSku(); }
+  else if (e.key === 'Escape') { skuDd.classList.remove('show'); }
+});
+
+document.addEventListener('click', e => { if (!e.target.closest('.sku-field')) skuDd.classList.remove('show'); });
+document.getElementById('skuModal').addEventListener('click', e => { if (e.target === document.getElementById('skuModal')) cancelSkuModal(); });
+
+function renderDd(q) {
+  const codes = Object.keys(SKU_SPECS);
+  const filtered = q ? codes.filter(k => k.toLowerCase().includes(q) || SKU_SPECS[k].label.toLowerCase().includes(q)) : codes;
+  if (!filtered.length) { skuDd.innerHTML = '<div class="sku-no-results">No matching SKU</div>'; return; }
+  skuDd.innerHTML = filtered.map(code => {
+    const s = SKU_SPECS[code];
+    const dims = s.w ? `${s.w}×${s.h}mm` : 'custom';
+    return `<div class="sku-opt" data-code="${code}" onclick="selectSku('${code}');skuDd.classList.remove('show')">
+      <span class="opt-code">${code}</span><span class="opt-label">${s.label}</span><span class="opt-dims">${dims}</span>
+    </div>`;
+  }).join('');
+}
+
+function selectSku(code) {
+  S.sku = code;
+  skuInp.value = code;
+  document.getElementById('skuConfirmBtn').disabled = false;
+  const s = SKU_SPECS[code];
+  document.getElementById('spCode').textContent = code;
+  document.getElementById('spName').textContent = s.label;
+  document.getElementById('spSpecs').innerHTML = [
+    s.w ? `<span><b>Size:</b> ${s.w}×${s.h}mm</span>` : '',
+    `<span><b>Min DPI:</b> ${s.dpi}</span>`,
+    `<span><b>Colour:</b> ${s.colour}</span>`,
+    `<span><b>Sided:</b> ${s.sides === 1 ? 'Single' : 'Double'}</span>`,
+    s.bleed ? `<span><b>Bleed:</b> ${s.bleed}mm</span>` : '<span><b>Bleed:</b> none</span>',
+  ].filter(Boolean).join('');
+  document.getElementById('spFlags').innerHTML = s.future_flags.map(f => `<span class="sku-preview-flag">${FLAG_LABELS[f]||f}</span>`).join('');
+  document.getElementById('spNote').textContent = s.notes || '';
+  document.getElementById('spNote').style.display = s.notes ? 'block' : 'none';
+  document.getElementById('skuPreview').classList.add('show');
+}
+
+function hideSp() { document.getElementById('skuPreview').classList.remove('show'); }
+
+// Apply SKU spec values to the sidebar so they override defaults
+function applySkuToSidebar(code) {
+  const s = SKU_SPECS[code];
+  if (!s) return;
+  // DPI
+  document.getElementById('val-dpi').value = s.dpi;
+  document.getElementById('tog-dpi').classList.add('on');
+  // Bleed
+  document.getElementById('val-bleed').value = s.bleed;
+  document.getElementById('tog-bleed').classList[s.bleed > 0 ? 'add' : 'remove']('on');
+  // Dimensions
+  if (s.w) {
+    document.getElementById('val-docw').value = s.w;
+    document.getElementById('tog-docw').classList.add('on');
+    document.getElementById('val-doch').value = s.h;
+    document.getElementById('tog-doch').classList.add('on');
+  }
+  // Colour
+  document.getElementById('val-colour').value = s.colour === 'CMYK' ? 'CMYK' : s.colour === 'RGB' ? 'RGB' : 'either';
+  document.getElementById('tog-colour').classList.add('on');
+}
+
+function updateSkuStrip() {
+  if (!S.sku) { document.getElementById('skuStrip').classList.remove('show'); return; }
+  const s = SKU_SPECS[S.sku];
+  document.getElementById('stripCode').textContent = S.sku;
+  document.getElementById('stripDesc').textContent = s.label;
+  document.getElementById('stripDims').textContent = [
+    s.w ? `${s.w}×${s.h}mm` : 'custom size',
+    `${s.dpi} DPI min`, s.colour,
+    s.sides === 1 ? 'single-sided' : 'double-sided'
+  ].join(' · ');
+  document.getElementById('stripFlags').innerHTML = s.future_flags.map(f =>
+    `<span class="sku-flag">${FLAG_LABELS[f]||f}</span>`
+  ).join('');
+  document.getElementById('skuStrip').classList.add('show');
+}
 
 // ── Initialise from URL param ─────────────────────────────────────────────────
 const _params = new URLSearchParams(window.location.search);
@@ -244,20 +512,13 @@ S.jobId = _params.get('job') || null;
 if (S.jobId) {
   fetch(`/api/job?id=${S.jobId}`).then(r => r.json()).then(async job => {
     if (!job) return;
-
-    // Show job banner
     document.getElementById('jobBanner').classList.add('show');
     document.getElementById('jbRef').textContent      = job.reference     || '—';
     document.getElementById('jbCustomer').textContent = job.customer_name || '—';
     document.getElementById('jbOrder').textContent    = job.order_number  || '—';
-
-    // If stored results exist, show them immediately
     if (job.results) renderResults(job.results, job.assessed_at);
-
-    // If file is in storage, load it ready for re-assess
     if (job.storage_path) {
       setDropZoneState('stored', job.file_name, job.file_type, job.storage_path);
-      // Load file from storage into memory
       try {
         const r = await fetch(`/api/file?path=${encodeURIComponent(job.storage_path)}`);
         if (r.ok) {
@@ -269,25 +530,19 @@ if (S.jobId) {
         }
       } catch(e) { console.error('failed to load stored file', e); }
     } else if (job.assessed_at) {
-      // Assessed but no storage — show drop zone for re-upload
       setDropZoneState('reassess', job.file_name, job.file_type, null);
     } else {
-      // Not yet assessed and no storage — may still be processing
       if (!job.assessed_at) {
         showProgress('Assessment in progress…');
-        // Poll until results arrive (max 60s)
         let attempts = 0;
         const poll = setInterval(async () => {
           attempts++;
           if (attempts > 24) { clearInterval(poll); hideProgress(); return; }
           const updated = await fetch(`/api/job?id=${S.jobId}`).then(r => r.json());
           if (updated && updated.results) {
-            clearInterval(poll);
-            hideProgress();
+            clearInterval(poll); hideProgress();
             renderResults(updated.results, updated.assessed_at);
-            if (updated.storage_path) {
-              document.getElementById('storageBadge').style.display = 'flex';
-            }
+            if (updated.storage_path) document.getElementById('storageBadge').style.display = 'flex';
           }
         }, 2500);
       }
@@ -299,8 +554,16 @@ if (S.jobId) {
 const dz = document.getElementById('dropZone');
 dz.addEventListener('dragover', e => { e.preventDefault(); dz.classList.add('drag-over'); });
 dz.addEventListener('dragleave', () => dz.classList.remove('drag-over'));
-dz.addEventListener('drop', e => { e.preventDefault(); dz.classList.remove('drag-over'); const f = e.dataTransfer.files[0]; if (f) loadFile(f); });
-function handleFile(e) { const f = e.target.files[0]; if (f) loadFile(f); }
+dz.addEventListener('drop', e => {
+  e.preventDefault(); dz.classList.remove('drag-over');
+  const f = e.dataTransfer.files[0];
+  if (f) openSkuModal(f, false);
+});
+function handleFile(e) {
+  const f = e.target.files[0];
+  if (f) openSkuModal(f, false);
+  e.target.value = '';
+}
 
 function bufToB64(buf) {
   const bytes = new Uint8Array(buf);
@@ -327,7 +590,7 @@ async function loadFile(f) {
   } else { alert('Unsupported file type.'); return; }
 
   S.b64 = b64; S.mediaType = mediaType; S.fileName = fileName; S.fileType = fileType;
-  S.storagePath = null; // new file — not stored yet
+  S.storagePath = null;
   document.getElementById('storageBadge').style.display = 'none';
   setDropZoneState('loaded', fileName, fileType, null);
   document.getElementById('runBtn').disabled = false;
@@ -340,7 +603,6 @@ function setDropZoneState(state, fileName, fileType, storagePath) {
   const nameEl = document.getElementById('fileBarName');
   const sb = document.getElementById('storageBadge');
   const dzTitle = document.getElementById('dzTitle');
-
   if (state === 'stored') {
     dzTitle.textContent = 'Drop a different file to replace';
     bar.style.display = 'flex';
@@ -366,18 +628,16 @@ function setDropZoneState(state, fileName, fileType, storagePath) {
 
 function clearFile() {
   S.b64 = null; S.mediaType = null; S.fileName = ''; S.fileType = ''; S.storagePath = null;
+  S.sku = null;
   document.getElementById('fileBar').style.display = 'none';
   document.getElementById('storageBadge').style.display = 'none';
+  document.getElementById('skuStrip').classList.remove('show');
   document.getElementById('fileInput').value = '';
   document.getElementById('runBtn').disabled = true;
   document.getElementById('dzTitle').textContent = 'Drop artwork file here';
 }
 
-function showProgress(msg) {
-  const pa = document.getElementById('progressArea');
-  pa.classList.add('show');
-  document.getElementById('progressMsg').textContent = msg || 'Analysing…';
-}
+function showProgress(msg) { document.getElementById('progressArea').classList.add('show'); document.getElementById('progressMsg').textContent = msg || 'Analysing…'; }
 function hideProgress() { document.getElementById('progressArea').classList.remove('show'); }
 
 // ── Custom checks ─────────────────────────────────────────────────────────────
@@ -403,6 +663,18 @@ function buildPrompt() {
   const isImage = ['PNG','JPG','JPEG'].includes(ft);
   const cfg = { w: isOn('docw') ? val('docw') : null, h: isOn('doch') ? val('doch') : null };
   const checks = [];
+
+  // SKU context block injected at the top of the prompt
+  const skuSpec = S.sku ? SKU_SPECS[S.sku] : null;
+  const skuContext = skuSpec
+    ? `Target SKU: ${S.sku} — ${skuSpec.label}
+Print dimensions: ${skuSpec.w ? skuSpec.w + '×' + skuSpec.h + 'mm' : 'custom size'}
+Minimum DPI: ${skuSpec.dpi}
+Colour profile: ${skuSpec.colour}
+Sided: ${skuSpec.sides === 1 ? 'single-sided' : 'double-sided'}
+Bleed: ${skuSpec.bleed ? skuSpec.bleed + 'mm' : 'none required'}
+${skuSpec.notes ? 'Notes: ' + skuSpec.notes : ''}`
+    : '';
 
   if (isOn('dpi')) checks.push(isImage
     ? `IMAGE RESOLUTION: Assess pixel dimensions relative to expected print output. Minimum ${val('dpi')} DPI. id: "dpi"`
@@ -448,7 +720,7 @@ function buildPrompt() {
   S.customChecks.forEach((c, i) => checks.push(`CUSTOM — ${c} id: "custom_${i}"`));
 
   const fileDesc = isPDF ? 'PDF' : isImage ? ft : 'EPS PostScript';
-  return `You are a print production specialist reviewing a ${fileDesc} file for print readiness. Respond ONLY as a JSON array — no markdown, no preamble.
+  return `You are a print production specialist reviewing a ${fileDesc} file for print readiness.${skuContext ? '\n\n' + skuContext : ''} Respond ONLY as a JSON array — no markdown, no preamble.
 
 Each object: "id", "label" (human name), "status" (pass/fail/warn/info), "headline" (≤12 words), "detail" (1–3 sentences).
 
@@ -492,14 +764,11 @@ async function runAssessment() {
     const now = new Date().toISOString();
     renderResults(results, now);
 
-    // If this is a job, upload to storage (if not already stored) then patch results
     if (S.jobId) {
       const overall   = results.find(r => r.id === 'overall');
       const checks    = results.filter(r => r.id !== 'overall');
       const scorePct  = checks.length ? Math.round(checks.filter(r => r.status === 'pass').length / checks.length * 100) : null;
-      const patch = { assessed_at: now, results, score_pct: scorePct, overall_status: overall?.status || null, file_name: S.fileName, file_type: S.fileType };
-
-      // Upload to storage if not already there
+      const patch = { assessed_at: now, results, score_pct: scorePct, overall_status: overall?.status || null, file_name: S.fileName, file_type: S.fileType, sku: S.sku || null };
       if (!S.storagePath) {
         const extMap = { PDF:'pdf', PNG:'png', JPG:'jpg', JPEG:'jpg', EPS:'eps' };
         const path = `${S.jobId}.${extMap[S.fileType] || 'bin'}`;
@@ -511,7 +780,6 @@ async function runAssessment() {
           if (ur.ok) { patch.storage_path = path; S.storagePath = path; document.getElementById('storageBadge').style.display = 'inline-flex'; }
         } catch(e) { console.error('storage upload failed', e); }
       }
-
       await fetch(`/api/job?id=${S.jobId}`, {
         method: 'PATCH', headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(patch)
