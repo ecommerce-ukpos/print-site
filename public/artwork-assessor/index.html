@@ -10,15 +10,16 @@
   body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",system-ui,sans-serif;background:#FAFAF8;color:#2C2C2A;min-height:100vh;font-size:15px;line-height:1.6}
   nav{border-bottom:1px solid #E8E6DE;padding:0 40px;background:#fff;display:flex;align-items:center;gap:0;height:48px}
   .nav-logo{font-size:14px;font-weight:500;color:#2C2C2A;text-decoration:none;margin-right:24px}
+  .nav-links{display:flex;align-items:stretch;gap:0;height:100%}
   .nav-link{display:flex;align-items:center;padding:0 14px;height:100%;font-size:13px;color:#5F5E5A;text-decoration:none;border-bottom:2px solid transparent}
   .nav-link:hover{color:#2C2C2A}
   .nav-link.active{color:#534AB7;font-weight:500;border-bottom-color:#534AB7}
+  .nav-link.designer{color:#185FA5}
+  .nav-link.designer:hover{color:#0C447C}
   .layout{max-width:960px;margin:0 auto;padding:32px 40px 80px;display:grid;grid-template-columns:1fr 300px;gap:40px;align-items:start}
   @media(max-width:720px){.layout{grid-template-columns:1fr;padding:20px 20px 60px}nav{padding:0 20px}}
   h1{font-size:22px;font-weight:500;margin-bottom:4px;letter-spacing:-0.02em}
   .page-desc{font-size:14px;color:#5F5E5A;margin-bottom:20px}
-
-  /* Job context banner */
   .job-banner{display:none;background:#EEEDFE;border-radius:8px;padding:12px 16px;margin-bottom:20px;gap:20px;flex-wrap:wrap;align-items:center}
   .job-banner.show{display:flex}
   .jb-item{display:flex;flex-direction:column;gap:1px}
@@ -26,8 +27,6 @@
   .jb-val{font-size:13px;font-weight:500;color:#3C3489}
   .jb-back{margin-left:auto;font-size:13px;color:#534AB7;text-decoration:none;white-space:nowrap}
   .jb-back:hover{text-decoration:underline}
-
-  /* File area */
   .file-area{margin-bottom:20px}
   .drop-zone{border:1.5px dashed #C8C6BC;border-radius:10px;padding:32px 24px;text-align:center;cursor:pointer;transition:border-color 0.15s,background 0.15s;background:#fff}
   .drop-zone:hover,.drop-zone.drag-over{border-color:#7F77DD;background:#FAFAFF}
@@ -44,11 +43,7 @@
   .file-name{flex:1;font-weight:500;color:#2C2C2A;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
   .clear-btn{background:none;border:none;cursor:pointer;color:#888780;font-size:18px;line-height:1}
   .clear-btn:hover{color:#2C2C2A}
-
-  /* Storage badge */
   .storage-badge{display:inline-flex;align-items:center;gap:5px;font-size:11px;color:#0F6E56;background:#E1F5EE;padding:3px 8px;border-radius:20px;margin-top:6px}
-
-  /* SKU strip */
   .sku-strip{display:none;align-items:center;gap:10px;padding:9px 14px;background:#EEEDFE;border:1px solid #AFA9EC;border-radius:8px;margin-top:8px;font-size:13px}
   .sku-strip.show{display:flex}
   .sku-code{font-size:11px;font-weight:700;background:#534AB7;color:#fff;padding:2px 7px;border-radius:4px;letter-spacing:0.04em;flex-shrink:0}
@@ -58,23 +53,17 @@
   .sku-flag{font-size:10px;font-weight:500;padding:2px 6px;border-radius:3px;background:#DDD9F5;color:#534AB7}
   .sku-change{background:none;border:none;font-size:12px;color:#534AB7;cursor:pointer;flex-shrink:0;text-decoration:underline}
   .sku-change:hover{color:#3C3489}
-
-  /* Run button */
   .run-btn{margin-top:12px;width:100%;padding:11px 20px;background:#534AB7;color:#fff;border:none;border-radius:8px;font-size:14px;font-weight:500;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:8px;transition:opacity 0.15s}
   .run-btn:hover{opacity:0.88}
   .run-btn:disabled{opacity:0.4;cursor:not-allowed}
   .spinner{width:16px;height:16px;border:2px solid rgba(255,255,255,0.3);border-top-color:#fff;border-radius:50%;animation:spin 0.6s linear infinite;display:inline-block}
   @keyframes spin{to{transform:rotate(360deg)}}
-
-  /* Progress */
   .progress-area{margin-top:16px;display:none}
   .progress-area.show{display:block}
   .progress-bar{height:3px;background:#E8E6DE;border-radius:2px;overflow:hidden;margin-bottom:8px}
   .progress-fill{height:100%;background:#534AB7;border-radius:2px;animation:loadpulse 1.6s ease-in-out infinite}
   @keyframes loadpulse{0%{width:5%}50%{width:75%}100%{width:92%}}
   .progress-msg{font-size:13px;color:#888780}
-
-  /* Results */
   .results-area{margin-top:24px}
   .result-overall{display:flex;align-items:center;gap:10px;padding:14px 16px;border-radius:10px;margin-bottom:16px;font-weight:500;font-size:15px}
   .result-overall.pass{background:#EAF3DE;color:#27500A}
@@ -92,8 +81,6 @@
   .ri-body strong{font-weight:500;display:block;margin-bottom:2px;font-size:13px}
   .ri-body span{font-size:12px;color:#5F5E5A;line-height:1.5}
   .assessed-note{font-size:12px;color:#888780;margin-top:12px;text-align:center}
-
-  /* Sidebar */
   .sidebar{position:sticky;top:24px}
   .sidebar-card{background:#fff;border:1px solid #E8E6DE;border-radius:10px;overflow:hidden}
   .sidebar-section{padding:16px 18px;border-bottom:1px solid #E8E6DE}
@@ -115,8 +102,6 @@
   .custom-item{display:flex;align-items:center;gap:6px;font-size:12px;padding:5px 0;border-bottom:1px solid #F1EFE8}
   .custom-item span{flex:1;color:#5F5E5A}
   .custom-item button{background:none;border:none;cursor:pointer;color:#888780;font-size:15px}
-
-  /* SKU modal */
   .modal-overlay{display:none;position:fixed;inset:0;background:rgba(20,20,18,0.5);z-index:100;align-items:center;justify-content:center;padding:20px;backdrop-filter:blur(2px)}
   .modal-overlay.show{display:flex}
   .modal{background:#fff;border-radius:12px;box-shadow:0 20px 60px rgba(0,0,0,0.15),0 4px 16px rgba(0,0,0,0.08);padding:28px;width:100%;max-width:460px;animation:modal-in 0.16s ease}
@@ -157,7 +142,6 @@
 </head>
 <body>
 
-<!-- ── SKU selection modal ─────────────────────────────────────────────── -->
 <div class="modal-overlay" id="skuModal">
   <div class="modal">
     <div class="modal-eyebrow">Before assessing</div>
@@ -186,8 +170,11 @@
 
 <nav>
   <a class="nav-logo" href="/">UKPOS Print Site</a>
-  <a class="nav-link" href="/dashboard">Dashboard</a>
-  <a class="nav-link active" href="/artwork-assessor">Artwork assessor</a>
+  <div class="nav-links">
+    <a class="nav-link" href="/dashboard">Artwork list</a>
+    <a class="nav-link active" href="/artwork-assessor">Artwork assessor</a>
+    <a class="nav-link designer" href="/designer">Designer</a>
+  </div>
 </nav>
 
 <div class="layout">
@@ -195,15 +182,13 @@
     <h1>Artwork assessor</h1>
     <p class="page-desc">Assess print-readiness of PDF, EPS, PNG, or JPG artwork files.</p>
 
-    <!-- Job context (when opened from dashboard) -->
     <div class="job-banner" id="jobBanner">
       <div class="jb-item"><span class="jb-label">Reference</span><span class="jb-val" id="jbRef">—</span></div>
       <div class="jb-item"><span class="jb-label">Customer</span><span class="jb-val" id="jbCustomer">—</span></div>
       <div class="jb-item"><span class="jb-label">Order</span><span class="jb-val" id="jbOrder">—</span></div>
-      <a class="jb-back" href="/dashboard">← Back to dashboard</a>
+      <a class="jb-back" href="/dashboard">← Back to artwork list</a>
     </div>
 
-    <!-- File upload area -->
     <div class="file-area">
       <div class="drop-zone" id="dropZone" onclick="document.getElementById('fileInput').click()">
         <div class="dz-icon">📂</div>
@@ -211,8 +196,6 @@
         <div class="dz-sub">PDF · EPS · ZIP · PNG · JPG — or click to browse</div>
       </div>
       <input type="file" id="fileInput" accept=".pdf,.eps,.zip,.png,.jpg,.jpeg" onchange="handleFile(event)" />
-
-      <!-- SKU strip — shown after SKU confirmed -->
       <div class="sku-strip" id="skuStrip">
         <span class="sku-code" id="stripCode"></span>
         <div style="flex:1;min-width:0">
@@ -222,7 +205,6 @@
         </div>
         <button class="sku-change" onclick="openSkuModal(S._pendingFileForChange, true)">Change SKU</button>
       </div>
-
       <div id="fileBar" class="file-bar" style="display:none">
         <span class="file-type-badge" id="fileTypeBadge">PDF</span>
         <span class="file-name" id="fileBarName">—</span>
@@ -245,7 +227,6 @@
     <div class="results-area" id="resultsArea"></div>
   </div>
 
-  <!-- Sidebar settings — unchanged from original -->
   <aside class="sidebar">
     <div class="sidebar-card">
       <div class="sidebar-section">
@@ -322,10 +303,6 @@
 </div>
 
 <script>
-// ── SKU specifications ────────────────────────────────────────────────────────
-// future_flags is the hook for Stage 3 pre-production requirements.
-// Current values: cut_lines, vinyl_colour, double_sided
-// These are surfaced in the modal and strip now; they will drive routing logic later.
 const SKU_SPECS = {
   'AS1-A0':  { label:'Acrylic Poster Holder — A0',  w:841,  h:1189, dpi:150, colour:'CMYK', sides:1, bleed:3,  notes:'', future_flags:[] },
   'AS1-A1':  { label:'Acrylic Poster Holder — A1',  w:594,  h:841,  dpi:200, colour:'CMYK', sides:1, bleed:3,  notes:'', future_flags:[] },
@@ -369,19 +346,13 @@ const SKU_SPECS = {
 
 const FLAG_LABELS = { cut_lines:'Cut lines required', vinyl_colour:'White→pink conversion', double_sided:'Double-sided' };
 
-// ── State ─────────────────────────────────────────────────────────────────────
 const S = {
   b64: null, mediaType: null, fileName: '', fileType: '', jobId: null, storagePath: null,
-  customChecks: [],
-  sku: null,            // confirmed SKU code
-  _pendingFile: null,   // File object waiting for SKU confirmation
-  _pendingFileForChange: null  // used by "Change SKU" button
+  customChecks: [], sku: null, _pendingFile: null, _pendingFileForChange: null
 };
 
-// ── SKU modal ─────────────────────────────────────────────────────────────────
 function openSkuModal(file, isChange) {
-  S._pendingFile = file;
-  S._pendingFileForChange = file;
+  S._pendingFile = file; S._pendingFileForChange = file;
   const ext = (file && file.name ? file.name.split('.').pop().toUpperCase() : '');
   document.getElementById('mFileType').textContent = ext;
   document.getElementById('mFileName').textContent = file ? file.name : '';
@@ -393,10 +364,7 @@ function openSkuModal(file, isChange) {
   setTimeout(() => inp.focus(), 80);
 }
 
-function cancelSkuModal() {
-  document.getElementById('skuModal').classList.remove('show');
-  S._pendingFile = null;
-}
+function cancelSkuModal() { document.getElementById('skuModal').classList.remove('show'); S._pendingFile = null; }
 
 function confirmSku() {
   if (!S.sku || !S._pendingFile) return;
@@ -407,7 +375,6 @@ function confirmSku() {
   S._pendingFile = null;
 }
 
-// Dropdown
 const skuInp = document.getElementById('skuInput');
 const skuDd  = document.getElementById('skuDropdown');
 
@@ -446,8 +413,7 @@ function renderDd(q) {
 }
 
 function selectSku(code) {
-  S.sku = code;
-  skuInp.value = code;
+  S.sku = code; skuInp.value = code;
   document.getElementById('skuConfirmBtn').disabled = false;
   const s = SKU_SPECS[code];
   document.getElementById('spCode').textContent = code;
@@ -467,24 +433,16 @@ function selectSku(code) {
 
 function hideSp() { document.getElementById('skuPreview').classList.remove('show'); }
 
-// Apply SKU spec values to the sidebar so they override defaults
 function applySkuToSidebar(code) {
-  const s = SKU_SPECS[code];
-  if (!s) return;
-  // DPI
+  const s = SKU_SPECS[code]; if (!s) return;
   document.getElementById('val-dpi').value = s.dpi;
   document.getElementById('tog-dpi').classList.add('on');
-  // Bleed
   document.getElementById('val-bleed').value = s.bleed;
   document.getElementById('tog-bleed').classList[s.bleed > 0 ? 'add' : 'remove']('on');
-  // Dimensions
   if (s.w) {
-    document.getElementById('val-docw').value = s.w;
-    document.getElementById('tog-docw').classList.add('on');
-    document.getElementById('val-doch').value = s.h;
-    document.getElementById('tog-doch').classList.add('on');
+    document.getElementById('val-docw').value = s.w; document.getElementById('tog-docw').classList.add('on');
+    document.getElementById('val-doch').value = s.h; document.getElementById('tog-doch').classList.add('on');
   }
-  // Colour
   document.getElementById('val-colour').value = s.colour === 'CMYK' ? 'CMYK' : s.colour === 'RGB' ? 'RGB' : 'either';
   document.getElementById('tog-colour').classList.add('on');
 }
@@ -494,18 +452,11 @@ function updateSkuStrip() {
   const s = SKU_SPECS[S.sku];
   document.getElementById('stripCode').textContent = S.sku;
   document.getElementById('stripDesc').textContent = s.label;
-  document.getElementById('stripDims').textContent = [
-    s.w ? `${s.w}×${s.h}mm` : 'custom size',
-    `${s.dpi} DPI min`, s.colour,
-    s.sides === 1 ? 'single-sided' : 'double-sided'
-  ].join(' · ');
-  document.getElementById('stripFlags').innerHTML = s.future_flags.map(f =>
-    `<span class="sku-flag">${FLAG_LABELS[f]||f}</span>`
-  ).join('');
+  document.getElementById('stripDims').textContent = [s.w ? `${s.w}×${s.h}mm` : 'custom size', `${s.dpi} DPI min`, s.colour, s.sides === 1 ? 'single-sided' : 'double-sided'].join(' · ');
+  document.getElementById('stripFlags').innerHTML = s.future_flags.map(f => `<span class="sku-flag">${FLAG_LABELS[f]||f}</span>`).join('');
   document.getElementById('skuStrip').classList.add('show');
 }
 
-// ── Initialise from URL param ─────────────────────────────────────────────────
 const _params = new URLSearchParams(window.location.search);
 S.jobId = _params.get('job') || null;
 
@@ -523,9 +474,7 @@ if (S.jobId) {
         const r = await fetch(`/api/file?path=${encodeURIComponent(job.storage_path)}`);
         if (r.ok) {
           const { b64, mediaType } = await r.json();
-          S.b64 = b64; S.mediaType = mediaType;
-          S.fileName = job.file_name; S.fileType = job.file_type;
-          S.storagePath = job.storage_path;
+          S.b64 = b64; S.mediaType = mediaType; S.fileName = job.file_name; S.fileType = job.file_type; S.storagePath = job.storage_path;
           document.getElementById('runBtn').disabled = false;
         }
       } catch(e) { console.error('failed to load stored file', e); }
@@ -539,35 +488,21 @@ if (S.jobId) {
           attempts++;
           if (attempts > 24) { clearInterval(poll); hideProgress(); return; }
           const updated = await fetch(`/api/job?id=${S.jobId}`).then(r => r.json());
-          if (updated && updated.results) {
-            clearInterval(poll); hideProgress();
-            renderResults(updated.results, updated.assessed_at);
-            if (updated.storage_path) document.getElementById('storageBadge').style.display = 'flex';
-          }
+          if (updated && updated.results) { clearInterval(poll); hideProgress(); renderResults(updated.results, updated.assessed_at); if (updated.storage_path) document.getElementById('storageBadge').style.display = 'flex'; }
         }, 2500);
       }
     }
   }).catch(e => console.error('job load failed', e));
 }
 
-// ── File drop / upload ────────────────────────────────────────────────────────
 const dz = document.getElementById('dropZone');
 dz.addEventListener('dragover', e => { e.preventDefault(); dz.classList.add('drag-over'); });
 dz.addEventListener('dragleave', () => dz.classList.remove('drag-over'));
-dz.addEventListener('drop', e => {
-  e.preventDefault(); dz.classList.remove('drag-over');
-  const f = e.dataTransfer.files[0];
-  if (f) openSkuModal(f, false);
-});
-function handleFile(e) {
-  const f = e.target.files[0];
-  if (f) openSkuModal(f, false);
-  e.target.value = '';
-}
+dz.addEventListener('drop', e => { e.preventDefault(); dz.classList.remove('drag-over'); const f = e.dataTransfer.files[0]; if (f) openSkuModal(f, false); });
+function handleFile(e) { const f = e.target.files[0]; if (f) openSkuModal(f, false); e.target.value = ''; }
 
 function bufToB64(buf) {
-  const bytes = new Uint8Array(buf);
-  let bin = '';
+  const bytes = new Uint8Array(buf); let bin = '';
   for (let i = 0; i < bytes.length; i += 8192) bin += String.fromCharCode(...bytes.subarray(i, i + 8192));
   return btoa(bin);
 }
@@ -575,7 +510,6 @@ function bufToB64(buf) {
 async function loadFile(f) {
   const ext = f.name.split('.').pop().toLowerCase();
   let b64, mediaType, fileName = f.name, fileType = ext.toUpperCase();
-
   if (ext === 'pdf')  { b64 = bufToB64(await f.arrayBuffer()); mediaType = 'application/pdf'; }
   else if (ext === 'png')  { b64 = bufToB64(await f.arrayBuffer()); mediaType = 'image/png'; }
   else if (ext === 'jpg' || ext === 'jpeg') { b64 = bufToB64(await f.arrayBuffer()); mediaType = 'image/jpeg'; fileType = 'JPG'; }
@@ -585,12 +519,9 @@ async function loadFile(f) {
     const zip = await JSZip.loadAsync(f);
     const entry = Object.values(zip.files).find(e => e.name.toLowerCase().endsWith('.eps') && !e.name.startsWith('__MACOSX'));
     if (!entry) { alert('No EPS found in ZIP.'); return; }
-    b64 = btoa(unescape(encodeURIComponent(await entry.async('text'))));
-    mediaType = 'text/plain'; fileType = 'EPS'; fileName = entry.name.split('/').pop();
+    b64 = btoa(unescape(encodeURIComponent(await entry.async('text')))); mediaType = 'text/plain'; fileType = 'EPS'; fileName = entry.name.split('/').pop();
   } else { alert('Unsupported file type.'); return; }
-
-  S.b64 = b64; S.mediaType = mediaType; S.fileName = fileName; S.fileType = fileType;
-  S.storagePath = null;
+  S.b64 = b64; S.mediaType = mediaType; S.fileName = fileName; S.fileType = fileType; S.storagePath = null;
   document.getElementById('storageBadge').style.display = 'none';
   setDropZoneState('loaded', fileName, fileType, null);
   document.getElementById('runBtn').disabled = false;
@@ -598,231 +529,107 @@ async function loadFile(f) {
 }
 
 function setDropZoneState(state, fileName, fileType, storagePath) {
-  const bar = document.getElementById('fileBar');
-  const badge = document.getElementById('fileTypeBadge');
-  const nameEl = document.getElementById('fileBarName');
-  const sb = document.getElementById('storageBadge');
+  const bar = document.getElementById('fileBar'); const badge = document.getElementById('fileTypeBadge');
+  const nameEl = document.getElementById('fileBarName'); const sb = document.getElementById('storageBadge');
   const dzTitle = document.getElementById('dzTitle');
   if (state === 'stored') {
-    dzTitle.textContent = 'Drop a different file to replace';
-    bar.style.display = 'flex';
-    badge.textContent = fileType || '?';
-    badge.className = 'file-type-badge badge-' + (fileType||'').toLowerCase();
-    nameEl.textContent = fileName || '—';
-    sb.style.display = 'inline-flex';
+    dzTitle.textContent = 'Drop a different file to replace'; bar.style.display = 'flex';
+    badge.textContent = fileType||'?'; badge.className = 'file-type-badge badge-'+(fileType||'').toLowerCase();
+    nameEl.textContent = fileName||'—'; sb.style.display = 'inline-flex';
   } else if (state === 'loaded') {
-    dzTitle.textContent = 'Drop a different file to replace';
-    bar.style.display = 'flex';
-    badge.textContent = fileType || '?';
-    badge.className = 'file-type-badge badge-' + (fileType||'').toLowerCase();
-    nameEl.textContent = fileName || '—';
+    dzTitle.textContent = 'Drop a different file to replace'; bar.style.display = 'flex';
+    badge.textContent = fileType||'?'; badge.className = 'file-type-badge badge-'+(fileType||'').toLowerCase(); nameEl.textContent = fileName||'—';
   } else if (state === 'reassess') {
-    dzTitle.textContent = `Re-upload ${fileName} to re-assess`;
-    bar.style.display = 'none';
+    dzTitle.textContent = `Re-upload ${fileName} to re-assess`; bar.style.display = 'none';
   } else {
-    dzTitle.textContent = 'Drop artwork file here';
-    bar.style.display = 'none';
-    sb.style.display = 'none';
+    dzTitle.textContent = 'Drop artwork file here'; bar.style.display = 'none'; sb.style.display = 'none';
   }
 }
 
 function clearFile() {
-  S.b64 = null; S.mediaType = null; S.fileName = ''; S.fileType = ''; S.storagePath = null;
-  S.sku = null;
-  document.getElementById('fileBar').style.display = 'none';
-  document.getElementById('storageBadge').style.display = 'none';
-  document.getElementById('skuStrip').classList.remove('show');
-  document.getElementById('fileInput').value = '';
-  document.getElementById('runBtn').disabled = true;
-  document.getElementById('dzTitle').textContent = 'Drop artwork file here';
+  S.b64 = null; S.mediaType = null; S.fileName = ''; S.fileType = ''; S.storagePath = null; S.sku = null;
+  document.getElementById('fileBar').style.display = 'none'; document.getElementById('storageBadge').style.display = 'none';
+  document.getElementById('skuStrip').classList.remove('show'); document.getElementById('fileInput').value = '';
+  document.getElementById('runBtn').disabled = true; document.getElementById('dzTitle').textContent = 'Drop artwork file here';
 }
 
 function showProgress(msg) { document.getElementById('progressArea').classList.add('show'); document.getElementById('progressMsg').textContent = msg || 'Analysing…'; }
 function hideProgress() { document.getElementById('progressArea').classList.remove('show'); }
 
-// ── Custom checks ─────────────────────────────────────────────────────────────
-function addCustom() {
-  const inp = document.getElementById('customInput');
-  const t = inp.value.trim(); if (!t) return;
-  S.customChecks.push(t); inp.value = ''; renderCustom();
-}
+function addCustom() { const inp = document.getElementById('customInput'); const t = inp.value.trim(); if (!t) return; S.customChecks.push(t); inp.value = ''; renderCustom(); }
 function removeCustom(i) { S.customChecks.splice(i, 1); renderCustom(); }
-function renderCustom() {
-  document.getElementById('customList').innerHTML = S.customChecks.map((c, i) =>
-    `<div class="custom-item"><span>${c}</span><button onclick="removeCustom(${i})">×</button></div>`
-  ).join('');
-}
+function renderCustom() { document.getElementById('customList').innerHTML = S.customChecks.map((c,i) => `<div class="custom-item"><span>${c}</span><button onclick="removeCustom(${i})">×</button></div>`).join(''); }
+function isOn(id) { return document.getElementById('tog-'+id)?.classList.contains('on'); }
+function val(id) { return document.getElementById('val-'+id)?.value || ''; }
 
-function isOn(id) { return document.getElementById('tog-' + id)?.classList.contains('on'); }
-function val(id)  { return document.getElementById('val-' + id)?.value || ''; }
-
-// ── Build prompt ──────────────────────────────────────────────────────────────
 function buildPrompt() {
-  const ft = S.fileType;
-  const isPDF   = ft === 'PDF';
-  const isImage = ['PNG','JPG','JPEG'].includes(ft);
+  const ft = S.fileType; const isPDF = ft === 'PDF'; const isImage = ['PNG','JPG','JPEG'].includes(ft);
   const cfg = { w: isOn('docw') ? val('docw') : null, h: isOn('doch') ? val('doch') : null };
   const checks = [];
-
-  // SKU context block injected at the top of the prompt
   const skuSpec = S.sku ? SKU_SPECS[S.sku] : null;
-  const skuContext = skuSpec
-    ? `Target SKU: ${S.sku} — ${skuSpec.label}
-Print dimensions: ${skuSpec.w ? skuSpec.w + '×' + skuSpec.h + 'mm' : 'custom size'}
-Minimum DPI: ${skuSpec.dpi}
-Colour profile: ${skuSpec.colour}
-Sided: ${skuSpec.sides === 1 ? 'single-sided' : 'double-sided'}
-Bleed: ${skuSpec.bleed ? skuSpec.bleed + 'mm' : 'none required'}
-${skuSpec.notes ? 'Notes: ' + skuSpec.notes : ''}`
-    : '';
-
-  if (isOn('dpi')) checks.push(isImage
-    ? `IMAGE RESOLUTION: Assess pixel dimensions relative to expected print output. Minimum ${val('dpi')} DPI. id: "dpi"`
-    : isPDF
-    ? `IMAGE RESOLUTION: Check all embedded raster images. Minimum ${val('dpi')} DPI. Report actual DPI. If purely vector mark pass. id: "dpi"`
-    : `IMAGE RESOLUTION: Check embedded raster images meet ${val('dpi')} DPI via image dictionary. If entirely vector mark pass. id: "dpi"`);
-
-  if (isOn('pixelation')) checks.push(
-    `PIXELATION / UPSAMPLING: Inspect for blocky pixel grid, jagged staircase edges, or blurry areas from upsampling. id: "pixelation"`);
-
-  if (isOn('bleed')) {
-    const note = cfg.w && cfg.h
-      ? `Expected trim ${cfg.w}×${cfg.h}mm, so with ${val('bleed')}mm bleed artwork should be ${(+cfg.w + +val('bleed')*2).toFixed(1)}×${(+cfg.h + +val('bleed')*2).toFixed(1)}mm.`
-      : `Expected ${val('bleed')}mm bleed on all sides.`;
-    checks.push(`BLEED: ${note} Does artwork include sufficient bleed? id: "bleed"`);
-  }
-
+  const skuContext = skuSpec ? `Target SKU: ${S.sku} — ${skuSpec.label}\nPrint dimensions: ${skuSpec.w ? skuSpec.w+'×'+skuSpec.h+'mm' : 'custom size'}\nMinimum DPI: ${skuSpec.dpi}\nColour profile: ${skuSpec.colour}\nSided: ${skuSpec.sides === 1 ? 'single-sided' : 'double-sided'}\nBleed: ${skuSpec.bleed ? skuSpec.bleed+'mm' : 'none required'}\n${skuSpec.notes ? 'Notes: '+skuSpec.notes : ''}` : '';
+  if (isOn('dpi')) checks.push(isImage ? `IMAGE RESOLUTION: Assess pixel dimensions relative to expected print output. Minimum ${val('dpi')} DPI. id: "dpi"` : isPDF ? `IMAGE RESOLUTION: Check all embedded raster images. Minimum ${val('dpi')} DPI. Report actual DPI. If purely vector mark pass. id: "dpi"` : `IMAGE RESOLUTION: Check embedded raster images meet ${val('dpi')} DPI via image dictionary. If entirely vector mark pass. id: "dpi"`);
+  if (isOn('pixelation')) checks.push(`PIXELATION / UPSAMPLING: Inspect for blocky pixel grid, jagged staircase edges, or blurry areas from upsampling. id: "pixelation"`);
+  if (isOn('bleed')) { const note = cfg.w && cfg.h ? `Expected trim ${cfg.w}×${cfg.h}mm, so with ${val('bleed')}mm bleed artwork should be ${(+cfg.w + +val('bleed')*2).toFixed(1)}×${(+cfg.h + +val('bleed')*2).toFixed(1)}mm.` : `Expected ${val('bleed')}mm bleed on all sides.`; checks.push(`BLEED: ${note} Does artwork include sufficient bleed? id: "bleed"`); }
   if (isOn('docw') && cfg.w) checks.push(`DOCUMENT WIDTH: Expected trim width ${cfg.w}mm. Report actual width and match within 1mm. id: "docw"`);
   if (isOn('doch') && cfg.h) checks.push(`DOCUMENT HEIGHT: Expected trim height ${cfg.h}mm. Report actual height and match within 1mm. id: "doch"`);
-
-  if (isOn('colour') && val('colour') !== 'either') checks.push(isImage
-    ? `COLOUR MODE: PNG/JPG are typically RGB — flag as warn since ${val('colour')} is expected for print. id: "colour"`
-    : isPDF
-    ? `COLOUR MODE: Expected ${val('colour')}. Inspect colour spaces in PDF. id: "colour"`
-    : `COLOUR MODE: Expected ${val('colour')}. Check PostScript colour operators. id: "colour"`);
-
-  if (isOn('whiteedge')) checks.push(
-    `WHITE EDGE: Inspect all four edges for thin white or light strip — artwork not extended to bleed line. Even 1–3mm is FAIL. id: "white_edge"`);
-
-  if (isOn('safezone')) checks.push(
-    `SAFE ZONE: Any text, logos, or important elements within ~5mm of trim edge? id: "safe_zone"`);
-
-  if (isOn('fonts')) checks.push(isImage
-    ? `FONTS: Does visible text appear sharp, or show rasterisation artefacts? id: "fonts"`
-    : isPDF
-    ? `FONTS: All fonts fully embedded or outlined in PDF? Missing = FAIL. id: "fonts"`
-    : `FONTS: Fonts fully embedded or outlined in EPS? Unembedded = FAIL. id: "fonts"`);
-
-  if (isOn('transparency')) checks.push(isImage
-    ? `TRANSPARENCY: Any transparent areas (alpha channel)? Can cause unexpected backgrounds on press. id: "transparency"`
-    : `TRANSPARENCY / OVERPRINT: Any unflattened transparency or overprint that could cause press issues? id: "transparency"`);
-
-  S.customChecks.forEach((c, i) => checks.push(`CUSTOM — ${c} id: "custom_${i}"`));
-
+  if (isOn('colour') && val('colour') !== 'either') checks.push(isImage ? `COLOUR MODE: PNG/JPG are typically RGB — flag as warn since ${val('colour')} is expected for print. id: "colour"` : isPDF ? `COLOUR MODE: Expected ${val('colour')}. Inspect colour spaces in PDF. id: "colour"` : `COLOUR MODE: Expected ${val('colour')}. Check PostScript colour operators. id: "colour"`);
+  if (isOn('whiteedge')) checks.push(`WHITE EDGE: Inspect all four edges for thin white or light strip — artwork not extended to bleed line. Even 1–3mm is FAIL. id: "white_edge"`);
+  if (isOn('safezone')) checks.push(`SAFE ZONE: Any text, logos, or important elements within ~5mm of trim edge? id: "safe_zone"`);
+  if (isOn('fonts')) checks.push(isImage ? `FONTS: Does visible text appear sharp, or show rasterisation artefacts? id: "fonts"` : isPDF ? `FONTS: All fonts fully embedded or outlined in PDF? Missing = FAIL. id: "fonts"` : `FONTS: Fonts fully embedded or outlined in EPS? Unembedded = FAIL. id: "fonts"`);
+  if (isOn('transparency')) checks.push(isImage ? `TRANSPARENCY: Any transparent areas (alpha channel)? Can cause unexpected backgrounds on press. id: "transparency"` : `TRANSPARENCY / OVERPRINT: Any unflattened transparency or overprint that could cause press issues? id: "transparency"`);
+  S.customChecks.forEach((c,i) => checks.push(`CUSTOM — ${c} id: "custom_${i}"`));
   const fileDesc = isPDF ? 'PDF' : isImage ? ft : 'EPS PostScript';
-  return `You are a print production specialist reviewing a ${fileDesc} file for print readiness.${skuContext ? '\n\n' + skuContext : ''} Respond ONLY as a JSON array — no markdown, no preamble.
-
-Each object: "id", "label" (human name), "status" (pass/fail/warn/info), "headline" (≤12 words), "detail" (1–3 sentences).
-
-Checks:
-${checks.map((c, i) => `${i+1}. ${c}`).join('\n')}
-
-Final object: id "overall", label "Overall verdict", status from any fails, brief headline and detail.
-
-JSON array only.`;
+  return `You are a print production specialist reviewing a ${fileDesc} file for print readiness.${skuContext ? '\n\n'+skuContext : ''} Respond ONLY as a JSON array — no markdown, no preamble.\n\nEach object: "id", "label" (human name), "status" (pass/fail/warn/info), "headline" (≤12 words), "detail" (1–3 sentences).\n\nChecks:\n${checks.map((c,i) => `${i+1}. ${c}`).join('\n')}\n\nFinal object: id "overall", label "Overall verdict", status from any fails, brief headline and detail.\n\nJSON array only.`;
 }
 
-// ── Run assessment ────────────────────────────────────────────────────────────
 async function runAssessment() {
   if (!S.b64) return;
   const btn = document.getElementById('runBtn');
-  btn.disabled = true;
-  document.getElementById('runLabel').innerHTML = '<span class="spinner"></span> Assessing…';
+  btn.disabled = true; document.getElementById('runLabel').innerHTML = '<span class="spinner"></span> Assessing…';
   showProgress(['PNG','JPG','JPEG'].includes(S.fileType) ? 'Inspecting image…' : S.fileType === 'PDF' ? 'Inspecting PDF…' : 'Reading PostScript…');
   document.getElementById('resultsArea').innerHTML = '';
-
   try {
     const isImage = ['PNG','JPG','JPEG'].includes(S.fileType);
-    const contentBlock = isImage
-      ? { type: 'image',    source: { type: 'base64', media_type: S.mediaType, data: S.b64 } }
-      : { type: 'document', source: { type: 'base64', media_type: S.mediaType, data: S.b64 } };
-
-    const resp = await fetch('/api/assess', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        model: 'claude-sonnet-4-5',
-        max_tokens: 1500,
-        messages: [{ role: 'user', content: [contentBlock, { type: 'text', text: buildPrompt() }] }]
-      })
-    });
+    const contentBlock = isImage ? { type:'image', source:{ type:'base64', media_type:S.mediaType, data:S.b64 } } : { type:'document', source:{ type:'base64', media_type:S.mediaType, data:S.b64 } };
+    const resp = await fetch('/api/assess', { method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify({ model:'claude-sonnet-4-5', max_tokens:1500, messages:[{ role:'user', content:[contentBlock,{type:'text',text:buildPrompt()}] }] }) });
     const data = await resp.json();
     if (data.error) throw new Error(data.error.message || JSON.stringify(data.error));
-    const raw = (data.content || []).filter(b => b.type === 'text').map(b => b.text).join('');
-    const results = JSON.parse(raw.replace(/```json|```/g, '').trim());
-
+    const raw = (data.content||[]).filter(b=>b.type==='text').map(b=>b.text).join('');
+    const results = JSON.parse(raw.replace(/```json|```/g,'').trim());
     const now = new Date().toISOString();
     renderResults(results, now);
-
     if (S.jobId) {
-      const overall   = results.find(r => r.id === 'overall');
-      const checks    = results.filter(r => r.id !== 'overall');
-      const scorePct  = checks.length ? Math.round(checks.filter(r => r.status === 'pass').length / checks.length * 100) : null;
-      const patch = { assessed_at: now, results, score_pct: scorePct, overall_status: overall?.status || null, file_name: S.fileName, file_type: S.fileType, sku: S.sku || null };
+      const overall = results.find(r=>r.id==='overall'); const checks = results.filter(r=>r.id!=='overall');
+      const scorePct = checks.length ? Math.round(checks.filter(r=>r.status==='pass').length/checks.length*100) : null;
+      const patch = { assessed_at:now, results, score_pct:scorePct, overall_status:overall?.status||null, file_name:S.fileName, file_type:S.fileType, sku:S.sku||null };
       if (!S.storagePath) {
-        const extMap = { PDF:'pdf', PNG:'png', JPG:'jpg', JPEG:'jpg', EPS:'eps' };
-        const path = `${S.jobId}.${extMap[S.fileType] || 'bin'}`;
+        const extMap = {PDF:'pdf',PNG:'png',JPG:'jpg',JPEG:'jpg',EPS:'eps'};
+        const path = `${S.jobId}.${extMap[S.fileType]||'bin'}`;
         try {
-          const ur = await fetch('/api/upload', {
-            method: 'POST', headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ path, mediaType: S.mediaType, data: S.b64 })
-          });
+          const ur = await fetch('/api/upload', { method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify({ path, mediaType:S.mediaType, data:S.b64 }) });
           if (ur.ok) { patch.storage_path = path; S.storagePath = path; document.getElementById('storageBadge').style.display = 'inline-flex'; }
         } catch(e) { console.error('storage upload failed', e); }
       }
-      await fetch(`/api/job?id=${S.jobId}`, {
-        method: 'PATCH', headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(patch)
-      });
+      await fetch(`/api/job?id=${S.jobId}`, { method:'PATCH', headers:{'Content-Type':'application/json'}, body:JSON.stringify(patch) });
     }
   } catch(e) {
-    document.getElementById('resultsArea').innerHTML =
-      `<div class="result-item fail"><span class="ri-icon">❌</span><div class="ri-body"><strong>Assessment failed</strong><span>${e.message}</span></div></div>`;
+    document.getElementById('resultsArea').innerHTML = `<div class="result-item fail"><span class="ri-icon">❌</span><div class="ri-body"><strong>Assessment failed</strong><span>${e.message}</span></div></div>`;
   }
-
-  hideProgress();
-  btn.disabled = false;
-  document.getElementById('runLabel').textContent = 'Re-assess';
+  hideProgress(); btn.disabled = false; document.getElementById('runLabel').textContent = 'Re-assess';
 }
 
-// ── Render results ────────────────────────────────────────────────────────────
 function renderResults(results, assessedAt) {
-  const overall = results.find(r => r.id === 'overall');
-  const checks  = results.filter(r => r.id !== 'overall');
-  const icons   = { pass:'✅', fail:'❌', warn:'⚠️', info:'ℹ️' };
+  const overall = results.find(r=>r.id==='overall'); const checks = results.filter(r=>r.id!=='overall');
+  const icons = {pass:'✅',fail:'❌',warn:'⚠️',info:'ℹ️'};
   let html = '';
-
   if (overall) {
-    const pct = checks.length ? Math.round(checks.filter(r => r.status === 'pass').length / checks.length * 100) : null;
-    html += `<div class="result-overall ${overall.status}">
-      <span class="ov-icon">${icons[overall.status]||'ℹ️'}</span>
-      <span>${overall.headline}</span>
-      <span class="ov-meta">${pct !== null ? pct + '% passed' : ''}${assessedAt ? '<br>' + new Date(assessedAt).toLocaleString('en-GB',{day:'2-digit',month:'short',hour:'2-digit',minute:'2-digit'}) : ''}</span>
-    </div>`;
+    const pct = checks.length ? Math.round(checks.filter(r=>r.status==='pass').length/checks.length*100) : null;
+    html += `<div class="result-overall ${overall.status}"><span class="ov-icon">${icons[overall.status]||'ℹ️'}</span><span>${overall.headline}</span><span class="ov-meta">${pct!==null?pct+'% passed':''}${assessedAt?'<br>'+new Date(assessedAt).toLocaleString('en-GB',{day:'2-digit',month:'short',hour:'2-digit',minute:'2-digit'}):''}</span></div>`;
   }
-
-  if (overall?.detail) {
-    html += `<p style="font-size:13px;color:#5F5E5A;margin-bottom:14px;line-height:1.6">${overall.detail}</p>`;
-  }
-
+  if (overall?.detail) html += `<p style="font-size:13px;color:#5F5E5A;margin-bottom:14px;line-height:1.6">${overall.detail}</p>`;
   html += '<div class="checks-label">Check results</div>';
-  checks.forEach(r => {
-    html += `<div class="result-item ${r.status}">
-      <span class="ri-icon">${icons[r.status]||'ℹ️'}</span>
-      <div class="ri-body"><strong>${r.label}</strong><span>${r.headline}${r.detail ? ' — ' + r.detail : ''}</span></div>
-    </div>`;
-  });
-
+  checks.forEach(r => { html += `<div class="result-item ${r.status}"><span class="ri-icon">${icons[r.status]||'ℹ️'}</span><div class="ri-body"><strong>${r.label}</strong><span>${r.headline}${r.detail?' — '+r.detail:''}</span></div></div>`; });
   document.getElementById('resultsArea').innerHTML = html;
   document.getElementById('runLabel').textContent = 'Re-assess';
   document.getElementById('runBtn').disabled = !S.b64;
