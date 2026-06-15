@@ -20,99 +20,32 @@
     align-items: center;
     gap: 12px;
   }
-  header .wordmark {
-    font-size: 15px;
-    font-weight: 500;
-    color: #2C2C2A;
-    letter-spacing: -0.01em;
-  }
+  header .wordmark { font-size: 15px; font-weight: 500; color: #2C2C2A; letter-spacing: -0.01em; }
   header .divider { color: #D3D1C7; }
   header .subtitle { font-size: 14px; color: #888780; }
-  main {
-    max-width: 860px;
-    margin: 0 auto;
-    padding: 56px 40px 80px;
-  }
-  h1 {
-    font-size: 28px;
-    font-weight: 500;
-    margin-bottom: 8px;
-    letter-spacing: -0.02em;
-  }
-  .intro {
-    font-size: 15px;
-    color: #5F5E5A;
-    margin-bottom: 48px;
-    line-height: 1.6;
-  }
-  .section-label {
-    font-size: 11px;
-    font-weight: 500;
-    text-transform: uppercase;
-    letter-spacing: 0.08em;
-    color: #888780;
-    margin-bottom: 16px;
-  }
-  .tools-grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
-    gap: 16px;
-    margin-bottom: 48px;
-  }
+  main { max-width: 860px; margin: 0 auto; padding: 56px 40px 80px; }
+  h1 { font-size: 28px; font-weight: 500; margin-bottom: 8px; letter-spacing: -0.02em; }
+  .intro { font-size: 15px; color: #5F5E5A; margin-bottom: 48px; line-height: 1.6; }
+  .section-label { font-size: 11px; font-weight: 500; text-transform: uppercase; letter-spacing: 0.08em; color: #888780; margin-bottom: 16px; }
+  .tools-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap: 16px; margin-bottom: 48px; }
   .tool-card {
-    background: #fff;
-    border: 1px solid #E8E6DE;
-    border-radius: 10px;
-    padding: 20px 22px;
-    text-decoration: none;
-    color: inherit;
-    display: block;
-    transition: border-color 0.15s, box-shadow 0.15s;
+    background: #fff; border: 1px solid #E8E6DE; border-radius: 10px; padding: 20px 22px;
+    text-decoration: none; color: inherit; display: block; transition: border-color 0.15s, box-shadow 0.15s;
   }
-  .tool-card:hover {
-    border-color: #AFA9EC;
-    box-shadow: 0 2px 12px rgba(83,74,183,0.08);
-  }
+  .tool-card:hover { border-color: #AFA9EC; box-shadow: 0 2px 12px rgba(83,74,183,0.08); }
   .tool-card .icon {
-    width: 36px;
-    height: 36px;
-    border-radius: 8px;
-    background: #EEEDFE;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    margin-bottom: 14px;
-    font-size: 18px;
+    width: 36px; height: 36px; border-radius: 8px; background: #EEEDFE;
+    display: flex; align-items: center; justify-content: center; margin-bottom: 14px; font-size: 18px;
   }
-  .tool-card .name {
-    font-size: 15px;
-    font-weight: 500;
-    margin-bottom: 4px;
-  }
-  .tool-card .desc {
-    font-size: 13px;
-    color: #5F5E5A;
-    line-height: 1.5;
-  }
+  .tool-card .name { font-size: 15px; font-weight: 500; margin-bottom: 4px; }
+  .tool-card .desc { font-size: 13px; color: #5F5E5A; line-height: 1.5; }
   .tool-card .badge {
-    display: inline-block;
-    font-size: 10px;
-    font-weight: 500;
-    padding: 2px 7px;
-    border-radius: 20px;
-    background: #EAF3DE;
-    color: #3B6D11;
-    margin-top: 10px;
+    display: inline-block; font-size: 10px; font-weight: 500; padding: 2px 7px;
+    border-radius: 20px; background: #EAF3DE; color: #3B6D11; margin-top: 10px;
   }
-  .tool-card .badge.wip {
-    background: #FAEEDA;
-    color: #854F0B;
-  }
-  .coming-soon {
-    opacity: 0.5;
-    pointer-events: none;
-    cursor: default;
-  }
+  .tool-card .badge.wip { background: #FAEEDA; color: #854F0B; }
+  .tool-card .badge.internal { background: #E6F1FB; color: #185FA5; }
+  .coming-soon { opacity: 0.5; pointer-events: none; cursor: default; }
 </style>
 </head>
 <body>
@@ -122,7 +55,7 @@
   <span class="divider">/</span>
   <span class="subtitle">Print Site</span>
   <span style="flex:1"></span>
-  <a href="/dashboard" style="font-size:13px;color:#534AB7;text-decoration:none;font-weight:500">Go to dashboard →</a>
+  <a href="/designer" style="font-size:13px;color:#534AB7;text-decoration:none;font-weight:500">Go to Designer →</a>
 </header>
 
 <main>
@@ -137,16 +70,22 @@
       <div class="desc">Upload an EPS or ZIP and check it against print standards — DPI, bleed, colour mode, pixelation, white edges, and more.</div>
       <span class="badge">Live</span>
     </a>
+    <a href="/designer" class="tool-card">
+      <div class="icon">🎛️</div>
+      <div class="name">Designer</div>
+      <div class="desc">Position and validate customer artwork against the SKU template with live bleed guides, scale controls, and layer compositing.</div>
+      <span class="badge internal">Internal tool</span>
+    </a>
     <div class="tool-card coming-soon">
       <div class="icon">✏️</div>
       <div class="name">AI artwork generator</div>
-      <div class="desc">Journey A — generate print-ready artwork from a customer prompt, constrained to SKU template dimensions.</div>
+      <div class="desc">Option A — generate print-ready artwork from a customer prompt, constrained to SKU template dimensions.</div>
       <span class="badge wip">Coming soon</span>
     </div>
     <div class="tool-card coming-soon">
       <div class="icon">🖼️</div>
       <div class="name">AI artwork composer</div>
-      <div class="desc">Journey B — compose artwork from customer-uploaded assets, fitted and validated against the SKU template.</div>
+      <div class="desc">Option B — compose artwork from customer-uploaded assets, fitted and validated against the SKU template.</div>
       <span class="badge wip">Coming soon</span>
     </div>
   </div>
