@@ -3,19 +3,21 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Dashboard — UKPOS Print Site</title>
+<title>Artwork List — UKPOS Print Site</title>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
 <style>
   *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
   body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",system-ui,sans-serif;background:#FAFAF8;color:#2C2C2A;min-height:100vh;font-size:14px}
 
-  /* Nav */
   nav{border-bottom:1px solid #E8E6DE;padding:0 32px;background:#fff;display:flex;align-items:center;gap:0;height:48px}
   .nav-logo{font-size:14px;font-weight:500;color:#2C2C2A;text-decoration:none;margin-right:24px;white-space:nowrap}
   .nav-links{display:flex;align-items:stretch;gap:0;height:100%}
   .nav-link{display:flex;align-items:center;padding:0 14px;font-size:13px;color:#5F5E5A;text-decoration:none;border-bottom:2px solid transparent;white-space:nowrap;transition:color 0.12s}
   .nav-link:hover{color:#2C2C2A}
   .nav-link.active{color:#534AB7;border-bottom-color:#534AB7;font-weight:500}
+  .nav-link.designer{color:#185FA5}
+  .nav-link.designer:hover{color:#0C447C}
+  .nav-link.designer.active{color:#185FA5;border-bottom-color:#185FA5}
   .nav-spacer{flex:1}
   .nav-actions{display:flex;align-items:center;gap:8px}
 
@@ -41,7 +43,6 @@
   .controls-bar .label{font-size:11px;color:#888780;font-weight:500;text-transform:uppercase;letter-spacing:0.06em;margin-right:2px}
   .col-pill{padding:3px 9px;font-size:11px;border-radius:20px;cursor:pointer;border:1px solid #E8E6DE;background:#F1EFE8;color:#5F5E5A;white-space:nowrap}
   .col-pill.on{background:#EEEDFE;color:#534AB7;border-color:#AFA9EC}
-  .controls-sep{width:1px;height:20px;background:#E8E6DE;margin:0 4px}
 
   .table-wrap{margin:0 32px;overflow-x:auto}
   table{width:100%;border-collapse:collapse;background:#fff;border:1px solid #E8E6DE;border-radius:10px;overflow:hidden;min-width:900px}
@@ -78,10 +79,11 @@
   .actions-cell{display:flex;align-items:center;gap:6px;white-space:nowrap}
   .view-btn{padding:4px 10px;font-size:12px;border-radius:6px;cursor:pointer;border:1px solid #E8E6DE;background:#fff;color:#534AB7;font-weight:500}
   .view-btn:hover{background:#EEEDFE;border-color:#AFA9EC}
+  .design-btn{padding:4px 10px;font-size:12px;border-radius:6px;cursor:pointer;border:1px solid #B5D4F4;background:#fff;color:#185FA5;font-weight:500}
+  .design-btn:hover{background:#E6F1FB;border-color:#85B7EB}
   .del-btn{padding:4px 8px;font-size:12px;border-radius:6px;cursor:pointer;border:1px solid #F09595;background:#fff;color:#A32D2D;font-weight:500}
   .del-btn:hover{background:#FCEBEB}
 
-  /* Pagination */
   .pagination{margin:16px 32px 40px;display:flex;align-items:center;gap:8px;flex-wrap:wrap}
   .pagination .pg-info{font-size:13px;color:#888780;margin-right:auto}
   .pagination .pg-size{display:flex;align-items:center;gap:6px;font-size:13px;color:#5F5E5A}
@@ -89,13 +91,11 @@
   .pg-btn{padding:5px 10px;font-size:13px;border-radius:6px;cursor:pointer;border:1px solid #E8E6DE;background:#fff;color:#2C2C2A}
   .pg-btn:hover{background:#F1EFE8}
   .pg-btn:disabled{opacity:0.4;cursor:not-allowed}
-  .pg-btn.active{background:#534AB7;color:#fff;border-color:#534AB7}
 
   .empty-state{padding:60px 32px;text-align:center;color:#888780}
   .empty-state .es-icon{font-size:32px;margin-bottom:12px}
   .empty-state p{font-size:14px}
 
-  /* Delete modal */
   .modal-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,0.45);z-index:100;align-items:center;justify-content:center}
   .modal-overlay.show{display:flex}
   .modal{background:#fff;border-radius:12px;padding:28px;width:380px;max-width:90vw}
@@ -115,8 +115,9 @@
 <nav>
   <a class="nav-logo" href="/">UKPOS Print Site</a>
   <div class="nav-links">
-    <a class="nav-link active" href="/dashboard">Dashboard</a>
+    <a class="nav-link active" href="/dashboard">Artwork list</a>
     <a class="nav-link" href="/artwork-assessor">Artwork assessor</a>
+    <a class="nav-link designer" href="/designer">Designer</a>
   </div>
   <span class="nav-spacer"></span>
   <div class="nav-actions">
@@ -128,7 +129,7 @@
 </nav>
 
 <div class="page-header">
-  <h1>Artwork jobs</h1>
+  <h1>Artwork list</h1>
   <button class="btn" onclick="loadJobs()">↻ Refresh</button>
 </div>
 
@@ -196,7 +197,6 @@
   <button class="pg-btn" id="pgNext" onclick="changePage(1)">Next →</button>
 </div>
 
-<!-- Delete confirmation modal -->
 <div class="modal-overlay" id="deleteModal">
   <div class="modal">
     <h2>Delete job</h2>
@@ -227,19 +227,14 @@ function toggleCol(btn) {
 }
 
 function applyColVisibility() {
-  document.querySelectorAll('.check-col').forEach(th => {
-    th.style.display = hiddenCols.has(th.dataset.col) ? 'none' : '';
-  });
-  document.querySelectorAll('.check-td').forEach(td => {
-    td.style.display = hiddenCols.has(td.dataset.col) ? 'none' : '';
-  });
+  document.querySelectorAll('.check-col').forEach(th => { th.style.display = hiddenCols.has(th.dataset.col) ? 'none' : ''; });
+  document.querySelectorAll('.check-td').forEach(td => { td.style.display = hiddenCols.has(td.dataset.col) ? 'none' : ''; });
 }
 
 function fmtDate(iso) {
   if (!iso) return '—';
   const d = new Date(iso);
-  return d.toLocaleDateString('en-GB', {day:'2-digit',month:'short'}) + ' ' +
-         d.toLocaleTimeString('en-GB', {hour:'2-digit',minute:'2-digit'});
+  return d.toLocaleDateString('en-GB', {day:'2-digit',month:'short'}) + ' ' + d.toLocaleTimeString('en-GB', {hour:'2-digit',minute:'2-digit'});
 }
 
 function checkIcon(results, id) {
@@ -266,6 +261,7 @@ function renderRow(job) {
   const badgeSrc  = 'badge-' + (job.source||'manual').toLowerCase().replace(/\s/g,'');
   const ref = (job.reference||'').replace(/</g,'&lt;');
   const fname = (job.file_name||'').replace(/</g,'&lt;');
+  const skuParam = job.sku ? `&sku=${encodeURIComponent(job.sku)}` : '';
 
   const checkCells = CHECK_COLS.map(col => {
     const hidden = hiddenCols.has(col) ? ' style="display:none"' : '';
@@ -284,8 +280,9 @@ function renderRow(job) {
     <td>${scoreHtml}</td>
     ${checkCells}
     <td><div class="actions-cell">
-      <button class="view-btn" onclick="openJob('${job.id}')">View →</button>
-      <button class="del-btn"  onclick="openDeleteModal('${job.id}','${ref}')">✕</button>
+      <button class="view-btn" onclick="openJob('${job.id}')">Assess →</button>
+      <button class="design-btn" onclick="openDesigner('${job.id}','${ref}','${encodeURIComponent(job.file_name||'')}','${job.sku||''}')">Design →</button>
+      <button class="del-btn" onclick="openDeleteModal('${job.id}','${ref}')">✕</button>
     </div></td>
   </tr>`;
 }
@@ -295,7 +292,6 @@ function renderTable() {
   const total = allJobs.length;
   const totalPages = Math.max(1, Math.ceil(total / pageSize));
   if (currentPage > totalPages) currentPage = totalPages;
-
   const start = (currentPage - 1) * pageSize;
   const pageJobs = allJobs.slice(start, start + pageSize);
 
@@ -306,7 +302,6 @@ function renderTable() {
   }
   applyColVisibility();
 
-  // Pagination controls
   const showing = total ? `${start + 1}–${Math.min(start + pageSize, total)} of ${total} jobs` : '0 jobs';
   document.getElementById('pgInfo').textContent = showing;
   document.getElementById('pgPages').textContent = `Page ${currentPage} of ${totalPages}`;
@@ -314,17 +309,8 @@ function renderTable() {
   document.getElementById('pgNext').disabled = currentPage >= totalPages;
 }
 
-function changePage(dir) {
-  currentPage += dir;
-  renderTable();
-  window.scrollTo(0, 0);
-}
-
-function changePageSize(val) {
-  pageSize = parseInt(val);
-  currentPage = 1;
-  renderTable();
-}
+function changePage(dir) { currentPage += dir; renderTable(); window.scrollTo(0,0); }
+function changePageSize(val) { pageSize = parseInt(val); currentPage = 1; renderTable(); }
 
 async function loadJobs() {
   document.getElementById('jobBody').innerHTML =
@@ -335,14 +321,16 @@ async function loadJobs() {
     allJobs = Array.isArray(data) ? data : [];
     currentPage = 1;
     renderTable();
-  } catch(e) {
-    console.error('loadJobs failed', e);
-  }
+  } catch(e) { console.error('loadJobs failed', e); }
 }
 
 function openJob(id) { window.location.href = `/artwork-assessor?job=${id}`; }
+function openDesigner(id, ref, fileName, sku) {
+  const params = new URLSearchParams({ job: id });
+  if (sku) params.set('sku', sku);
+  window.location.href = `/designer?${params.toString()}`;
+}
 
-// Delete modal
 function openDeleteModal(id, ref) {
   pendingDeleteId = id;
   document.getElementById('deleteRef').textContent = ref;
@@ -353,10 +341,7 @@ function openDeleteModal(id, ref) {
   setTimeout(() => document.getElementById('deleteConfirmInput').focus(), 50);
 }
 
-function closeDeleteModal() {
-  document.getElementById('deleteModal').classList.remove('show');
-  pendingDeleteId = null;
-}
+function closeDeleteModal() { document.getElementById('deleteModal').classList.remove('show'); pendingDeleteId = null; }
 
 function validateDeleteInput(inp) {
   const ok = inp.value.trim() === 'DELETE';
@@ -370,38 +355,22 @@ async function confirmDelete() {
   closeDeleteModal();
   try {
     const r = await fetch(`/api/job?id=${id}`, { method: 'DELETE' });
-    if (r.ok) {
-      allJobs = allJobs.filter(j => j.id !== id);
-      renderTable();
-      showToast('Job deleted');
-    } else {
-      showToast('Delete failed — try again');
-    }
-  } catch(e) {
-    showToast('Delete failed: ' + e.message);
-  }
+    if (r.ok) { allJobs = allJobs.filter(j => j.id !== id); renderTable(); showToast('Job deleted'); }
+    else showToast('Delete failed — try again');
+  } catch(e) { showToast('Delete failed: ' + e.message); }
 }
 
-// Close modal on overlay click
-document.getElementById('deleteModal').addEventListener('click', function(e) {
-  if (e.target === this) closeDeleteModal();
-});
-
-// Keyboard: Escape closes modal, Enter confirms if valid
+document.getElementById('deleteModal').addEventListener('click', function(e) { if (e.target === this) closeDeleteModal(); });
 document.addEventListener('keydown', e => {
   if (e.key === 'Escape') closeDeleteModal();
   if (e.key === 'Enter' && !document.getElementById('deleteConfirmBtn').disabled) confirmDelete();
 });
 
-// ── Utilities ────────────────────────────────────────────────────────────────
-
 function bufToB64(buf) {
   const bytes = new Uint8Array(buf);
   let binary = '';
   const chunk = 8192;
-  for (let i = 0; i < bytes.length; i += chunk) {
-    binary += String.fromCharCode(...bytes.subarray(i, i + chunk));
-  }
+  for (let i = 0; i < bytes.length; i += chunk) binary += String.fromCharCode(...bytes.subarray(i, i + chunk));
   return btoa(binary);
 }
 
@@ -413,17 +382,13 @@ async function encodeFile(f) {
   if (ext === 'pdf')  return { b64: bufToB64(await f.arrayBuffer()), mediaType: 'application/pdf', fileType: 'PDF', fileName: f.name };
   if (ext === 'png')  return { b64: bufToB64(await f.arrayBuffer()), mediaType: 'image/png',        fileType: 'PNG', fileName: f.name };
   if (ext === 'jpg' || ext === 'jpeg') return { b64: bufToB64(await f.arrayBuffer()), mediaType: 'image/jpeg', fileType: 'JPG', fileName: f.name };
-  if (ext === 'eps')  {
-    const text = await f.text();
-    return { b64: btoa(unescape(encodeURIComponent(text))), mediaType: 'text/plain', fileType: 'EPS', fileName: f.name };
-  }
+  if (ext === 'eps')  { const text = await f.text(); return { b64: btoa(unescape(encodeURIComponent(text))), mediaType: 'text/plain', fileType: 'EPS', fileName: f.name }; }
   if (ext === 'zip' && typeof JSZip !== 'undefined') {
     const zip = await JSZip.loadAsync(f);
     const entry = Object.values(zip.files).find(e => e.name.toLowerCase().endsWith('.eps') && !e.name.startsWith('__MACOSX'));
     if (!entry) throw new Error('No EPS found in ZIP');
     const text = await entry.async('text');
-    const fileName = entry.name.split('/').pop();
-    return { b64: btoa(unescape(encodeURIComponent(text))), mediaType: 'text/plain', fileType: 'EPS', fileName };
+    return { b64: btoa(unescape(encodeURIComponent(text))), mediaType: 'text/plain', fileType: 'EPS', fileName: entry.name.split('/').pop() };
   }
   throw new Error('Unsupported file type: ' + ext);
 }
@@ -432,173 +397,93 @@ function buildAssessmentPrompt(fileType) {
   const isPDF = fileType === 'PDF';
   const isImage = ['PNG','JPG','JPEG'].includes(fileType);
   const fileDesc = isPDF ? 'PDF artwork file' : isImage ? `${fileType} image file` : 'EPS PostScript file';
-
   const checks = [
     isPDF  ? `IMAGE RESOLUTION: Check all embedded raster images. Minimum DPI is 300. Report actual DPI and pass/fail. If purely vector mark pass. id: "dpi"`
     : isImage ? `IMAGE RESOLUTION: Assess pixel dimensions relative to expected print output. Minimum 300 DPI. id: "dpi"`
     : `IMAGE RESOLUTION: Check embedded raster images meet 300 DPI minimum via image dictionary entries. If entirely vector mark pass. id: "dpi"`,
-
     `PIXELATION / UPSAMPLING: Inspect for blocky pixel grid, jagged staircase edges, or blurry areas suggesting upsampling from a low-res original. id: "pixelation"`,
-
     `BLEED: Expected 3mm bleed on all sides beyond trim. Does the artwork include sufficient bleed? id: "bleed"`,
-
     isPDF  ? `COLOUR MODE: Inspect embedded images and colour spaces. Flag if RGB found (CMYK expected for print). id: "colour"`
     : isImage ? `COLOUR MODE: PNG/JPG are typically RGB — flag this as a warning since CMYK is expected for print. id: "colour"`
     : `COLOUR MODE: Check for setcmykcolor/DeviceCMYK vs setrgbcolor/DeviceRGB. Flag if RGB found. id: "colour"`,
-
     isPDF  ? `WHITE EDGE: Visually inspect all four edges for any thin white or light strip — artwork not extended to the bleed line. Even 1–3mm is a FAIL. id: "white_edge"`
     : isImage ? `WHITE EDGE: Inspect all four edges for any thin white or light strip not extending to the bleed line. id: "white_edge"`
     : `WHITE EDGE: Do PostScript drawing commands fill to the BoundingBox edges, or stop short leaving implied white space? id: "white_edge"`,
-
     `SAFE ZONE: Are any text, logos, or important elements within ~5mm of the trim edge, risking being cut off? id: "safe_zone"`,
-
     isPDF  ? `FONTS: Are all fonts fully embedded or outlined in this PDF? Any missing fonts = FAIL. id: "fonts"`
     : isImage ? `FONTS: Does visible text appear sharp and clean, or show rasterisation artefacts? Note embedding cannot be checked in raster files. id: "fonts"`
     : `FONTS: Are fonts fully embedded or outlined in the EPS? Any unembedded non-outlined fonts = FAIL. id: "fonts"`,
-
     isImage ? `TRANSPARENCY: Does this image contain transparent areas (alpha channel)? Transparency can cause unexpected backgrounds on press. id: "transparency"`
     : `TRANSPARENCY / OVERPRINT: Any unflattened transparency or overprint settings that could cause unexpected results at print? id: "transparency"`,
   ];
-
-  return `You are a professional print production specialist reviewing a ${fileDesc} for print readiness. Analyse it thoroughly and respond ONLY as a JSON array — no markdown, no preamble.
-
-Each object must have: "id" (from check), "label" (human-readable name), "status" (pass/fail/warn/info), "headline" (≤12 words), "detail" (1–3 sentences of specific findings).
-
-Checks:
-${checks.map((c, i) => `${i+1}. ${c}`).join('\n')}
-
-Add a final object: id "overall", label "Overall verdict", status based on any fails present, headline and brief detail summary.
-
-JSON array only.`;
+  return `You are a professional print production specialist reviewing a ${fileDesc} for print readiness. Analyse it thoroughly and respond ONLY as a JSON array — no markdown, no preamble.\n\nEach object must have: "id" (from check), "label" (human-readable name), "status" (pass/fail/warn/info), "headline" (≤12 words), "detail" (1–3 sentences of specific findings).\n\nChecks:\n${checks.map((c,i) => `${i+1}. ${c}`).join('\n')}\n\nAdd a final object: id "overall", label "Overall verdict", status based on any fails present, headline and brief detail summary.\n\nJSON array only.`;
 }
 
 async function saveJob(jobData) {
   try {
-    const r = await fetch('/api/jobs', {
-      method: 'POST',
-      headers: {'Content-Type':'application/json'},
-      body: JSON.stringify(jobData)
-    });
+    const r = await fetch('/api/jobs', { method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify(jobData) });
     const data = await r.json();
     if (!r.ok) { console.error('saveJob error', data); return null; }
     return Array.isArray(data) ? data[0] : data;
-  } catch(e) {
-    console.error('saveJob failed', e);
-    return null;
-  }
+  } catch(e) { console.error('saveJob failed', e); return null; }
 }
 
 async function assessAndPatch(jobId, encoded) {
   try {
     const isImage = ['PNG','JPG','JPEG'].includes(encoded.fileType);
     const contentBlock = isImage
-      ? { type: 'image',    source: { type: 'base64', media_type: encoded.mediaType, data: encoded.b64 } }
-      : { type: 'document', source: { type: 'base64', media_type: encoded.mediaType, data: encoded.b64 } };
-
+      ? { type:'image',    source:{ type:'base64', media_type:encoded.mediaType, data:encoded.b64 } }
+      : { type:'document', source:{ type:'base64', media_type:encoded.mediaType, data:encoded.b64 } };
     const resp = await fetch('/api/assess', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        model: 'claude-sonnet-4-5',
-        max_tokens: 1500,
-        messages: [{ role: 'user', content: [contentBlock, { type: 'text', text: buildAssessmentPrompt(encoded.fileType) }] }]
-      })
+      method:'POST', headers:{'Content-Type':'application/json'},
+      body: JSON.stringify({ model:'claude-sonnet-4-5', max_tokens:1500, messages:[{ role:'user', content:[contentBlock,{type:'text',text:buildAssessmentPrompt(encoded.fileType)}] }] })
     });
     const data = await resp.json();
     if (data.error) throw new Error(data.error.message || JSON.stringify(data.error));
-    const raw = (data.content || []).filter(b => b.type === 'text').map(b => b.text).join('');
-    const results = JSON.parse(raw.replace(/```json|```/g, '').trim());
-
-    const overall = results.find(r => r.id === 'overall');
-    const checks  = results.filter(r => r.id !== 'overall');
-    const passCount = checks.filter(r => r.status === 'pass').length;
-    const scorePct = checks.length ? Math.round(passCount / checks.length * 100) : null;
-
+    const raw = (data.content||[]).filter(b=>b.type==='text').map(b=>b.text).join('');
+    const results = JSON.parse(raw.replace(/```json|```/g,'').trim());
+    const overall = results.find(r=>r.id==='overall');
+    const checks  = results.filter(r=>r.id!=='overall');
+    const scorePct = checks.length ? Math.round(checks.filter(r=>r.status==='pass').length/checks.length*100) : null;
     await fetch(`/api/job?id=${jobId}`, {
-      method: 'PATCH',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        assessed_at: new Date().toISOString(),
-        results,
-        score_pct: scorePct,
-        overall_status: overall ? overall.status : null,
-        file_name: encoded.fileName,
-        file_type: encoded.fileType
-      })
+      method:'PATCH', headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({ assessed_at:new Date().toISOString(), results, score_pct:scorePct, overall_status:overall?overall.status:null, file_name:encoded.fileName, file_type:encoded.fileType })
     });
-
     return { results, scorePct, overallStatus: overall ? overall.status : null };
-  } catch(e) {
-    console.error('assessAndPatch failed', e);
-    return null;
-  }
+  } catch(e) { console.error('assessAndPatch failed', e); return null; }
 }
 
 async function uploadToStorage(encoded, jobId) {
-  const extMap = { PDF:'pdf', PNG:'png', JPG:'jpg', JPEG:'jpg', EPS:'eps' };
-  const ext = extMap[encoded.fileType] || 'bin';
-  const path = `${jobId}.${ext}`;
+  const extMap = {PDF:'pdf',PNG:'png',JPG:'jpg',JPEG:'jpg',EPS:'eps'};
+  const path = `${jobId}.${extMap[encoded.fileType]||'bin'}`;
   try {
-    const r = await fetch('/api/upload', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ path, mediaType: encoded.mediaType, data: encoded.b64 })
-    });
+    const r = await fetch('/api/upload', { method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify({ path, mediaType:encoded.mediaType, data:encoded.b64 }) });
     const data = await r.json();
     if (!r.ok) { console.error('upload failed', data); return null; }
-    await fetch(`/api/job?id=${jobId}`, {
-      method: 'PATCH',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ storage_path: path })
-    });
+    await fetch(`/api/job?id=${jobId}`, { method:'PATCH', headers:{'Content-Type':'application/json'}, body:JSON.stringify({ storage_path:path }) });
     return path;
-  } catch(e) {
-    console.error('uploadToStorage failed', e);
-    return null;
-  }
+  } catch(e) { console.error('uploadToStorage failed', e); return null; }
 }
 
 async function addFilesToQueue(files) {
-  const validFiles = Array.from(files).filter(f => {
-    return ['pdf','eps','zip','png','jpg','jpeg'].includes(f.name.split('.').pop().toLowerCase());
-  });
+  const validFiles = Array.from(files).filter(f => ['pdf','eps','zip','png','jpg','jpeg'].includes(f.name.split('.').pop().toLowerCase()));
   if (!validFiles.length) { showToast('No supported files found'); return; }
   showToast(`Adding ${validFiles.length} file${validFiles.length > 1 ? 's' : ''}…`);
-
-  // Encode all files locally first
-  const encodedFiles = await Promise.all(validFiles.map(async f => {
-    try { return await encodeFile(f); }
-    catch(e) { console.error('encodeFile failed', f.name, e); return null; }
-  }));
-
-  // Save job records immediately — rows appear in table with spinning indicator
-  const jobRecords = await Promise.all(encodedFiles.map(enc => {
-    if (!enc) return null;
-    return saveJob({ reference: makeReference(enc.fileName), file_name: enc.fileName, file_type: enc.fileType, source: 'Manual', customer_name: null, order_number: null });
-  }));
-
-  const pairs = jobRecords.map((job, i) => ({ job, enc: encodedFiles[i] })).filter(p => p.job && p.job.id && p.enc);
-  pairs.forEach(({ job }) => allJobs.unshift(job));
+  const encodedFiles = await Promise.all(validFiles.map(async f => { try { return await encodeFile(f); } catch(e) { console.error('encodeFile failed', f.name, e); return null; } }));
+  const jobRecords = await Promise.all(encodedFiles.map(enc => enc ? saveJob({ reference:makeReference(enc.fileName), file_name:enc.fileName, file_type:enc.fileType, source:'Manual', customer_name:null, order_number:null }) : null));
+  const pairs = jobRecords.map((job,i) => ({job, enc:encodedFiles[i]})).filter(p => p.job && p.job.id && p.enc);
+  pairs.forEach(({job}) => allJobs.unshift(job));
   renderTable();
-  showToast(`Uploading and assessing ${pairs.length} file${pairs.length !== 1 ? 's' : ''}…`);
-
-  // Upload to storage + assess in parallel
-  await Promise.all(pairs.map(async ({ job, enc }) => {
-    // Upload to storage (fire and don't block assessment)
+  showToast(`Uploading and assessing ${pairs.length} file${pairs.length!==1?'s':''}…`);
+  await Promise.all(pairs.map(async ({job,enc}) => {
     uploadToStorage(enc, job.id).catch(e => console.error('storage upload error', e));
-
-    // Run assessment
     const assessment = await assessAndPatch(job.id, enc);
     if (assessment) {
       const idx = allJobs.findIndex(j => j.id === job.id);
-      if (idx !== -1) {
-        allJobs[idx] = { ...allJobs[idx], results: assessment.results, score_pct: assessment.scorePct, overall_status: assessment.overallStatus, assessed_at: new Date().toISOString() };
-        renderTable();
-      }
+      if (idx !== -1) { allJobs[idx] = {...allJobs[idx], results:assessment.results, score_pct:assessment.scorePct, overall_status:assessment.overallStatus, assessed_at:new Date().toISOString()}; renderTable(); }
     }
   }));
-
-  showToast(`${pairs.length} file${pairs.length !== 1 ? 's' : ''} assessed`);
+  showToast(`${pairs.length} file${pairs.length!==1?'s':''} assessed`);
 }
 
 async function handleCSV(e) {
@@ -607,24 +492,17 @@ async function handleCSV(e) {
   const lines = text.trim().split('\n');
   if (lines.length < 2) { showToast('CSV appears empty'); return; }
   const headers = lines[0].split(',').map(h => h.trim().toLowerCase().replace(/[^a-z_]/g,''));
-  let added = 0;
   const promises = lines.slice(1).map(async line => {
     const vals = line.split(',').map(v => v.trim().replace(/^"|"$/g,''));
-    const row = {}; headers.forEach((h,i) => row[h] = vals[i] || '');
-    const fileName = row['file_name'] || row['filename'] || row['file'] || ''; if (!fileName) return null;
-    return saveJob({
-      reference: row['reference'] || row['ref'] || makeReference(fileName),
-      file_name: fileName, file_type: getFileType(fileName), source: 'CSV',
-      customer_name: row['customer_name'] || row['customer'] || null,
-      order_number: row['order_number'] || row['order'] || row['order_no'] || null
-    });
+    const row = {}; headers.forEach((h,i) => row[h] = vals[i]||'');
+    const fileName = row['file_name']||row['filename']||row['file']||''; if (!fileName) return null;
+    return saveJob({ reference:row['reference']||row['ref']||makeReference(fileName), file_name:fileName, file_type:getFileType(fileName), source:'CSV', customer_name:row['customer_name']||row['customer']||null, order_number:row['order_number']||row['order']||row['order_no']||null });
   });
   const results = await Promise.all(promises);
   const saved = results.filter(j => j && j.id);
   saved.forEach(job => allJobs.unshift(job));
-  added = saved.length;
   renderTable();
-  showToast(`${added} job${added !== 1 ? 's' : ''} added from CSV`);
+  showToast(`${saved.length} job${saved.length!==1?'s':''} added from CSV`);
   e.target.value = '';
 }
 
