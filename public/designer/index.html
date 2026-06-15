@@ -5,130 +5,166 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Designer — UKPOS Print Site</title>
 <style>
-  *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
-  body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",system-ui,sans-serif;background:#FAFAF8;color:#2C2C2A;height:100vh;display:flex;flex-direction:column;overflow:hidden;font-size:14px}
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",system-ui,sans-serif;background:#FAFAF8;color:#2C2C2A;height:100vh;display:flex;flex-direction:column;overflow:hidden;font-size:14px}
 
-  nav{border-bottom:1px solid #E8E6DE;padding:0 32px;background:#fff;display:flex;align-items:center;gap:0;height:48px;flex-shrink:0;z-index:10}
-  .nav-logo{font-size:14px;font-weight:500;color:#2C2C2A;text-decoration:none;margin-right:24px;white-space:nowrap}
-  .nav-links{display:flex;align-items:stretch;gap:0;height:100%}
-  .nav-link{display:flex;align-items:center;padding:0 14px;font-size:13px;color:#5F5E5A;text-decoration:none;border-bottom:2px solid transparent;white-space:nowrap;transition:color 0.12s}
-  .nav-link:hover{color:#2C2C2A}
-  .nav-link.active{color:#185FA5;border-bottom-color:#185FA5;font-weight:500}
-  .nav-link.assessor.active{color:#534AB7;border-bottom-color:#534AB7}
-  .nav-spacer{flex:1}
-  .nav-badge{font-size:11px;padding:3px 9px;border-radius:12px;background:#E6F1FB;color:#185FA5;font-weight:500;border:1px solid #B5D4F4}
+/* NAV */
+nav{border-bottom:1px solid #E8E6DE;padding:0 28px;background:#fff;display:flex;align-items:center;height:48px;flex-shrink:0;z-index:20}
+.nav-logo{font-size:14px;font-weight:500;color:#2C2C2A;text-decoration:none;margin-right:20px;white-space:nowrap}
+.nav-links{display:flex;align-items:stretch;height:100%}
+.nav-link{display:flex;align-items:center;padding:0 13px;font-size:13px;color:#5F5E5A;text-decoration:none;border-bottom:2px solid transparent;white-space:nowrap}
+.nav-link:hover{color:#2C2C2A}
+.nav-link.active{color:#185FA5;border-bottom-color:#185FA5;font-weight:500}
+.nav-link.assessor-link.active{color:#534AB7;border-bottom-color:#534AB7}
+.nav-spacer{flex:1}
+.nav-badge{font-size:11px;padding:3px 9px;border-radius:12px;background:#E6F1FB;color:#185FA5;font-weight:500;border:1px solid #B5D4F4}
 
-  /* Job context bar */
-  .job-bar{display:none;align-items:center;gap:16px;padding:8px 32px;background:#EEEDFE;border-bottom:1px solid #AFA9EC;font-size:13px;flex-shrink:0}
-  .job-bar.show{display:flex}
-  .jb-item{display:flex;align-items:center;gap:6px}
-  .jb-label{font-size:11px;color:#7F77DD;font-weight:500;text-transform:uppercase;letter-spacing:0.05em}
-  .jb-val{color:#3C3489;font-weight:500}
-  .jb-back{margin-left:auto;font-size:12px;color:#534AB7;text-decoration:none}
-  .jb-back:hover{text-decoration:underline}
+/* JOB BAR */
+.job-bar{display:none;align-items:center;gap:16px;padding:7px 28px;background:#EEEDFE;border-bottom:1px solid #AFA9EC;font-size:13px;flex-shrink:0}
+.job-bar.show{display:flex}
+.jb-label{font-size:11px;color:#7F77DD;font-weight:500;text-transform:uppercase;letter-spacing:0.05em;margin-right:4px}
+.jb-val{color:#3C3489;font-weight:500}
+.jb-back{margin-left:auto;font-size:12px;color:#534AB7;text-decoration:none}
+.jb-back:hover{text-decoration:underline}
 
-  /* SKU / step bar */
-  .tool-bar{display:flex;align-items:center;gap:0;padding:0 32px;background:#fff;border-bottom:1px solid #E8E6DE;height:44px;flex-shrink:0}
-  .tb-sku-label{font-size:11px;color:#888780;margin-right:8px;text-transform:uppercase;letter-spacing:0.06em;font-weight:500}
-  .tb-sku-select{font-size:13px;padding:4px 8px;border:1px solid #E8E6DE;border-radius:6px;background:#FAFAF8;color:#2C2C2A;cursor:pointer}
-  .tb-sku-dims{font-size:12px;color:#5F5E5A;margin-left:10px}
-  .tb-sku-dims strong{color:#2C2C2A}
-  .tb-sep{width:1px;height:20px;background:#E8E6DE;margin:0 16px}
-  .tb-steps{display:flex;align-items:center;gap:0;height:100%;margin-left:auto}
-  .tb-step{display:flex;align-items:center;gap:7px;padding:0 14px;height:100%;font-size:12px;color:#888780;border-bottom:2px solid transparent}
-  .tb-step.active{color:#185FA5;border-bottom-color:#185FA5;font-weight:500}
-  .tb-step.done{color:#3B6D11}
-  .tb-step-num{width:16px;height:16px;border-radius:50%;border:1px solid #D3D1C7;display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:600;flex-shrink:0}
-  .tb-step.active .tb-step-num{background:#185FA5;color:#fff;border-color:#185FA5}
-  .tb-step.done .tb-step-num{background:#639922;color:#fff;border-color:#639922}
-  .tb-step-arrow{color:#D3D1C7;font-size:12px;padding:0 2px}
+/* MAIN WORKSPACE */
+.workspace{display:flex;flex:1;overflow:hidden}
 
-  /* Main layout */
-  .workspace{display:flex;flex:1;overflow:hidden}
+/* LEFT STEP PANEL */
+.step-panel{width:220px;flex-shrink:0;background:#fff;border-right:1px solid #E8E6DE;display:flex;flex-direction:column;overflow-y:auto}
+.step-panel-title{padding:16px 18px 10px;font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:0.1em;color:#B4B2A9}
 
-  /* Canvas area */
-  .canvas-area{flex:1;background:#1C1C2E;display:flex;flex-direction:column;align-items:center;justify-content:center;position:relative;overflow:hidden}
-  .canvas-wrap{position:relative;cursor:grab}
-  .canvas-wrap.dragging{cursor:grabbing}
-  canvas{display:block}
-  .canvas-upload-prompt{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;color:rgba(255,255,255,0.4);font-size:13px;text-align:center;gap:10px;pointer-events:none}
-  .canvas-upload-prompt .cup-icon{font-size:36px}
-  .canvas-upload-prompt .cup-hint{font-size:11px;opacity:0.6}
+.step-block{padding:0;border-bottom:1px solid #F1EFE8}
+.step-block:last-of-type{border-bottom:none}
+.step-header{display:flex;align-items:center;gap:10px;padding:13px 16px;cursor:default}
+.step-num{width:22px;height:22px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;flex-shrink:0;border:2px solid #D3D1C7;color:#B4B2A9;background:#fff;transition:all 0.15s}
+.step-label{font-size:13px;font-weight:500;color:#888780;transition:color 0.15s}
+.step-block.active .step-num{background:#185FA5;border-color:#185FA5;color:#fff}
+.step-block.active .step-label{color:#185FA5}
+.step-block.done .step-num{background:#639922;border-color:#639922;color:#fff}
+.step-block.done .step-label{color:#3B6D11}
+.step-content{padding:0 16px 14px 48px;display:none}
+.step-block.active .step-content{display:block}
 
-  .bleed-callout{position:absolute;bottom:16px;left:50%;transform:translateX(-50%);background:rgba(244,121,32,0.92);color:#fff;font-size:11px;padding:6px 14px;border-radius:20px;white-space:nowrap;pointer-events:none;display:flex;align-items:center;gap:6px;font-weight:500}
+/* Step 1 — SKU */
+.sku-select{width:100%;font-size:13px;padding:7px 9px;border:1.5px solid #E8E6DE;border-radius:8px;background:#FAFAF8;color:#2C2C2A;cursor:pointer;margin-bottom:8px}
+.sku-select:focus{outline:none;border-color:#185FA5}
+.sku-spec-card{background:#EEF5FF;border:1px solid #B5D4F4;border-radius:8px;padding:10px 12px;font-size:12px;display:none}
+.sku-spec-card.show{display:block}
+.sku-spec-row{display:flex;justify-content:space-between;padding:3px 0;border-bottom:1px solid rgba(0,0,0,0.05)}
+.sku-spec-row:last-child{border-bottom:none}
+.sku-spec-key{color:#185FA5;font-weight:500}
+.sku-spec-val{color:#0C447C;font-weight:600}
+.flag-pills{display:flex;flex-wrap:wrap;gap:4px;margin-top:8px}
+.flag-pill{font-size:10px;font-weight:500;padding:2px 7px;border-radius:3px;background:#FAEEDA;color:#854F0B;border:1px solid #FAC775}
 
-  .canvas-status{position:absolute;top:12px;left:50%;transform:translateX(-50%);font-size:11px;padding:4px 12px;border-radius:12px;white-space:nowrap;pointer-events:none;transition:opacity 0.2s}
-  .canvas-status.pass{background:rgba(99,153,34,0.15);color:#9CCD50;border:1px solid rgba(99,153,34,0.3)}
-  .canvas-status.warn{background:rgba(239,159,39,0.15);color:#FAC775;border:1px solid rgba(239,159,39,0.3)}
-  .canvas-status.fail{background:rgba(226,75,74,0.15);color:#F09595;border:1px solid rgba(226,75,74,0.3)}
+/* Step 2 — Upload */
+.upload-drop{border:1.5px dashed #C8C6BC;border-radius:8px;padding:16px 10px;text-align:center;cursor:pointer;background:#FAFAF8;transition:border-color 0.15s,background 0.15s;font-size:12px;color:#5F5E5A}
+.upload-drop:hover,.upload-drop.drag-over{border-color:#185FA5;background:#EEF5FF;color:#185FA5}
+.upload-drop .ud-icon{font-size:20px;display:block;margin-bottom:6px}
+.upload-drop strong{color:#2C2C2A}
+.ud-formats{font-size:10px;color:#B4B2A9;margin-top:4px}
 
-  /* Sidebar */
-  .sidebar{width:230px;flex-shrink:0;border-left:1px solid #E8E6DE;background:#fff;display:flex;flex-direction:column;overflow-y:auto}
-  .sb-section{padding:14px 16px;border-bottom:1px solid #E8E6DE}
-  .sb-section:last-child{border-bottom:none}
-  .sb-title{font-size:10px;font-weight:600;text-transform:uppercase;letter-spacing:0.08em;color:#888780;margin-bottom:10px}
+/* Step 3 — Position */
+.ctrl-row{display:flex;flex-direction:column;gap:5px;margin-bottom:10px}
+.ctrl-lbl{display:flex;justify-content:space-between;font-size:11px;color:#5F5E5A}
+.ctrl-val{font-weight:700;color:#2C2C2A;font-size:11px}
+input[type=range]{width:100%;cursor:pointer}
+.btn-row{display:flex;gap:5px;margin-bottom:6px}
+.mini-btn{flex:1;padding:6px 4px;font-size:11px;border-radius:6px;border:1px solid #E8E6DE;background:#FAFAF8;color:#2C2C2A;cursor:pointer;text-align:center;white-space:nowrap}
+.mini-btn:hover{background:#EEF5FF;border-color:#B5D4F4;color:#185FA5}
+.pos-info{font-size:10px;color:#B4B2A9;margin-top:3px}
+.pos-info span{color:#5F5E5A;font-weight:500}
 
-  /* Upload */
-  .upload-trigger{display:flex;align-items:center;gap:8px;width:100%;padding:8px 10px;border:1.5px dashed #D3D1C7;border-radius:8px;background:#FAFAF8;color:#5F5E5A;font-size:12px;cursor:pointer;transition:border-color 0.15s,color 0.15s;text-align:left}
-  .upload-trigger:hover{border-color:#534AB7;color:#534AB7}
-  .upload-trigger .ut-icon{font-size:16px;flex-shrink:0}
-  .file-chip{display:flex;align-items:center;gap:6px;padding:6px 8px;background:#FAFAF8;border:1px solid #E8E6DE;border-radius:6px;font-size:11px;margin-top:6px}
-  .file-chip-icon{font-size:14px;color:#534AB7;flex-shrink:0}
-  .file-chip-name{flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;color:#2C2C2A;font-weight:500}
-  .file-chip-clear{cursor:pointer;color:#B4B2A9;font-size:14px;flex-shrink:0;background:none;border:none;padding:0;line-height:1}
-  .file-chip-clear:hover{color:#E24B4A}
+/* Step 4 — size toggle */
+.size-toggle{display:flex;border:1.5px solid #E8E6DE;border-radius:8px;overflow:hidden;margin-bottom:8px}
+.st-opt{flex:1;padding:8px 6px;font-size:11px;text-align:center;cursor:pointer;background:#FAFAF8;color:#888780;font-weight:500;transition:background 0.12s,color 0.12s;border:none;line-height:1.3}
+.st-opt.active{background:#185FA5;color:#fff}
+.st-note{font-size:10px;color:#888780;line-height:1.4;margin-bottom:6px}
 
-  /* Flag pills */
-  .flag-pills{display:flex;flex-wrap:wrap;gap:4px;margin-top:6px}
-  .flag-pill{font-size:10px;font-weight:500;padding:2px 7px;border-radius:3px;background:#FAEEDA;color:#854F0B}
+/* Step 5 — opacity */
+.op-row{display:flex;align-items:center;gap:6px;margin-bottom:6px}
+.op-lbl{font-size:11px;color:#5F5E5A;min-width:52px}
+.op-row input[type=range]{flex:1}
+.op-val{font-size:11px;font-weight:700;color:#2C2C2A;min-width:24px;text-align:right}
 
-  /* Bleed notice */
-  .bleed-notice{margin-top:8px;padding:8px 10px;border-radius:6px;background:rgba(244,121,32,0.08);border:1px solid rgba(244,121,32,0.25);font-size:11px;line-height:1.5;color:#854F0B}
-  .bleed-notice strong{color:#633806}
+/* Step spacer */
+.step-spacer{flex:1}
 
-  /* Controls */
-  .ctrl-row{display:flex;flex-direction:column;gap:6px;margin-bottom:10px}
-  .ctrl-label{display:flex;justify-content:space-between;align-items:center;font-size:11px;color:#5F5E5A}
-  .ctrl-val{font-weight:600;color:#2C2C2A;font-size:11px}
-  input[type=range]{width:100%;cursor:pointer}
+/* Bottom of step panel */
+.step-actions{padding:14px 16px;border-top:1px solid #E8E6DE;display:flex;flex-direction:column;gap:7px;flex-shrink:0}
+.btn{padding:8px 14px;font-size:13px;border-radius:7px;cursor:pointer;border:1px solid #E8E6DE;background:#fff;color:#2C2C2A;transition:background 0.12s;text-align:center;text-decoration:none;display:block}
+.btn:hover{background:#F1EFE8}
+.btn-blue{background:#185FA5;color:#fff;border-color:#185FA5}
+.btn-blue:hover{opacity:0.88;background:#185FA5}
+.btn-blue:disabled{background:#D3D1C7;border-color:#D3D1C7;cursor:not-allowed;opacity:1}
+.btn-outline-blue{border-color:#B5D4F4;color:#185FA5;background:#EEF5FF}
+.btn-outline-blue:hover{background:#B5D4F4}
 
-  .ctrl-btn-row{display:flex;gap:5px}
-  .ctrl-btn{flex:1;padding:6px 4px;font-size:11px;border-radius:6px;border:1px solid #E8E6DE;background:#FAFAF8;color:#2C2C2A;cursor:pointer;text-align:center;transition:background 0.12s,border-color 0.12s;white-space:nowrap}
-  .ctrl-btn:hover{background:#EEEDFE;border-color:#AFA9EC;color:#534AB7}
+/* CANVAS AREA */
+.canvas-area{flex:1;background:#C8C8C4;display:flex;align-items:center;justify-content:center;position:relative;overflow:hidden}
+.canvas-scroll{overflow:auto;max-width:100%;max-height:100%;display:flex;align-items:center;justify-content:center}
+.canvas-wrap{position:relative;flex-shrink:0}
+.canvas-wrap.can-drag{cursor:grab}
+.canvas-wrap.dragging{cursor:grabbing}
+canvas{display:block}
 
-  /* Opacity rows */
-  .opacity-row{display:flex;align-items:center;gap:6px;margin-bottom:6px}
-  .opacity-label{font-size:11px;color:#5F5E5A;min-width:58px}
-  .opacity-row input[type=range]{flex:1}
-  .opacity-val{font-size:11px;font-weight:600;color:#2C2C2A;min-width:26px;text-align:right}
+/* Canvas overlays */
+.canvas-status-msg{position:absolute;top:14px;left:50%;transform:translateX(-50%);font-size:16px;font-weight:600;padding:8px 18px;border-radius:24px;white-space:nowrap;pointer-events:none;transition:opacity 0.2s;letter-spacing:-0.01em}
+.csm-pass{background:rgba(99,153,34,0.92);color:#fff}
+.csm-warn{background:rgba(239,159,39,0.92);color:#fff}
+.csm-fail{background:rgba(226,75,74,0.92);color:#fff}
+.csm-idle{background:rgba(44,44,42,0.6);color:#fff}
 
-  /* Layers */
-  .layer-row{display:flex;align-items:center;gap:8px;padding:5px 0;border-bottom:1px solid #F1EFE8;font-size:11px}
-  .layer-row:last-child{border-bottom:none}
-  .layer-dot{width:8px;height:8px;border-radius:50%;flex-shrink:0}
-  .layer-name{flex:1;color:#5F5E5A}
-  .layer-meta{color:#B4B2A9;font-size:10px}
+.bleed-callout{position:absolute;bottom:14px;left:50%;transform:translateX(-50%);background:rgba(244,121,32,0.93);color:#fff;font-size:12px;font-weight:600;padding:6px 14px;border-radius:20px;white-space:nowrap;pointer-events:none;display:flex;align-items:center;gap:6px}
 
-  /* Position readout */
-  .pos-readout{font-size:11px;color:#888780;margin-top:6px}
-  .pos-readout span{color:#2C2C2A;font-weight:500}
+/* Floating layers legend — ON the canvas */
+.layers-legend{position:absolute;bottom:52px;right:14px;background:rgba(255,255,255,0.92);border:1px solid rgba(0,0,0,0.12);border-radius:8px;padding:8px 10px;font-size:11px;pointer-events:none;min-width:140px}
+.ll-title{font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:0.07em;color:#888780;margin-bottom:6px}
+.ll-row{display:flex;align-items:center;gap:6px;padding:2px 0;color:#2C2C2A}
+.ll-dot{width:8px;height:8px;border-radius:50%;flex-shrink:0}
 
-  /* Bottom action bar */
-  .action-bar{display:flex;align-items:center;justify-content:space-between;padding:10px 32px;border-top:1px solid #E8E6DE;background:#fff;flex-shrink:0}
-  .action-status{display:flex;align-items:center;gap:8px;font-size:13px}
-  .action-status .as-dot{width:8px;height:8px;border-radius:50%;background:#B4B2A9;flex-shrink:0}
-  .action-status .as-dot.pass{background:#639922}
-  .action-status .as-dot.warn{background:#EF9F27}
-  .action-status .as-dot.fail{background:#E24B4A}
-  .action-btns{display:flex;gap:8px}
-  .btn{padding:7px 14px;font-size:13px;border-radius:7px;cursor:pointer;border:1px solid #E8E6DE;background:#fff;color:#2C2C2A;transition:background 0.12s}
-  .btn:hover{background:#F1EFE8}
-  .btn-primary{background:#534AB7;color:#fff;border-color:#534AB7}
-  .btn-primary:hover{opacity:0.88;background:#534AB7}
-  .btn-primary:disabled{background:#D3D1C7;border-color:#D3D1C7;cursor:not-allowed;opacity:1}
-  .btn-blue{background:#185FA5;color:#fff;border-color:#185FA5}
-  .btn-blue:hover{opacity:0.88;background:#185FA5}
-  .btn-blue:disabled{background:#D3D1C7;border-color:#D3D1C7;cursor:not-allowed;opacity:1}
+/* RIGHT LAYERS PANEL */
+.layers-panel{width:200px;flex-shrink:0;border-left:1px solid #E8E6DE;background:#fff;display:flex;flex-direction:column;overflow:hidden}
+.lp-header{padding:12px 14px 8px;font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:0.1em;color:#B4B2A9;border-bottom:1px solid #E8E6DE;display:flex;align-items:center;justify-content:space-between}
+.lp-add-btn{font-size:11px;color:#185FA5;cursor:pointer;font-weight:600;background:none;border:none;padding:0}
+.lp-add-btn:hover{text-decoration:underline}
+.layers-list{flex:1;overflow-y:auto;padding:6px 0}
+.layer-item{display:flex;align-items:center;gap:6px;padding:7px 10px;border-bottom:1px solid #F1EFE8;cursor:grab;transition:background 0.1s;user-select:none}
+.layer-item:last-child{border-bottom:none}
+.layer-item:hover{background:#FAFAF8}
+.layer-item.dragging-layer{opacity:0.5}
+.layer-item.drag-over-layer{background:#EEF5FF;border-top:2px solid #185FA5}
+.li-drag{color:#D3D1C7;font-size:14px;cursor:grab;flex-shrink:0}
+.li-thumb{width:28px;height:28px;border-radius:4px;object-fit:cover;flex-shrink:0;border:1px solid #E8E6DE;background:#F1EFE8}
+.li-thumb-placeholder{width:28px;height:28px;border-radius:4px;flex-shrink:0;border:1px solid #E8E6DE;display:flex;align-items:center;justify-content:center;font-size:14px}
+.li-info{flex:1;min-width:0}
+.li-name{font-size:11px;font-weight:500;color:#2C2C2A;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.li-meta{font-size:10px;color:#B4B2A9}
+.li-actions{display:flex;align-items:center;gap:4px;flex-shrink:0}
+.li-vis{font-size:14px;cursor:pointer;color:#B4B2A9;background:none;border:none;padding:2px;line-height:1}
+.li-vis:hover{color:#2C2C2A}
+.li-del{font-size:14px;cursor:pointer;color:#B4B2A9;background:none;border:none;padding:2px;line-height:1}
+.li-del:hover{color:#E24B4A}
+
+.lp-fixed{padding:8px 10px;border-top:1px solid #E8E6DE;background:#FAFAF8}
+.lp-fixed-row{display:flex;align-items:center;gap:6px;padding:4px 0;font-size:11px;color:#5F5E5A}
+.lp-fixed-dot{width:8px;height:8px;border-radius:50%;flex-shrink:0}
+.lp-fixed-meta{margin-left:auto;font-size:10px;color:#B4B2A9}
+
+/* Bottom action bar */
+.action-bar{display:flex;align-items:center;justify-content:space-between;padding:9px 20px;border-top:1px solid #E8E6DE;background:#fff;flex-shrink:0;gap:12px}
+.action-status{display:flex;align-items:center;gap:8px;flex:1;min-width:0}
+.as-dot{width:9px;height:9px;border-radius:50%;background:#B4B2A9;flex-shrink:0}
+.as-dot.pass{background:#639922}.as-dot.warn{background:#EF9F27}.as-dot.fail{background:#E24B4A}
+.as-text{font-size:13px;color:#5F5E5A;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.as-text.pass{color:#27500A}.as-text.warn{color:#633806}.as-text.fail{color:#791F1F}
+.action-btns{display:flex;gap:7px;flex-shrink:0}
+.abtn{padding:7px 13px;font-size:13px;border-radius:7px;cursor:pointer;border:1px solid #E8E6DE;background:#fff;color:#2C2C2A;white-space:nowrap}
+.abtn:hover{background:#F1EFE8}
+.abtn-blue{background:#185FA5;color:#fff;border-color:#185FA5}
+.abtn-blue:hover{opacity:0.88;background:#185FA5}
+.abtn-blue:disabled{background:#D3D1C7;border-color:#D3D1C7;cursor:not-allowed;opacity:1}
 </style>
 </head>
 <body>
@@ -136,165 +172,208 @@
 <nav>
   <a class="nav-logo" href="/">UKPOS Print Site</a>
   <div class="nav-links">
-    <a class="nav-link" href="/dashboard">Artwork list</a>
-    <a class="nav-link" href="/artwork-assessor">Artwork assessor</a>
     <a class="nav-link active" href="/designer">Designer</a>
+    <a class="nav-link" href="/dashboard">Artwork list</a>
+    <a class="nav-link assessor-link" href="/artwork-assessor">Artwork assessor</a>
   </div>
   <span class="nav-spacer"></span>
   <span class="nav-badge">Internal tool</span>
 </nav>
 
 <div class="job-bar" id="jobBar">
-  <div class="jb-item"><span class="jb-label">Ref</span><span class="jb-val" id="jbRef">—</span></div>
-  <div class="jb-item"><span class="jb-label">Customer</span><span class="jb-val" id="jbCustomer">—</span></div>
-  <div class="jb-item"><span class="jb-label">Order</span><span class="jb-val" id="jbOrder">—</span></div>
+  <span class="jb-label">Ref</span><span class="jb-val" id="jbRef">—</span>
+  <span class="jb-label" style="margin-left:12px">Customer</span><span class="jb-val" id="jbCustomer">—</span>
+  <span class="jb-label" style="margin-left:12px">Order</span><span class="jb-val" id="jbOrder">—</span>
   <a class="jb-back" href="/dashboard">← Back to artwork list</a>
 </div>
 
-<div class="tool-bar">
-  <span class="tb-sku-label">SKU</span>
-  <select class="tb-sku-select" id="skuSelect" onchange="onSkuChange()">
-    <option value="">— select product —</option>
-    <optgroup label="Acrylic Poster Holders (AS1)">
-      <option value="AS1-A0">AS1-A0 — A0</option>
-      <option value="AS1-A1">AS1-A1 — A1</option>
-      <option value="AS1-A2">AS1-A2 — A2</option>
-      <option value="AS1-A3">AS1-A3 — A3</option>
-      <option value="AS1-A4">AS1-A4 — A4</option>
-      <option value="AS1-A5">AS1-A5 — A5</option>
-    </optgroup>
-    <optgroup label="Waterproof Pavement Signs (WPG)">
-      <option value="WPG1">WPG1</option><option value="WPG2">WPG2</option><option value="WPG3">WPG3</option>
-      <option value="WPG4">WPG4</option><option value="WPG5">WPG5</option><option value="WPG6">WPG6</option>
-      <option value="WPG7">WPG7</option><option value="WPG8">WPG8</option><option value="WPG9">WPG9</option>
-      <option value="WPG10">WPG10</option><option value="WPG11">WPG11</option><option value="WPG12">WPG12</option>
-      <option value="WPG13">WPG13</option><option value="WPG14">WPG14</option><option value="WPG15">WPG15</option>
-      <option value="WPG16">WPG16</option><option value="WPG17">WPG17</option><option value="WPG18">WPG18</option>
-    </optgroup>
-    <optgroup label="Aluminium Signs">
-      <option value="ABG1">ABG1</option><option value="ABG9">ABG9</option><option value="ABG10">ABG10</option>
-      <option value="ABG12">ABG12</option><option value="ABG13">ABG13</option>
-      <option value="ABM2A1">ABM2A1</option><option value="PABG">PABG</option>
-    </optgroup>
-    <optgroup label="Snap Frame Prints">
-      <option value="SF-A0">SF-A0 — A0</option><option value="SF-A1">SF-A1 — A1</option>
-      <option value="SF-A2">SF-A2 — A2</option><option value="SF-A3">SF-A3 — A3</option>
-      <option value="SF-A4">SF-A4 — A4</option>
-    </optgroup>
-    <optgroup label="Other">
-      <option value="BOLL05">BOLL05 — Bollard Sign</option>
-      <option value="VINYL">VINYL — Vinyl Banner</option>
-    </optgroup>
-  </select>
-  <span class="tb-sku-dims" id="skuDimsBar"></span>
-
-  <span class="tb-sep"></span>
-
-  <div class="tb-steps">
-    <div class="tb-step done" id="step1"><div class="tb-step-num">✓</div>Select SKU</div>
-    <span class="tb-step-arrow">›</span>
-    <div class="tb-step active" id="step2"><div class="tb-step-num">2</div>Position artwork</div>
-    <span class="tb-step-arrow">›</span>
-    <div class="tb-step" id="step3"><div class="tb-step-num">3</div>Run checks</div>
-    <span class="tb-step-arrow">›</span>
-    <div class="tb-step" id="step4"><div class="tb-step-num">4</div>Approve</div>
-  </div>
-</div>
-
 <div class="workspace">
-  <div class="canvas-area" id="canvasArea">
-    <div class="canvas-wrap" id="canvasWrap">
-      <canvas id="mainCanvas" width="420" height="520"></canvas>
-      <div class="canvas-upload-prompt" id="uploadPrompt">
-        <div class="cup-icon">🖼</div>
-        <div>Upload artwork to begin</div>
-        <div class="cup-hint">Use the panel on the right, or drag a file anywhere on this page</div>
+
+  <!-- ── LEFT STEP PANEL ─────────────────────────────────────── -->
+  <div class="step-panel">
+    <div class="step-panel-title">Artwork setup</div>
+
+    <!-- Step 1: SKU -->
+    <div class="step-block active" id="stepBlock1">
+      <div class="step-header" onclick="jumpStep(1)">
+        <div class="step-num">1</div>
+        <span class="step-label">Select SKU</span>
+      </div>
+      <div class="step-content">
+        <select class="sku-select" id="skuSelect" onchange="onSkuChange()">
+          <option value="">— choose product —</option>
+          <optgroup label="Acrylic Poster Holders">
+            <option value="AS1-A0">AS1-A0 — A0</option>
+            <option value="AS1-A1">AS1-A1 — A1</option>
+            <option value="AS1-A2">AS1-A2 — A2</option>
+            <option value="AS1-A3">AS1-A3 — A3</option>
+            <option value="AS1-A4">AS1-A4 — A4</option>
+            <option value="AS1-A5">AS1-A5 — A5</option>
+          </optgroup>
+          <optgroup label="Waterproof Pavement Signs">
+            <option value="WPG1">WPG1</option><option value="WPG2">WPG2</option>
+            <option value="WPG3">WPG3</option><option value="WPG4">WPG4</option>
+            <option value="WPG5">WPG5</option><option value="WPG6">WPG6</option>
+            <option value="WPG7">WPG7</option><option value="WPG8">WPG8</option>
+            <option value="WPG9">WPG9</option><option value="WPG10">WPG10</option>
+            <option value="WPG11">WPG11</option><option value="WPG12">WPG12</option>
+            <option value="WPG13">WPG13</option><option value="WPG14">WPG14</option>
+            <option value="WPG15">WPG15</option><option value="WPG16">WPG16</option>
+            <option value="WPG17">WPG17</option><option value="WPG18">WPG18</option>
+          </optgroup>
+          <optgroup label="Aluminium Signs">
+            <option value="ABG1">ABG1</option><option value="ABG9">ABG9</option>
+            <option value="ABG10">ABG10</option><option value="ABG12">ABG12</option>
+            <option value="ABG13">ABG13</option><option value="ABM2A1">ABM2A1</option>
+            <option value="PABG">PABG</option>
+          </optgroup>
+          <optgroup label="Snap Frame Prints">
+            <option value="SF-A0">SF-A0</option><option value="SF-A1">SF-A1</option>
+            <option value="SF-A2">SF-A2</option><option value="SF-A3">SF-A3</option>
+            <option value="SF-A4">SF-A4</option>
+          </optgroup>
+          <optgroup label="Other">
+            <option value="BOLL05">BOLL05 — Bollard</option>
+            <option value="VINYL">VINYL — Vinyl Banner</option>
+          </optgroup>
+        </select>
+        <div class="sku-spec-card" id="skuSpecCard">
+          <div class="sku-spec-row"><span class="sku-spec-key">Size</span><span class="sku-spec-val" id="ssSize">—</span></div>
+          <div class="sku-spec-row"><span class="sku-spec-key">Min DPI</span><span class="sku-spec-val" id="ssDpi">—</span></div>
+          <div class="sku-spec-row"><span class="sku-spec-key">Colour</span><span class="sku-spec-val" id="ssColour">—</span></div>
+          <div class="sku-spec-row"><span class="sku-spec-key">Bleed</span><span class="sku-spec-val" id="ssBleed">—</span></div>
+          <div class="sku-spec-row"><span class="sku-spec-key">Sides</span><span class="sku-spec-val" id="ssSides">—</span></div>
+          <div class="flag-pills" id="ssFlags"></div>
+        </div>
       </div>
     </div>
-    <div class="bleed-callout" id="bleedCallout">
+
+    <!-- Step 2: Upload -->
+    <div class="step-block" id="stepBlock2">
+      <div class="step-header" onclick="jumpStep(2)">
+        <div class="step-num">2</div>
+        <span class="step-label">Upload artwork</span>
+      </div>
+      <div class="step-content">
+        <div class="upload-drop" id="uploadDrop" onclick="document.getElementById('fileIn').click()">
+          <span class="ud-icon">📂</span>
+          <strong>Drop files here</strong> or click to browse
+          <div class="ud-formats">PDF · EPS · PNG · JPG · TIFF</div>
+        </div>
+        <input type="file" id="fileIn" accept=".png,.jpg,.jpeg,.pdf,.tif,.tiff,.eps" multiple onchange="handleFileInput(event)" />
+      </div>
+    </div>
+
+    <!-- Step 3: Position -->
+    <div class="step-block" id="stepBlock3">
+      <div class="step-header" onclick="jumpStep(3)">
+        <div class="step-num">3</div>
+        <span class="step-label">Position &amp; scale</span>
+      </div>
+      <div class="step-content">
+        <div class="ctrl-row">
+          <div class="ctrl-lbl"><span>Active layer scale</span><span class="ctrl-val" id="scaleVal">100%</span></div>
+          <input type="range" id="scaleSlider" min="20" max="200" step="1" value="100" oninput="onScaleSlider(this.value)" />
+        </div>
+        <div class="btn-row">
+          <button class="mini-btn" onclick="fitToBleed()">Fit to bleed</button>
+          <button class="mini-btn" onclick="fitToTrim()">Fit to trim</button>
+        </div>
+        <div class="btn-row">
+          <button class="mini-btn" onclick="centreActive()">Centre</button>
+          <button class="mini-btn" onclick="resetActive()">Reset</button>
+        </div>
+        <div class="pos-info">Offset: <span id="posReadout">x 0, y 0</span></div>
+      </div>
+    </div>
+
+    <!-- Step 4: View size -->
+    <div class="step-block" id="stepBlock4">
+      <div class="step-header" onclick="jumpStep(4)">
+        <div class="step-num">4</div>
+        <span class="step-label">Check resolution</span>
+      </div>
+      <div class="step-content">
+        <div class="size-toggle">
+          <button class="st-opt active" id="stWorking" onclick="setViewMode('working')">Working size</button>
+          <button class="st-opt" id="stFull" onclick="setViewMode('full')">Full size</button>
+        </div>
+        <p class="st-note" id="stNote">Working view — scaled to fit screen. Switch to Full Size to check for pixelation at actual print dimensions.</p>
+      </div>
+    </div>
+
+    <!-- Step 5: Opacity -->
+    <div class="step-block" id="stepBlock5">
+      <div class="step-header" onclick="jumpStep(5)">
+        <div class="step-num">5</div>
+        <span class="step-label">Layer opacity</span>
+      </div>
+      <div class="step-content">
+        <div class="op-row">
+          <span class="op-lbl">Template</span>
+          <input type="range" min="0" max="100" step="1" value="55" id="tmplOpacity" oninput="draw()" />
+          <span class="op-val" id="tmplOpVal">55%</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="step-spacer"></div>
+
+    <div class="step-actions">
+      <button class="btn btn-blue" id="btnChecks" disabled onclick="goToAssessor()">Run checks →</button>
+      <a class="btn" href="/dashboard">← Artwork list</a>
+    </div>
+  </div>
+
+  <!-- ── CANVAS AREA ─────────────────────────────────────────── -->
+  <div class="canvas-area" id="canvasArea">
+    <div class="canvas-scroll" id="canvasScroll">
+      <div class="canvas-wrap" id="canvasWrap">
+        <canvas id="mainCanvas" width="460" height="560"></canvas>
+      </div>
+    </div>
+
+    <div class="canvas-status-msg csm-idle" id="canvasStatus" style="opacity:0.85">
+      Select a SKU and upload artwork to begin
+    </div>
+
+    <div class="bleed-callout" id="bleedCallout" style="display:none">
       ⚠ <span id="bleedCalloutText">3mm bleed required — artwork must extend to the orange line</span>
     </div>
-    <div class="canvas-status" id="canvasStatus" style="opacity:0"></div>
-  </div>
 
-  <div class="sidebar">
-    <div class="sb-section">
-      <div class="sb-title">Artwork file</div>
-      <div class="upload-trigger" id="uploadTrigger" onclick="document.getElementById('fileIn').click()">
-        <span class="ut-icon">📂</span>
-        <span>Upload artwork file</span>
-      </div>
-      <input type="file" id="fileIn" accept=".png,.jpg,.jpeg,.pdf,.tif,.tiff,.eps" onchange="loadArtwork(event)" />
-      <div class="file-chip" id="fileChip" style="display:none">
-        <span class="file-chip-icon">📄</span>
-        <span class="file-chip-name" id="chipName"></span>
-        <button class="file-chip-clear" onclick="clearArtwork()" title="Remove">×</button>
-      </div>
-      <div class="bleed-notice" id="bleedNotice">
-        <strong id="bleedNoticeTitle">3mm bleed required.</strong>
-        <br>Artwork must extend past the trim line on all sides. The orange dashed line marks the bleed boundary.
-      </div>
-    </div>
-
-    <div class="sb-section" id="flagSection" style="display:none">
-      <div class="sb-title">Production notes</div>
-      <div class="flag-pills" id="flagPills"></div>
-    </div>
-
-    <div class="sb-section">
-      <div class="sb-title">Scale</div>
-      <div class="ctrl-row">
-        <div class="ctrl-label"><span>Artwork size</span><span class="ctrl-val" id="scaleVal">100%</span></div>
-        <input type="range" id="scaleSlider" min="20" max="200" step="1" value="100" oninput="onScaleSlider(this.value)" />
-      </div>
-      <div class="ctrl-btn-row">
-        <button class="ctrl-btn" onclick="fitToBleed()">Fit to bleed</button>
-        <button class="ctrl-btn" onclick="fitToTrim()">Fit to trim</button>
-      </div>
-    </div>
-
-    <div class="sb-section">
-      <div class="sb-title">Position</div>
-      <div class="ctrl-btn-row" style="margin-bottom:6px">
-        <button class="ctrl-btn" onclick="centreArtwork()">Centre</button>
-        <button class="ctrl-btn" onclick="resetPosition()">Reset</button>
-      </div>
-      <div class="pos-readout">Offset <span id="posReadout">x 0, y 0</span></div>
-      <div style="font-size:10px;color:#B4B2A9;margin-top:4px">Drag artwork on canvas · scroll to scale</div>
-    </div>
-
-    <div class="sb-section">
-      <div class="sb-title">Layer opacity</div>
-      <div class="opacity-row">
-        <span class="opacity-label">Template</span>
-        <input type="range" min="0" max="100" step="1" value="55" id="tmplOpacity" oninput="draw()" />
-        <span class="opacity-val" id="tmplOpacityVal">55%</span>
-      </div>
-      <div class="opacity-row">
-        <span class="opacity-label">Artwork</span>
-        <input type="range" min="0" max="100" step="1" value="85" id="artOpacity" oninput="draw()" />
-        <span class="opacity-val" id="artOpacityVal">85%</span>
-      </div>
-    </div>
-
-    <div class="sb-section" style="flex:1">
-      <div class="sb-title">Layers</div>
-      <div class="layer-row"><div class="layer-dot" style="background:#F47920"></div><span class="layer-name">Bleed + trim guides</span><span class="layer-meta">always on</span></div>
-      <div class="layer-row"><div class="layer-dot" style="background:#6AB0FF"></div><span class="layer-name">SKU template</span><span class="layer-meta" id="tmplLayerMeta">55%</span></div>
-      <div class="layer-row"><div class="layer-dot" style="background:#ccc"></div><span class="layer-name">Your artwork</span><span class="layer-meta" id="artLayerMeta">85%</span></div>
+    <div class="layers-legend" id="layersLegend">
+      <div class="ll-title">Guides</div>
+      <div class="ll-row"><div class="ll-dot" style="background:#F47920"></div> Bleed boundary</div>
+      <div class="ll-row"><div class="ll-dot" style="background:rgba(30,120,220,0.7)"></div> Trim line</div>
+      <div class="ll-row"><div class="ll-dot" style="background:rgba(30,120,220,0.25)"></div> Template area</div>
     </div>
   </div>
+
+  <!-- ── RIGHT LAYERS PANEL ──────────────────────────────────── -->
+  <div class="layers-panel">
+    <div class="lp-header">
+      Layers
+      <button class="lp-add-btn" onclick="document.getElementById('fileIn').click()">+ Add</button>
+    </div>
+    <div class="layers-list" id="layersList"></div>
+    <div class="lp-fixed">
+      <div style="font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:0.07em;color:#B4B2A9;margin-bottom:6px">Fixed layers</div>
+      <div class="lp-fixed-row"><div class="lp-fixed-dot" style="background:#F47920"></div> Bleed + trim guides <span class="lp-fixed-meta">always on</span></div>
+      <div class="lp-fixed-row" id="tmplLayerRow" style="display:none"><div class="lp-fixed-dot" style="background:rgba(30,120,220,0.6)"></div> SKU template <span class="lp-fixed-meta" id="tmplLayerMeta">55%</span></div>
+    </div>
+  </div>
+
 </div>
 
+<!-- ACTION BAR -->
 <div class="action-bar">
   <div class="action-status">
-    <div class="as-dot" id="statusDot"></div>
-    <span id="statusText" style="color:#5F5E5A">Upload artwork and position it within the bleed guides.</span>
+    <div class="as-dot" id="asDot"></div>
+    <span class="as-text" id="asText">Select a SKU and upload artwork to begin.</span>
   </div>
   <div class="action-btns">
-    <button class="btn" onclick="window.location.href='/dashboard'">← Artwork list</button>
-    <button class="btn" onclick="window.location.href='/artwork-assessor'+(jobId?'?job='+jobId:'')">Open in assessor</button>
-    <button class="btn btn-blue" id="btnChecks" disabled onclick="runChecks()">Run checks →</button>
+    <button class="abtn" onclick="goToAssessor()">Open in assessor</button>
+    <button class="abtn abtn-blue" id="btnChecksBar" disabled onclick="goToAssessor()">Run checks →</button>
   </div>
 </div>
 
@@ -315,7 +394,7 @@ const SKU_SPECS = {
   'WPG7':    { label:'Waterproof Pavement Sign WPG7',  w:594, h:841, dpi:150, colour:'CMYK', sides:1, bleed:5, notes:'Shared A1 template.', future_flags:['cut_lines'] },
   'WPG8':    { label:'Waterproof Pavement Sign WPG8',  w:594, h:841, dpi:150, colour:'CMYK', sides:2, bleed:5, notes:'Double-sided A1.', future_flags:['cut_lines','double_sided'] },
   'WPG9':    { label:'Waterproof Pavement Sign WPG9',  w:594, h:841, dpi:150, colour:'CMYK', sides:1, bleed:5, notes:'Shared A1 template.', future_flags:['cut_lines'] },
-  'WPG10':   { label:'Waterproof Pavement Sign WPG10', w:450, h:600, dpi:150, colour:'CMYK', sides:2, bleed:5, notes:'Verify dimensions — suspected copy-paste error in template.', future_flags:['cut_lines','double_sided'] },
+  'WPG10':   { label:'Waterproof Pavement Sign WPG10', w:450, h:600, dpi:150, colour:'CMYK', sides:2, bleed:5, notes:'Verify dimensions.', future_flags:['cut_lines','double_sided'] },
   'WPG11':   { label:'Waterproof Pavement Sign WPG11', w:450, h:600, dpi:150, colour:'CMYK', sides:2, bleed:5, notes:'', future_flags:['cut_lines','double_sided'] },
   'WPG12':   { label:'Waterproof Pavement Sign WPG12', w:450, h:600, dpi:150, colour:'CMYK', sides:1, bleed:5, notes:'', future_flags:['cut_lines'] },
   'WPG13':   { label:'Waterproof Pavement Sign WPG13', w:594, h:841, dpi:150, colour:'CMYK', sides:2, bleed:5, notes:'', future_flags:['cut_lines','double_sided'] },
@@ -331,364 +410,578 @@ const SKU_SPECS = {
   'ABG13':   { label:'Aluminium Sign ABG13',  w:594, h:841, dpi:150, colour:'CMYK', sides:2, bleed:5, notes:'Shared A1 template.', future_flags:['cut_lines','double_sided'] },
   'ABM2A1':  { label:'Aluminium Sign ABM2A1', w:594, h:841, dpi:150, colour:'CMYK', sides:2, bleed:5, notes:'Shared A1 template.', future_flags:['cut_lines','double_sided'] },
   'PABG':    { label:'Pavement Sign PABG',    w:594, h:841, dpi:150, colour:'CMYK', sides:2, bleed:5, notes:'Shared A1 template.', future_flags:['cut_lines','double_sided'] },
-  'BOLL05':  { label:'Bollard Sign BOLL05',   w:300, h:300, dpi:300, colour:'CMYK', sides:1, bleed:3, notes:'Circular print. Artwork must be centred.', future_flags:['cut_lines'] },
+  'BOLL05':  { label:'Bollard Sign',          w:300, h:300, dpi:300, colour:'CMYK', sides:1, bleed:3, notes:'Circular print.', future_flags:['cut_lines'] },
   'SF-A0':   { label:'Snap Frame A0',         w:841, h:1189, dpi:150, colour:'CMYK', sides:1, bleed:0, notes:'No bleed required.', future_flags:[] },
   'SF-A1':   { label:'Snap Frame A1',         w:594, h:841,  dpi:200, colour:'CMYK', sides:1, bleed:0, notes:'No bleed required.', future_flags:[] },
   'SF-A2':   { label:'Snap Frame A2',         w:420, h:594,  dpi:200, colour:'CMYK', sides:1, bleed:0, notes:'No bleed required.', future_flags:[] },
   'SF-A3':   { label:'Snap Frame A3',         w:297, h:420,  dpi:300, colour:'CMYK', sides:1, bleed:0, notes:'No bleed required.', future_flags:[] },
   'SF-A4':   { label:'Snap Frame A4',         w:210, h:297,  dpi:300, colour:'CMYK', sides:1, bleed:0, notes:'No bleed required.', future_flags:[] },
-  'VINYL':   { label:'Vinyl Banner (custom)', w:null,h:null,  dpi:100, colour:'CMYK', sides:1, bleed:50, notes:'White→pink conversion required before RIP.', future_flags:['vinyl_colour'] },
+  'VINYL':   { label:'Vinyl Banner (custom)', w:null,h:null,  dpi:100, colour:'CMYK', sides:1, bleed:50, notes:'White→pink conversion before RIP.', future_flags:['vinyl_colour'] },
 };
-
 const FLAG_LABELS = { cut_lines:'Cut lines required', vinyl_colour:'White→pink conversion', double_sided:'Double-sided' };
 
+// ── State ──────────────────────────────────────────────────────────────────
+let currentSku = '';
+let viewMode = 'working'; // 'working' | 'full'
+let jobId = null;
+let currentStep = 1;
+
+// Layers: array of { id, name, img, scale, offsetX, offsetY, visible, thumb }
+// Rendered bottom-to-top (index 0 = bottom)
+let layers = [];
+let activeLayerId = null;
+let dragLayerId = null;
+let dragOverLayerId = null;
+
+// Canvas geometry
 const canvas = document.getElementById('mainCanvas');
 const ctx = canvas.getContext('2d');
-
-let currentSku = '';
-let artImg = null;
-let artScale = 1.0;
-let artOffsetX = 0, artOffsetY = 0;
-let isDragging = false, dragStartX = 0, dragStartY = 0, dragArtX = 0, dragArtY = 0;
-let jobId = null;
-
-const CW = 420, CH = 520;
+let CW = 460, CH = 560;
 let TX, TY, TW, TH, BLEEDPX;
 
-function computeLayout(sku) {
-  if (!sku || !SKU_SPECS[sku]) return;
-  const spec = SKU_SPECS[sku];
-  if (!spec.w) { TX=60; TY=60; TW=CW-120; TH=CH-120; BLEEDPX=20; return; }
-  const pad = 36;
-  const ar = spec.w / spec.h;
-  let tW = CW - pad*2, tH = tW / ar;
-  if (tH > CH - pad*2) { tH = CH - pad*2; tW = tH * ar; }
-  TW = Math.round(tW); TH = Math.round(tH);
-  TX = Math.round((CW - TW) / 2); TY = Math.round((CH - TH) / 2);
-  BLEEDPX = Math.round(spec.bleed * (TW / spec.w));
+// Drag state for canvas
+let isDragging = false, dragStartX = 0, dragStartY = 0, dragArtX = 0, dragArtY = 0;
+
+// ── Layout computation ─────────────────────────────────────────────────────
+function computeLayout() {
+  const spec = SKU_SPECS[currentSku];
+  if (!spec || !spec.w) { TX=50; TY=50; TW=CW-100; TH=CH-100; BLEEDPX=20; return; }
+  if (viewMode === 'full') {
+    const mmPerPx = 25.4 / spec.dpi;
+    TW = Math.round(spec.w / mmPerPx);
+    TH = Math.round(spec.h / mmPerPx);
+    BLEEDPX = Math.round(spec.bleed / mmPerPx);
+    CW = TW + BLEEDPX*2 + 60;
+    CH = TH + BLEEDPX*2 + 60;
+    TX = Math.round((CW - TW) / 2);
+    TY = Math.round((CH - TH) / 2);
+  } else {
+    CW = 460; CH = 560;
+    const pad = 40;
+    const ar = spec.w / spec.h;
+    let tW = CW - pad*2, tH = tW / ar;
+    if (tH > CH - pad*2) { tH = CH - pad*2; tW = tH * ar; }
+    TW = Math.round(tW); TH = Math.round(tH);
+    TX = Math.round((CW - TW) / 2); TY = Math.round((CH - TH) / 2);
+    BLEEDPX = Math.round(spec.bleed * (TW / spec.w));
+  }
+  canvas.width = CW; canvas.height = CH;
 }
 
+// ── Draw ───────────────────────────────────────────────────────────────────
 function draw() {
-  if (!currentSku) { ctx.clearRect(0,0,CW,CH); ctx.fillStyle='#1C1C2E'; ctx.fillRect(0,0,CW,CH); return; }
-  const spec = SKU_SPECS[currentSku];
   const tmplA = parseInt(document.getElementById('tmplOpacity').value) / 100;
-  const artA  = parseInt(document.getElementById('artOpacity').value)  / 100;
+  document.getElementById('tmplOpVal').textContent = Math.round(tmplA*100)+'%';
+  document.getElementById('tmplLayerMeta').textContent = Math.round(tmplA*100)+'%';
 
-  document.getElementById('tmplOpacityVal').textContent = Math.round(tmplA*100)+'%';
-  document.getElementById('artOpacityVal').textContent  = Math.round(artA*100)+'%';
-  document.getElementById('tmplLayerMeta').textContent  = Math.round(tmplA*100)+'%';
-  document.getElementById('artLayerMeta').textContent   = Math.round(artA*100)+'%';
+  ctx.clearRect(0,0,CW,CH);
+  ctx.fillStyle = '#E8E8E4';
+  ctx.fillRect(0,0,CW,CH);
 
-  ctx.fillStyle = '#1C1C2E';
-  ctx.fillRect(0, 0, CW, CH);
+  if (!currentSku) { updateStatus(); return; }
+  const spec = SKU_SPECS[currentSku];
+  const bx = TX-BLEEDPX, by = TY-BLEEDPX, bw = TW+BLEEDPX*2, bh = TH+BLEEDPX*2;
 
-  const bx = TX - BLEEDPX, by = TY - BLEEDPX;
-  const bw = TW + BLEEDPX*2, bh = TH + BLEEDPX*2;
-
-  // Bleed zone background
-  ctx.globalAlpha = 0.12;
+  // Bleed zone tint
+  ctx.globalAlpha = 0.18;
   ctx.fillStyle = '#ffffff';
   ctx.fillRect(bx, by, bw, bh);
   ctx.globalAlpha = 1;
 
-  // Artwork layer (below template)
-  if (artImg) {
-    ctx.globalAlpha = artA;
-    const aw = artImg.width * artScale, ah = artImg.height * artScale;
-    ctx.drawImage(artImg, artOffsetX - aw/2, artOffsetY - ah/2, aw, ah);
+  // Draw layers bottom-to-top
+  [...layers].reverse().forEach(layer => {
+    if (!layer.visible || !layer.img) return;
+    ctx.globalAlpha = layer.opacity !== undefined ? layer.opacity : 0.92;
+    const aw = layer.img.width * layer.scale;
+    const ah = layer.img.height * layer.scale;
+    ctx.drawImage(layer.img, layer.offsetX - aw/2, layer.offsetY - ah/2, aw, ah);
+    // Highlight active layer with subtle border
+    if (layer.id === activeLayerId) {
+      ctx.globalAlpha = 0.5;
+      ctx.strokeStyle = '#185FA5';
+      ctx.lineWidth = 2;
+      ctx.setLineDash([4,3]);
+      ctx.strokeRect(layer.offsetX - aw/2, layer.offsetY - ah/2, aw, ah);
+      ctx.setLineDash([]);
+    }
     ctx.globalAlpha = 1;
-  }
+  });
 
-  // Template layer
+  // Template overlay
   ctx.globalAlpha = tmplA;
-  ctx.fillStyle = 'rgba(90,150,255,0.18)';
+  ctx.fillStyle = 'rgba(30,100,220,0.15)';
   ctx.fillRect(TX, TY, TW, TH);
-  ctx.strokeStyle = 'rgba(106,176,255,0.85)';
-  ctx.lineWidth = 1;
+  ctx.strokeStyle = 'rgba(30,100,220,0.8)';
+  ctx.lineWidth = 1.5;
   ctx.setLineDash([]);
-  ctx.strokeRect(TX+0.5, TY+0.5, TW-1, TH-1);
+  ctx.strokeRect(TX+0.75, TY+0.75, TW-1.5, TH-1.5);
   ctx.globalAlpha = 1;
 
-  // Bleed guide (orange dashed, always on top)
+  // Bleed guide — orange dashed, always prominent
   if (spec.bleed > 0) {
     ctx.strokeStyle = '#F47920';
-    ctx.lineWidth = 1.5;
-    ctx.setLineDash([5, 4]);
-    ctx.strokeRect(bx+0.75, by+0.75, bw-1.5, bh-1.5);
+    ctx.lineWidth = 2;
+    ctx.setLineDash([6,4]);
+    ctx.strokeRect(bx+1, by+1, bw-2, bh-2);
     ctx.setLineDash([]);
   }
 
   // Centre crosshair
-  ctx.strokeStyle = 'rgba(255,255,255,0.12)';
+  ctx.strokeStyle = 'rgba(30,100,220,0.2)';
   ctx.lineWidth = 0.5;
-  const cx = TX + TW/2, cy = TY + TH/2;
-  ctx.beginPath(); ctx.moveTo(cx-8,cy); ctx.lineTo(cx+8,cy); ctx.stroke();
-  ctx.beginPath(); ctx.moveTo(cx,cy-8); ctx.lineTo(cx,cy+8); ctx.stroke();
+  const cx = TX+TW/2, cy = TY+TH/2;
+  ctx.beginPath(); ctx.moveTo(cx-10,cy); ctx.lineTo(cx+10,cy); ctx.stroke();
+  ctx.beginPath(); ctx.moveTo(cx,cy-10); ctx.lineTo(cx,cy+10); ctx.stroke();
 
   // Guide labels
-  ctx.globalAlpha = 0.6;
-  ctx.font = '9px -apple-system, sans-serif';
+  ctx.font = 'bold 9px -apple-system,sans-serif';
   ctx.textAlign = 'left';
+  ctx.globalAlpha = 0.75;
   if (spec.bleed > 0) {
-    ctx.fillStyle = '#F47920';
-    ctx.fillText(`Bleed ${spec.bleed}mm`, bx+3, by+11);
+    ctx.fillStyle = '#C75E0A';
+    ctx.fillText(`Bleed ${spec.bleed}mm`, bx+4, by+12);
   }
-  ctx.fillStyle = 'rgba(106,176,255,0.9)';
-  ctx.fillText(`Trim ${spec.w||'?'}×${spec.h||'?'}mm`, TX+3, TY+11);
+  ctx.fillStyle = '#1245A8';
+  ctx.fillText(`Trim ${spec.w||'?'}×${spec.h||'?'}mm`, TX+4, TY+12);
   ctx.globalAlpha = 1;
   ctx.textAlign = 'start';
 
-  // Status update
   updateStatus();
+  updatePosReadout();
 }
 
+// ── Status ─────────────────────────────────────────────────────────────────
 function updateStatus() {
-  if (!artImg) {
-    setStatus('', 'Upload artwork and position it within the bleed guides.', false, false);
-    return;
+  const statusEl = document.getElementById('canvasStatus');
+  const asDot = document.getElementById('asDot');
+  const asText = document.getElementById('asText');
+  const btnChecks = document.getElementById('btnChecks');
+  const btnChecksBar = document.getElementById('btnChecksBar');
+
+  if (!currentSku) {
+    statusEl.textContent = 'Select a SKU to begin';
+    statusEl.className = 'canvas-status-msg csm-idle';
+    statusEl.style.opacity = '0.85';
+    asDot.className = 'as-dot'; asText.textContent = 'Select a SKU to begin.'; asText.className = 'as-text';
+    btnChecks.disabled = true; btnChecksBar.disabled = true; return;
   }
+  if (layers.filter(l=>l.visible&&l.img).length === 0) {
+    statusEl.textContent = 'Upload artwork to continue';
+    statusEl.className = 'canvas-status-msg csm-idle';
+    statusEl.style.opacity = '0.85';
+    asDot.className = 'as-dot'; asText.textContent = 'Upload artwork to position.'; asText.className = 'as-text';
+    btnChecks.disabled = true; btnChecksBar.disabled = true; return;
+  }
+
   const spec = SKU_SPECS[currentSku];
   const bx = TX-BLEEDPX, by = TY-BLEEDPX, bw = TW+BLEEDPX*2, bh = TH+BLEEDPX*2;
-  const aw = artImg.width*artScale, ah = artImg.height*artScale;
-  const al = artOffsetX-aw/2, at = artOffsetY-ah/2;
+
+  // Check topmost visible layer (index 0 = top)
+  const topLayer = layers.find(l => l.visible && l.img);
+  if (!topLayer) return;
+  const aw = topLayer.img.width * topLayer.scale;
+  const ah = topLayer.img.height * topLayer.scale;
+  const al = topLayer.offsetX - aw/2, at = topLayer.offsetY - ah/2;
 
   const coversBleed = al<=bx && at<=by && (al+aw)>=(bx+bw) && (at+ah)>=(by+bh);
   const coversTrim  = al<=TX && at<=TY && (al+aw)>=(TX+TW) && (at+ah)>=(TY+TH);
 
-  const canv = document.getElementById('canvasStatus');
-  canv.style.opacity = '1';
-
-  if (spec.bleed === 0) {
-    if (coversTrim) {
-      setStatus('pass', `Artwork covers the trim area — ready for checks.`, true, false);
-      canv.textContent = '✓ Covers trim'; canv.className = 'canvas-status pass';
-    } else {
-      setStatus('fail', 'Artwork does not cover the trim area. Reposition or scale up.', false, true);
-      canv.textContent = '✗ Doesn\'t cover trim'; canv.className = 'canvas-status fail';
-    }
-  } else if (coversBleed) {
-    setStatus('pass', `Artwork covers the bleed area — ready to run checks.`, true, false);
-    canv.textContent = '✓ Covers bleed'; canv.className = 'canvas-status pass';
-  } else if (coversTrim) {
-    setStatus('warn', `Artwork covers the trim but not the bleed. Scale up slightly or use "Fit to bleed".`, false, true);
-    canv.textContent = '⚠ Trim only — needs bleed'; canv.className = 'canvas-status warn';
+  if (spec.bleed === 0 ? coversTrim : coversBleed) {
+    statusEl.textContent = spec.bleed === 0 ? '✓ Artwork covers the trim area — ready for checks' : '✓ Artwork covers the bleed area — ready for checks';
+    statusEl.className = 'canvas-status-msg csm-pass';
+    asDot.className = 'as-dot pass'; asText.textContent = statusEl.textContent; asText.className = 'as-text pass';
+    btnChecks.disabled = false; btnChecksBar.disabled = false;
+  } else if (coversTrim && spec.bleed > 0) {
+    statusEl.textContent = '⚠ Artwork covers trim but not the bleed — scale up slightly';
+    statusEl.className = 'canvas-status-msg csm-warn';
+    asDot.className = 'as-dot warn'; asText.textContent = statusEl.textContent; asText.className = 'as-text warn';
+    btnChecks.disabled = true; btnChecksBar.disabled = true;
   } else {
-    setStatus('fail', 'Artwork doesn\'t cover the trim area. Reposition or scale up.', false, true);
-    canv.textContent = '✗ Doesn\'t cover trim'; canv.className = 'canvas-status fail';
+    statusEl.textContent = '✗ Artwork doesn\'t cover the trim area — reposition or scale up';
+    statusEl.className = 'canvas-status-msg csm-fail';
+    asDot.className = 'as-dot fail'; asText.textContent = statusEl.textContent; asText.className = 'as-text fail';
+    btnChecks.disabled = true; btnChecksBar.disabled = true;
   }
-
-  const offX = Math.round(artOffsetX - TX - TW/2);
-  const offY = Math.round(artOffsetY - TY - TH/2);
-  document.getElementById('posReadout').textContent = `x ${offX}, y ${offY}`;
+  statusEl.style.opacity = '1';
 }
 
-function setStatus(state, text, enableBtn, disableBtn) {
-  const dot = document.getElementById('statusDot');
-  const st = document.getElementById('statusText');
-  dot.className = 'as-dot' + (state ? ' '+state : '');
-  st.textContent = text;
-  st.style.color = state === 'pass' ? '#27500A' : state === 'warn' ? '#633806' : state === 'fail' ? '#791F1F' : '#5F5E5A';
-  document.getElementById('btnChecks').disabled = !enableBtn;
+function updatePosReadout() {
+  const layer = getActiveLayer();
+  if (!layer || !TW) return;
+  const ox = Math.round(layer.offsetX - TX - TW/2);
+  const oy = Math.round(layer.offsetY - TY - TH/2);
+  document.getElementById('posReadout').textContent = `x ${ox}, y ${oy}`;
 }
 
+// ── SKU change ─────────────────────────────────────────────────────────────
 function onSkuChange() {
   currentSku = document.getElementById('skuSelect').value;
   const spec = currentSku ? SKU_SPECS[currentSku] : null;
-  if (!spec) {
-    document.getElementById('skuDimsBar').innerHTML = '';
-    document.getElementById('flagSection').style.display = 'none';
-    draw(); return;
-  }
+  if (!spec) { document.getElementById('skuSpecCard').classList.remove('show'); document.getElementById('tmplLayerRow').style.display='none'; draw(); return; }
 
-  document.getElementById('skuDimsBar').innerHTML =
-    `<strong>${spec.label}</strong> &nbsp;·&nbsp; ${spec.w ? spec.w+'×'+spec.h+'mm' : 'custom'} &nbsp;·&nbsp; ${spec.dpi}dpi min &nbsp;·&nbsp; ${spec.colour} &nbsp;·&nbsp; ${spec.bleed}mm bleed`;
+  document.getElementById('ssSize').textContent    = spec.w ? `${spec.w}×${spec.h}mm` : 'Custom';
+  document.getElementById('ssDpi').textContent     = `${spec.dpi}dpi min`;
+  document.getElementById('ssColour').textContent  = spec.colour;
+  document.getElementById('ssBleed').textContent   = spec.bleed ? `${spec.bleed}mm` : 'None';
+  document.getElementById('ssSides').textContent   = spec.sides === 1 ? 'Single' : 'Double';
+  document.getElementById('ssFlags').innerHTML     = spec.future_flags.map(f=>`<span class="flag-pill">${FLAG_LABELS[f]||f}</span>`).join('');
+  document.getElementById('skuSpecCard').classList.add('show');
+  document.getElementById('tmplLayerRow').style.display = 'flex';
 
-  document.getElementById('bleedNoticeTitle').textContent = `${spec.bleed}mm bleed required.`;
-  document.getElementById('bleedCalloutText').textContent = `${spec.bleed}mm bleed required — artwork must extend to the orange line`;
+  const bcText = spec.bleed > 0
+    ? `${spec.bleed}mm bleed required — artwork must extend to the orange line`
+    : 'No bleed required for this SKU — artwork must cover the trim line';
+  document.getElementById('bleedCalloutText').textContent = bcText;
+  document.getElementById('bleedCallout').style.display = spec.w ? 'flex' : 'none';
 
-  const flags = spec.future_flags;
-  if (flags.length) {
-    document.getElementById('flagPills').innerHTML = flags.map(f => `<span class="flag-pill">${FLAG_LABELS[f]||f}</span>`).join('');
-    document.getElementById('flagSection').style.display = 'block';
-  } else {
-    document.getElementById('flagSection').style.display = 'none';
-  }
-
-  computeLayout(currentSku);
-  if (artImg) centreArtwork();
-  else draw();
+  updateFullSizeNote();
+  computeLayout();
+  layers.forEach(l => centreLayerOnTemplate(l));
+  draw();
+  setStep(2);
 }
 
-function loadArtwork(e) {
-  const file = e.target.files[0]; if (!file) return;
-  document.getElementById('chipName').textContent = file.name;
-  document.getElementById('fileChip').style.display = 'flex';
-  document.getElementById('uploadTrigger').style.display = 'none';
-  document.getElementById('uploadPrompt').style.display = 'none';
+// ── Step navigation ────────────────────────────────────────────────────────
+function setStep(n) {
+  currentStep = n;
+  for (let i=1; i<=5; i++) {
+    const b = document.getElementById('stepBlock'+i);
+    b.classList.remove('active','done');
+    if (i === n) b.classList.add('active');
+    else if (i < n) b.classList.add('done');
+  }
+}
+function jumpStep(n) { if (n < currentStep || n <= getMaxUnlockedStep()) setStep(n); }
+function getMaxUnlockedStep() {
+  if (!currentSku) return 1;
+  if (layers.length === 0) return 2;
+  return 5;
+}
 
+// ── File handling ──────────────────────────────────────────────────────────
+function handleFileInput(e) {
+  const files = Array.from(e.target.files);
+  files.forEach(f => loadLayerFile(f));
+  e.target.value = '';
+}
+
+function loadLayerFile(file) {
   if (!file.type.startsWith('image/')) {
-    const oc = document.createElement('canvas');
-    oc.width = TW || 300; oc.height = TH || 400;
-    const oc2d = oc.getContext('2d');
-    oc2d.fillStyle = '#dde8f5';
-    oc2d.fillRect(0, 0, oc.width, oc.height);
-    oc2d.fillStyle = '#4a7fc1';
-    oc2d.font = `bold ${Math.round(oc.width/14)}px sans-serif`;
-    oc2d.textAlign = 'center';
-    oc2d.fillText(file.name.split('.').pop().toUpperCase() + ' file', oc.width/2, oc.height/2-8);
-    oc2d.font = `${Math.round(oc.width/18)}px sans-serif`;
-    oc2d.fillStyle = '#7097ba';
-    oc2d.fillText('Preview not available', oc.width/2, oc.height/2+16);
-    const img2 = new Image();
-    img2.onload = () => { artImg = img2; fitToBleed(); };
-    img2.src = oc.toDataURL();
+    addPlaceholderLayer(file);
     return;
   }
-
   const reader = new FileReader();
   reader.onload = ev => {
     const img = new Image();
-    img.onload = () => { artImg = img; fitToBleed(); };
+    img.onload = () => {
+      const layer = createLayer(file.name, img);
+      layers.unshift(layer); // add to top
+      activeLayerId = layer.id;
+      computeLayout();
+      fitLayerToBleed(layer);
+      renderLayersList();
+      draw();
+      setStep(3);
+    };
     img.src = ev.target.result;
   };
   reader.readAsDataURL(file);
 }
 
-function clearArtwork() {
-  artImg = null;
-  document.getElementById('fileIn').value = '';
-  document.getElementById('fileChip').style.display = 'none';
-  document.getElementById('uploadTrigger').style.display = 'flex';
-  document.getElementById('uploadPrompt').style.display = 'flex';
-  document.getElementById('canvasStatus').style.opacity = '0';
-  document.getElementById('btnChecks').disabled = true;
-  setStatus('', 'Upload artwork and position it within the bleed guides.', false, false);
-  draw();
+function addPlaceholderLayer(file) {
+  const oc = document.createElement('canvas');
+  oc.width = TW||300; oc.height = TH||400;
+  const c = oc.getContext('2d');
+  c.fillStyle = '#ddeeff';
+  c.fillRect(0,0,oc.width,oc.height);
+  c.fillStyle = '#3366aa';
+  c.font = `bold ${Math.round(oc.width/12)}px sans-serif`;
+  c.textAlign = 'center';
+  c.fillText(file.name.split('.').pop().toUpperCase(), oc.width/2, oc.height/2-10);
+  c.font = `${Math.round(oc.width/20)}px sans-serif`;
+  c.fillStyle = '#5588bb';
+  c.fillText('Preview unavailable', oc.width/2, oc.height/2+18);
+  const img = new Image();
+  img.onload = () => {
+    const layer = createLayer(file.name, img);
+    layers.unshift(layer);
+    activeLayerId = layer.id;
+    computeLayout();
+    fitLayerToBleed(layer);
+    renderLayersList();
+    draw();
+    setStep(3);
+  };
+  img.src = oc.toDataURL();
 }
 
-function fitToBleed() {
-  if (!artImg || !currentSku) return;
-  const spec = SKU_SPECS[currentSku];
+function createLayer(name, img) {
+  const id = 'layer_' + Date.now() + '_' + Math.random().toString(36).slice(2,6);
+  const cx = TX + TW/2 || 230;
+  const cy = TY + TH/2 || 280;
+  return { id, name, img, scale:1, offsetX:cx, offsetY:cy, visible:true, opacity:0.92 };
+}
+
+function fitLayerToBleed(layer) {
+  if (!layer.img || !currentSku) return;
   const bw = TW + BLEEDPX*2, bh = TH + BLEEDPX*2;
-  const sx = bw / artImg.width, sy = bh / artImg.height;
-  artScale = Math.max(sx, sy);
-  centreArtwork();
-  syncSlider();
+  const sx = bw / layer.img.width, sy = bh / layer.img.height;
+  layer.scale = Math.max(sx, sy);
+  centreLayerOnTemplate(layer);
+  syncSliderToActive();
 }
 
-function fitToTrim() {
-  if (!artImg || !currentSku) return;
-  const sx = TW / artImg.width, sy = TH / artImg.height;
-  artScale = Math.max(sx, sy);
-  centreArtwork();
-  syncSlider();
+function centreLayerOnTemplate(layer) {
+  layer.offsetX = TX + TW/2;
+  layer.offsetY = TY + TH/2;
 }
 
-function centreArtwork() {
-  artOffsetX = TX + TW/2;
-  artOffsetY = TY + TH/2;
-  draw();
-}
+function getActiveLayer() { return layers.find(l => l.id === activeLayerId) || layers[0] || null; }
 
-function resetPosition() { artScale = 1.0; centreArtwork(); syncSlider(); }
-
-function syncSlider() {
-  const pct = Math.min(200, Math.max(20, Math.round(artScale*100)));
+function syncSliderToActive() {
+  const layer = getActiveLayer();
+  if (!layer) return;
+  const pct = Math.min(200, Math.max(20, Math.round(layer.scale*100)));
   document.getElementById('scaleSlider').value = pct;
   document.getElementById('scaleVal').textContent = pct+'%';
 }
 
+// ── Layer controls ─────────────────────────────────────────────────────────
+function fitToBleed() { const l=getActiveLayer(); if(l){fitLayerToBleed(l);draw();} }
+function fitToTrim() {
+  const l=getActiveLayer(); if(!l||!l.img) return;
+  const sx=TW/l.img.width, sy=TH/l.img.height;
+  l.scale=Math.max(sx,sy); centreLayerOnTemplate(l); syncSliderToActive(); draw();
+}
+function centreActive() { const l=getActiveLayer(); if(l){centreLayerOnTemplate(l);draw();} }
+function resetActive() { const l=getActiveLayer(); if(l){l.scale=1;centreLayerOnTemplate(l);syncSliderToActive();draw();} }
+
 function onScaleSlider(val) {
-  artScale = parseInt(val) / 100;
-  document.getElementById('scaleVal').textContent = Math.round(artScale*100)+'%';
+  const l=getActiveLayer(); if(!l) return;
+  l.scale=parseInt(val)/100;
+  document.getElementById('scaleVal').textContent=Math.round(l.scale*100)+'%';
   draw();
 }
 
-// Drag
-const wrap = document.getElementById('canvasWrap');
-wrap.addEventListener('mousedown', e => {
-  if (!artImg) return;
-  isDragging = true; dragStartX = e.offsetX; dragStartY = e.offsetY;
-  dragArtX = artOffsetX; dragArtY = artOffsetY;
-  wrap.classList.add('dragging');
+function deleteLayer(id) {
+  layers = layers.filter(l => l.id !== id);
+  if (activeLayerId === id) activeLayerId = layers[0]?.id || null;
+  syncSliderToActive();
+  renderLayersList();
+  draw();
+}
+
+function toggleLayerVis(id) {
+  const l = layers.find(l=>l.id===id); if(!l) return;
+  l.visible = !l.visible;
+  renderLayersList(); draw();
+}
+
+function setActiveLayer(id) {
+  activeLayerId = id;
+  syncSliderToActive();
+  renderLayersList();
+  draw();
+}
+
+// ── Layers panel render ────────────────────────────────────────────────────
+function renderLayersList() {
+  const list = document.getElementById('layersList');
+  if (layers.length === 0) {
+    list.innerHTML = '<div style="padding:20px 14px;font-size:12px;color:#B4B2A9;text-align:center">No artwork layers yet.<br>Use <strong>+ Add</strong> to upload.</div>';
+    return;
+  }
+  list.innerHTML = layers.map((l,i) => {
+    const isActive = l.id === activeLayerId;
+    const visIcon = l.visible ? '👁' : '🚫';
+    const thumbHtml = l.img
+      ? `<canvas class="li-thumb" id="thumb_${l.id}" width="28" height="28"></canvas>`
+      : `<div class="li-thumb-placeholder">📄</div>`;
+    return `<div class="layer-item${isActive?' layer-active':''}" id="li_${l.id}"
+        draggable="true"
+        ondragstart="onLayerDragStart(event,'${l.id}')"
+        ondragover="onLayerDragOver(event,'${l.id}')"
+        ondrop="onLayerDrop(event,'${l.id}')"
+        ondragend="onLayerDragEnd()"
+        onclick="setActiveLayer('${l.id}')"
+        style="background:${isActive?'#EEF5FF':''}">
+      <span class="li-drag" title="Drag to reorder">⠿</span>
+      ${thumbHtml}
+      <div class="li-info">
+        <div class="li-name" title="${l.name}">${l.name}</div>
+        <div class="li-meta">${Math.round(l.scale*100)}% · ${l.visible?'visible':'hidden'}</div>
+      </div>
+      <div class="li-actions">
+        <button class="li-vis" onclick="event.stopPropagation();toggleLayerVis('${l.id}')" title="${l.visible?'Hide':'Show'}">${visIcon}</button>
+        <button class="li-del" onclick="event.stopPropagation();deleteLayer('${l.id}')" title="Delete layer">✕</button>
+      </div>
+    </div>`;
+  }).join('');
+
+  // Render thumbnails
+  layers.forEach(l => {
+    if (!l.img) return;
+    const thumbCanvas = document.getElementById('thumb_'+l.id);
+    if (!thumbCanvas) return;
+    const tc = thumbCanvas.getContext('2d');
+    tc.clearRect(0,0,28,28);
+    const ar = l.img.width/l.img.height;
+    let tw=28,th=28;
+    if (ar>1){th=Math.round(28/ar);}else{tw=Math.round(28*ar);}
+    tc.drawImage(l.img,(28-tw)/2,(28-th)/2,tw,th);
+  });
+}
+
+// ── Layer drag-to-reorder ──────────────────────────────────────────────────
+let dragSrcLayerId = null;
+function onLayerDragStart(e, id) { dragSrcLayerId=id; e.dataTransfer.effectAllowed='move'; }
+function onLayerDragOver(e, id) { e.preventDefault(); e.dataTransfer.dropEffect='move'; }
+function onLayerDrop(e, id) {
+  e.preventDefault();
+  if (dragSrcLayerId===id) return;
+  const fromIdx = layers.findIndex(l=>l.id===dragSrcLayerId);
+  const toIdx   = layers.findIndex(l=>l.id===id);
+  if (fromIdx===-1||toIdx===-1) return;
+  const [moved] = layers.splice(fromIdx,1);
+  layers.splice(toIdx,0,moved);
+  renderLayersList(); draw();
+}
+function onLayerDragEnd() { dragSrcLayerId=null; renderLayersList(); }
+
+// ── Canvas drag ────────────────────────────────────────────────────────────
+const canvasWrap = document.getElementById('canvasWrap');
+canvasWrap.classList.add('can-drag');
+
+canvas.addEventListener('mousedown', e => {
+  const layer = getActiveLayer(); if(!layer) return;
+  isDragging=true;
+  const rect=canvas.getBoundingClientRect();
+  dragStartX=e.clientX-rect.left; dragStartY=e.clientY-rect.top;
+  dragArtX=layer.offsetX; dragArtY=layer.offsetY;
+  canvasWrap.classList.add('dragging');
 });
 window.addEventListener('mousemove', e => {
-  if (!isDragging) return;
-  const rect = canvas.getBoundingClientRect();
-  artOffsetX = dragArtX + (e.clientX - rect.left - dragStartX);
-  artOffsetY = dragArtY + (e.clientY - rect.top  - dragStartY);
+  if(!isDragging) return;
+  const rect=canvas.getBoundingClientRect();
+  const layer=getActiveLayer(); if(!layer) return;
+  layer.offsetX=dragArtX+(e.clientX-rect.left-dragStartX);
+  layer.offsetY=dragArtY+(e.clientY-rect.top-dragStartY);
   draw();
 });
-window.addEventListener('mouseup', () => { isDragging = false; wrap.classList.remove('dragging'); });
+window.addEventListener('mouseup', ()=>{ isDragging=false; canvasWrap.classList.remove('dragging'); renderLayersList(); });
+
+canvas.addEventListener('wheel', e => {
+  const layer=getActiveLayer(); if(!layer) return;
+  e.preventDefault();
+  layer.scale=Math.max(0.05,Math.min(5,layer.scale*(e.deltaY>0?0.95:1.05)));
+  syncSliderToActive(); draw();
+},{passive:false});
 
 // Touch
-canvas.addEventListener('touchstart', e => {
-  if (!artImg) return; e.preventDefault();
-  const t = e.touches[0]; const rect = canvas.getBoundingClientRect();
-  isDragging = true;
-  dragStartX = t.clientX - rect.left; dragStartY = t.clientY - rect.top;
-  dragArtX = artOffsetX; dragArtY = artOffsetY;
-}, {passive:false});
-canvas.addEventListener('touchmove', e => {
-  if (!isDragging) return; e.preventDefault();
-  const t = e.touches[0]; const rect = canvas.getBoundingClientRect();
-  artOffsetX = dragArtX + (t.clientX - rect.left - dragStartX);
-  artOffsetY = dragArtY + (t.clientY - rect.top  - dragStartY);
-  draw();
-}, {passive:false});
-canvas.addEventListener('touchend', () => { isDragging = false; });
-
-// Scroll to scale
-canvas.addEventListener('wheel', e => {
-  if (!artImg) return; e.preventDefault();
-  artScale = Math.max(0.1, Math.min(4, artScale * (e.deltaY > 0 ? 0.95 : 1.05)));
-  syncSlider(); draw();
-}, {passive:false});
-
-// Page-level drag-and-drop
-document.addEventListener('dragover', e => e.preventDefault());
-document.addEventListener('drop', e => {
+canvas.addEventListener('touchstart', e=>{
+  const layer=getActiveLayer(); if(!layer) return;
   e.preventDefault();
-  const f = e.dataTransfer.files[0];
-  if (f) { document.getElementById('fileIn').files; loadArtworkFromFile(f); }
+  const t=e.touches[0]; const rect=canvas.getBoundingClientRect();
+  isDragging=true;
+  dragStartX=t.clientX-rect.left; dragStartY=t.clientY-rect.top;
+  dragArtX=layer.offsetX; dragArtY=layer.offsetY;
+},{passive:false});
+canvas.addEventListener('touchmove', e=>{
+  if(!isDragging) return; e.preventDefault();
+  const t=e.touches[0]; const rect=canvas.getBoundingClientRect();
+  const layer=getActiveLayer(); if(!layer) return;
+  layer.offsetX=dragArtX+(t.clientX-rect.left-dragStartX);
+  layer.offsetY=dragArtY+(t.clientY-rect.top-dragStartY);
+  draw();
+},{passive:false});
+canvas.addEventListener('touchend',()=>{ isDragging=false; renderLayersList(); });
+
+// Page drop
+document.addEventListener('dragover', e=>e.preventDefault());
+document.addEventListener('drop', e=>{
+  if(e.target.closest('.layers-panel')||e.target.closest('.layer-item')) return;
+  e.preventDefault();
+  Array.from(e.dataTransfer.files).forEach(f=>loadLayerFile(f));
 });
 
-function loadArtworkFromFile(file) {
-  document.getElementById('chipName').textContent = file.name;
-  document.getElementById('fileChip').style.display = 'flex';
-  document.getElementById('uploadTrigger').style.display = 'none';
-  document.getElementById('uploadPrompt').style.display = 'none';
-  if (!file.type.startsWith('image/')) return;
-  const reader = new FileReader();
-  reader.onload = ev => { const img = new Image(); img.onload = () => { artImg = img; fitToBleed(); }; img.src = ev.target.result; };
-  reader.readAsDataURL(file);
+// ── Upload drop zone ───────────────────────────────────────────────────────
+const ud=document.getElementById('uploadDrop');
+ud.addEventListener('dragover',e=>{e.preventDefault();ud.classList.add('drag-over');});
+ud.addEventListener('dragleave',()=>ud.classList.remove('drag-over'));
+ud.addEventListener('drop',e=>{e.preventDefault();ud.classList.remove('drag-over');Array.from(e.dataTransfer.files).forEach(f=>loadLayerFile(f));});
+
+// ── View mode ──────────────────────────────────────────────────────────────
+function setViewMode(mode) {
+  viewMode = mode;
+  document.getElementById('stWorking').classList.toggle('active', mode==='working');
+  document.getElementById('stFull').classList.toggle('active', mode==='full');
+  updateFullSizeNote();
+  if (!currentSku) return;
+  computeLayout();
+  draw();
 }
 
-function runChecks() {
-  window.location.href = '/artwork-assessor' + (jobId ? '?job='+jobId : '');
+function updateFullSizeNote() {
+  const spec = currentSku ? SKU_SPECS[currentSku] : null;
+  const note = document.getElementById('stNote');
+  if (viewMode==='full' && spec && spec.w) {
+    const pxW = Math.round(spec.w / (25.4/spec.dpi));
+    const pxH = Math.round(spec.h / (25.4/spec.dpi));
+    note.textContent = `Full size — canvas is ${pxW}×${pxH}px (${spec.dpi}dpi). Pixelation will be visible if artwork resolution is too low.`;
+  } else {
+    note.textContent = 'Working view — scaled to fit screen. Switch to Full Size to check for pixelation at actual print dimensions.';
+  }
 }
 
-// Initialise from URL params
+// ── Go to assessor ─────────────────────────────────────────────────────────
+function goToAssessor() {
+  const params = new URLSearchParams();
+  if (jobId) params.set('job', jobId);
+  if (currentSku) params.set('sku', currentSku);
+  window.location.href = '/artwork-assessor' + (params.toString() ? '?'+params.toString() : '');
+}
+
+// ── URL params ─────────────────────────────────────────────────────────────
 const _p = new URLSearchParams(window.location.search);
 jobId = _p.get('job') || null;
 const urlSku = _p.get('sku') || '';
 
 if (jobId) {
-  fetch(`/api/job?id=${jobId}`).then(r => r.json()).then(job => {
-    if (!job) return;
+  fetch('/api/job?id='+jobId).then(r=>r.json()).then(job=>{
+    if(!job) return;
     document.getElementById('jobBar').classList.add('show');
     document.getElementById('jbRef').textContent      = job.reference     || '—';
     document.getElementById('jbCustomer').textContent = job.customer_name || '—';
     document.getElementById('jbOrder').textContent    = job.order_number  || '—';
-  }).catch(e => console.error('job load failed', e));
-}
-
-if (urlSku && SKU_SPECS[urlSku]) {
+    // Load stored file onto canvas if available
+    if (job.storage_path) {
+      fetch('/api/file?path='+encodeURIComponent(job.storage_path)).then(r=>r.ok?r.json():null).then(d=>{
+        if(!d||!d.b64) return;
+        const img=new Image();
+        img.onload=()=>{
+          const layer=createLayer(job.file_name||'Stored file', img);
+          layers.unshift(layer); activeLayerId=layer.id;
+          if(job.sku&&SKU_SPECS[job.sku]){
+            document.getElementById('skuSelect').value=job.sku||urlSku;
+            onSkuChange();
+          } else { computeLayout(); fitLayerToBleed(layer); renderLayersList(); draw(); }
+        };
+        img.src='data:'+d.mediaType+';base64,'+d.b64;
+      });
+    } else if (job.sku || urlSku) {
+      document.getElementById('skuSelect').value = job.sku||urlSku;
+      onSkuChange();
+    }
+  }).catch(e=>console.error('job load failed',e));
+} else if (urlSku && SKU_SPECS[urlSku]) {
   document.getElementById('skuSelect').value = urlSku;
   onSkuChange();
-} else {
-  draw();
 }
+
+// Init
+renderLayersList();
+computeLayout();
+draw();
 </script>
 </body>
 </html>
