@@ -7,30 +7,25 @@
 <style>
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
 body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",system-ui,sans-serif;background:#FAFAF8;color:#2C2C2A;height:100vh;display:flex;flex-direction:column;overflow:hidden;font-size:14px}
-
 nav{border-bottom:1px solid #E8E6DE;padding:0 28px;background:#fff;display:flex;align-items:center;height:48px;flex-shrink:0;z-index:20}
 .nav-logo{font-size:14px;font-weight:500;color:#2C2C2A;text-decoration:none;margin-right:20px}
 .nav-links{display:flex;align-items:stretch;height:100%}
 .nav-link{display:flex;align-items:center;padding:0 13px;font-size:13px;color:#5F5E5A;text-decoration:none;border-bottom:2px solid transparent;white-space:nowrap}
 .nav-link:hover{color:#2C2C2A}
 .nav-link.active{color:#185FA5;border-bottom-color:#185FA5;font-weight:500}
-.nav-link.assessor-link{color:#5F5E5A}
 .nav-link.assessor-link.active{color:#534AB7;border-bottom-color:#534AB7;font-weight:500}
 .nav-spacer{flex:1}
 .nav-badge{font-size:11px;padding:3px 9px;border-radius:12px;background:#E6F1FB;color:#185FA5;font-weight:500;border:1px solid #B5D4F4}
-
 .job-bar{display:none;align-items:center;gap:16px;padding:7px 28px;background:#EEEDFE;border-bottom:1px solid #AFA9EC;font-size:13px;flex-shrink:0}
 .job-bar.show{display:flex}
 .jb-label{font-size:11px;color:#7F77DD;font-weight:500;text-transform:uppercase;letter-spacing:0.05em;margin-right:4px}
 .jb-val{color:#3C3489;font-weight:500}
 .jb-back{margin-left:auto;font-size:12px;color:#534AB7;text-decoration:none}
-
 .workspace{display:flex;flex:1;overflow:hidden}
 
-/* ── LEFT STEP PANEL ─────────────────────────────────────── */
+/* LEFT STEP PANEL */
 .step-panel{width:226px;flex-shrink:0;background:#fff;border-right:1px solid #E8E6DE;display:flex;flex-direction:column;overflow-y:auto}
 .step-panel-title{padding:14px 18px 8px;font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:0.1em;color:#B4B2A9;flex-shrink:0}
-
 .step-block{border-bottom:1px solid #F1EFE8;flex-shrink:0}
 .step-header{display:flex;align-items:center;gap:10px;padding:11px 16px;cursor:pointer;user-select:none}
 .step-header:hover{background:#FAFAF8}
@@ -42,18 +37,16 @@ nav{border-bottom:1px solid #E8E6DE;padding:0 28px;background:#fff;display:flex;
 .step-block.active .step-chevron{transform:rotate(180deg);color:#185FA5}
 .step-block.done .step-num{background:#639922;border-color:#639922;color:#fff}
 .step-block.done .step-title{color:#3B6D11}
-
-.step-body{display:none;padding:0 16px 14px 16px}
+.step-body{display:none;padding:0 16px 14px}
 .step-block.active .step-body{display:block}
 
-/* SKU summary pill — always visible after selection */
 .sku-summary{display:none;margin:0 16px 0;padding:7px 10px;background:#EEF5FF;border:1px solid #B5D4F4;border-radius:7px;font-size:11px;cursor:pointer}
 .sku-summary.show{display:block}
 .sku-summary-top{display:flex;align-items:center;gap:6px;margin-bottom:3px}
 .sku-summary-code{font-weight:700;font-size:11px;background:#185FA5;color:#fff;padding:1px 6px;border-radius:3px}
 .sku-summary-name{color:#0C447C;font-weight:500;flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .sku-summary-dims{color:#185FA5;font-size:10px}
-.sku-summary-hint{font-size:10px;color:#B5D4F4;margin-top:2px}
+.sku-summary-hint{font-size:10px;color:#93C5E8;margin-top:2px}
 
 .sku-select{width:100%;font-size:13px;padding:7px 9px;border:1.5px solid #E8E6DE;border-radius:8px;background:#FAFAF8;color:#2C2C2A;cursor:pointer;margin-bottom:8px}
 .sku-select:focus{outline:none;border-color:#185FA5}
@@ -64,14 +57,12 @@ nav{border-bottom:1px solid #E8E6DE;padding:0 28px;background:#fff;display:flex;
 .flag-pills{display:flex;flex-wrap:wrap;gap:4px;margin-top:6px}
 .flag-pill{font-size:10px;font-weight:500;padding:2px 7px;border-radius:3px;background:#FAEEDA;color:#854F0B;border:1px solid #FAC775}
 
-/* Upload */
 .upload-drop{border:1.5px dashed #C8C6BC;border-radius:8px;padding:20px 12px;text-align:center;cursor:pointer;background:#FAFAF8;transition:border-color 0.15s,background 0.15s;font-size:12px;color:#5F5E5A}
 .upload-drop:hover,.upload-drop.drag-over{border-color:#185FA5;background:#EEF5FF;color:#185FA5}
 .upload-drop .ud-icon{font-size:22px;display:block;margin-bottom:6px}
 .upload-drop strong{color:#2C2C2A;display:block;margin-bottom:2px}
 .ud-formats{font-size:10px;color:#B4B2A9;margin-top:3px}
 
-/* Position controls */
 .ctrl-row{display:flex;flex-direction:column;gap:5px;margin-bottom:10px}
 .ctrl-lbl{display:flex;justify-content:space-between;font-size:11px;color:#5F5E5A}
 .ctrl-val{font-weight:700;color:#2C2C2A;font-size:11px}
@@ -79,19 +70,18 @@ input[type=range]{width:100%;cursor:pointer;accent-color:#185FA5}
 .btn-row{display:flex;gap:5px;margin-bottom:6px}
 .mini-btn{flex:1;padding:6px 4px;font-size:11px;border-radius:6px;border:1px solid #E8E6DE;background:#FAFAF8;color:#2C2C2A;cursor:pointer;text-align:center;white-space:nowrap;transition:all 0.12s}
 .mini-btn:hover{background:#EEF5FF;border-color:#B5D4F4;color:#185FA5}
+.mini-btn.rot{font-size:14px;padding:5px}
 .pos-info{font-size:10px;color:#B4B2A9;margin-top:3px}
 .pos-info span{color:#5F5E5A;font-weight:500}
-
-/* Active layer callout inside step */
 .active-layer-tag{display:none;align-items:center;gap:5px;padding:5px 8px;background:#FFF8E6;border:1px solid #FAC775;border-radius:5px;font-size:11px;color:#854F0B;margin-bottom:8px;font-weight:500}
 .active-layer-tag.show{display:flex}
 .alt-dot{width:7px;height:7px;border-radius:50%;background:#EF9F27;flex-shrink:0}
-
-/* Opacity in step */
 .op-row{display:flex;align-items:center;gap:6px;margin-bottom:6px}
 .op-lbl{font-size:11px;color:#5F5E5A;min-width:52px}
 .op-row input[type=range]{flex:1}
 .op-val{font-size:11px;font-weight:700;color:#2C2C2A;min-width:26px;text-align:right}
+.tmpl-rotate-row{display:flex;align-items:center;gap:6px;padding:7px 0;border-top:1px solid #F1EFE8;margin-top:4px}
+.tmpl-rotate-label{font-size:11px;color:#5F5E5A;flex:1}
 
 .step-spacer{flex:1;min-height:12px}
 .step-actions{padding:12px 16px;border-top:1px solid #E8E6DE;display:flex;flex-direction:column;gap:7px;flex-shrink:0}
@@ -104,10 +94,8 @@ input[type=range]{width:100%;cursor:pointer;accent-color:#185FA5}
 .btn-green:hover{opacity:0.88}
 .btn-green:disabled{background:#D3D1C7;border-color:#D3D1C7;cursor:not-allowed;opacity:1}
 
-/* ── CANVAS AREA ─────────────────────────────────────────── */
-.canvas-area{flex:1;background:#C8C8C4;display:flex;flex-direction:column;align-items:stretch;position:relative;overflow:hidden}
-
-/* Size toggle bar — permanently above canvas */
+/* CANVAS AREA */
+.canvas-area{flex:1;background:#C8C8C4;display:flex;flex-direction:column;overflow:hidden}
 .canvas-toolbar{display:flex;align-items:center;gap:10px;padding:7px 14px;background:#fff;border-bottom:1px solid #E8E6DE;flex-shrink:0}
 .size-toggle{display:flex;border:1.5px solid #D3D1C7;border-radius:7px;overflow:hidden}
 .st-btn{padding:5px 12px;font-size:12px;font-weight:500;cursor:pointer;background:#FAFAF8;color:#888780;border:none;transition:all 0.12s;white-space:nowrap}
@@ -115,74 +103,63 @@ input[type=range]{width:100%;cursor:pointer;accent-color:#185FA5}
 .st-btn:not(.active):hover{background:#EEF5FF;color:#185FA5}
 .ct-label{font-size:11px;color:#888780}
 .ct-info{font-size:11px;color:#5F5E5A;margin-left:auto;font-style:italic}
-
-.canvas-scroll{flex:1;overflow:auto;display:flex;align-items:center;justify-content:center;padding:20px}
-.canvas-wrap{position:relative;flex-shrink:0;cursor:grab}
-.canvas-wrap.dragging{cursor:grabbing}
-canvas{display:block;box-shadow:0 2px 12px rgba(0,0,0,0.18)}
-
-/* Status pill — on canvas */
-.canvas-status{position:absolute;top:36px;left:50%;transform:translateX(-50%);font-size:16px;font-weight:700;padding:9px 20px;border-radius:28px;white-space:nowrap;pointer-events:none;letter-spacing:-0.01em;box-shadow:0 2px 8px rgba(0,0,0,0.15)}
+.canvas-scroll{flex:1;overflow:auto;display:flex;align-items:flex-start;justify-content:center;padding:24px}
+.canvas-outer{position:relative;flex-shrink:0}
+canvas{display:block;box-shadow:0 2px 14px rgba(0,0,0,0.18)}
+.canvas-status{position:absolute;top:-38px;left:50%;transform:translateX(-50%);font-size:16px;font-weight:700;padding:8px 20px;border-radius:28px;white-space:nowrap;pointer-events:none;letter-spacing:-0.01em;box-shadow:0 2px 8px rgba(0,0,0,0.12)}
 .cs-idle{background:rgba(44,44,42,0.65);color:#fff}
 .cs-ok{background:rgba(59,109,17,0.92);color:#fff}
 .cs-warn{background:rgba(239,159,39,0.92);color:#fff}
-
-/* Bleed callout */
-.bleed-callout{position:absolute;bottom:10px;left:50%;transform:translateX(-50%);background:rgba(244,121,32,0.93);color:#fff;font-size:12px;font-weight:600;padding:5px 14px;border-radius:18px;white-space:nowrap;pointer-events:none;display:none;align-items:center;gap:5px}
+.bleed-callout{position:absolute;bottom:-34px;left:50%;transform:translateX(-50%);background:rgba(244,121,32,0.93);color:#fff;font-size:12px;font-weight:600;padding:5px 14px;border-radius:18px;white-space:nowrap;pointer-events:none;display:none;align-items:center;gap:5px}
 .bleed-callout.show{display:flex}
-
-/* Floating guide legend on canvas */
-.canvas-legend{position:absolute;bottom:44px;right:14px;background:rgba(255,255,255,0.93);border:1px solid rgba(0,0,0,0.1);border-radius:8px;padding:8px 10px;font-size:11px;pointer-events:none}
+.canvas-legend{position:absolute;bottom:8px;right:8px;background:rgba(255,255,255,0.93);border:1px solid rgba(0,0,0,0.1);border-radius:8px;padding:8px 10px;font-size:11px;pointer-events:none}
 .cl-title{font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:0.07em;color:#888780;margin-bottom:5px}
 .cl-row{display:flex;align-items:center;gap:6px;padding:2px 0;color:#2C2C2A}
 .cl-dot{width:8px;height:8px;border-radius:50%;flex-shrink:0}
 
-/* ── RIGHT LAYERS PANEL ──────────────────────────────────── */
+/* RIGHT LAYERS PANEL */
 .layers-panel{width:204px;flex-shrink:0;border-left:1px solid #E8E6DE;background:#fff;display:flex;flex-direction:column}
 .lp-header{padding:11px 14px 8px;font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:0.1em;color:#B4B2A9;border-bottom:1px solid #E8E6DE;display:flex;align-items:center;justify-content:space-between;flex-shrink:0}
 .lp-add{font-size:12px;color:#185FA5;cursor:pointer;font-weight:600;background:none;border:none;padding:2px 6px;border-radius:5px}
 .lp-add:hover{background:#EEF5FF}
 .layers-list{flex:1;overflow-y:auto}
-.layer-item{display:flex;align-items:center;gap:6px;padding:8px 10px;border-bottom:1px solid #F1EFE8;cursor:pointer;transition:background 0.1s;user-select:none;border-left:3px solid transparent;position:relative}
+.layer-item{display:flex;align-items:center;gap:6px;padding:8px 10px;border-bottom:1px solid #F1EFE8;cursor:pointer;user-select:none;border-left:3px solid transparent}
 .layer-item:hover{background:#FAFAF8}
 .layer-item.selected{background:#EEF5FF;border-left-color:#185FA5}
-.layer-item.hidden-layer{opacity:0.5}
+.layer-item.hidden-layer{opacity:0.45}
 .li-drag{color:#D3D1C7;font-size:16px;cursor:grab;flex-shrink:0;line-height:1}
-.li-thumb{width:30px;height:30px;border-radius:4px;object-fit:cover;flex-shrink:0;border:1px solid #E8E6DE;background:#F1EFE8;display:block}
+.li-thumb{width:30px;height:30px;border-radius:4px;flex-shrink:0;border:1px solid #E8E6DE;background:#F1EFE8;display:block}
 .li-info{flex:1;min-width:0}
 .li-name{font-size:11px;font-weight:500;color:#2C2C2A;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .li-meta{font-size:10px;color:#B4B2A9;margin-top:1px}
 .li-btns{display:flex;gap:2px;flex-shrink:0}
-.li-btn{font-size:15px;cursor:pointer;color:#B4B2A9;background:none;border:none;padding:3px;line-height:1;border-radius:4px}
+.li-btn{font-size:14px;cursor:pointer;color:#B4B2A9;background:none;border:none;padding:3px;line-height:1;border-radius:4px}
 .li-btn:hover{background:#F1EFE8;color:#2C2C2A}
 .li-btn.del:hover{background:#FCEBEB;color:#E24B4A}
 .li-btn.vis-on{color:#185FA5}
-
+.lp-bottom-add{display:flex;align-items:center;justify-content:center;padding:10px;border-top:1px solid #F1EFE8;cursor:pointer;font-size:22px;color:#D3D1C7;transition:all 0.12s;flex-shrink:0}
+.lp-bottom-add:hover{background:#EEF5FF;color:#185FA5}
 .lp-fixed{padding:8px 10px;border-top:1px solid #E8E6DE;background:#FAFAF8;flex-shrink:0}
 .lp-fixed-title{font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:0.07em;color:#B4B2A9;margin-bottom:5px}
 .lp-fixed-row{display:flex;align-items:center;gap:6px;padding:3px 0;font-size:11px;color:#5F5E5A}
 .lp-fixed-dot{width:7px;height:7px;border-radius:50%;flex-shrink:0}
 .lp-fixed-meta{margin-left:auto;font-size:10px;color:#B4B2A9}
 
-/* Action bar */
 .action-bar{display:flex;align-items:center;padding:8px 20px;border-top:1px solid #E8E6DE;background:#fff;flex-shrink:0;gap:10px}
 .as-dot{width:9px;height:9px;border-radius:50%;background:#B4B2A9;flex-shrink:0}
-.as-dot.ok{background:#639922}.as-dot.warn{background:#EF9F27}.as-dot.idle{background:#B4B2A9}
+.as-dot.ok{background:#639922}.as-dot.warn{background:#EF9F27}
 .as-text{font-size:13px;color:#5F5E5A;flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .as-text.ok{color:#27500A}.as-text.warn{color:#633806}
-.abtn{padding:7px 13px;font-size:13px;border-radius:7px;cursor:pointer;border:1px solid #E8E6DE;background:#fff;color:#2C2C2A;white-space:nowrap;transition:background 0.12s}
+.abtn{padding:7px 13px;font-size:13px;border-radius:7px;cursor:pointer;border:1px solid #E8E6DE;background:#fff;color:#2C2C2A;white-space:nowrap}
 .abtn:hover{background:#F1EFE8}
 .abtn-green{background:#3B6D11;color:#fff;border-color:#3B6D11}
 .abtn-green:hover{opacity:0.88;background:#3B6D11}
 .abtn-green:disabled{background:#D3D1C7;border-color:#D3D1C7;cursor:not-allowed;opacity:1}
-
-/* Toast */
 .toast{position:fixed;bottom:20px;left:50%;transform:translateX(-50%);background:#2C2C2A;color:#fff;padding:9px 18px;border-radius:8px;font-size:13px;opacity:0;transition:opacity 0.2s;pointer-events:none;z-index:999;white-space:nowrap}
 .toast.show{opacity:1}
 </style>
 </head>
 <body>
-
 <nav>
   <a class="nav-logo" href="/">UKPOS Print Site</a>
   <div class="nav-links">
@@ -193,480 +170,644 @@ canvas{display:block;box-shadow:0 2px 12px rgba(0,0,0,0.18)}
   <span class="nav-spacer"></span>
   <span class="nav-badge">Internal tool</span>
 </nav>
-
 <div class="job-bar" id="jobBar">
   <span class="jb-label">Ref</span><span class="jb-val" id="jbRef">—</span>
   <span class="jb-label" style="margin-left:12px">Customer</span><span class="jb-val" id="jbCustomer">—</span>
   <span class="jb-label" style="margin-left:12px">Order</span><span class="jb-val" id="jbOrder">—</span>
   <a class="jb-back" href="/dashboard">← Back to artwork list</a>
 </div>
-
 <div class="workspace">
 
-  <!-- ── LEFT STEP PANEL ── -->
-  <div class="step-panel">
-    <div class="step-panel-title">Artwork setup</div>
+<!-- LEFT STEP PANEL -->
+<div class="step-panel">
+  <div class="step-panel-title">Artwork setup</div>
 
-    <!-- Step 1: SKU -->
-    <div class="step-block active" id="sb1">
-      <div class="step-header" onclick="toggleStep(1)">
-        <div class="step-num" id="sn1">1</div>
-        <span class="step-title">Select SKU</span>
-        <span class="step-chevron">▾</span>
-      </div>
-      <div class="step-body">
-        <select class="sku-select" id="skuSelect" onchange="onSkuChange()">
-          <option value="">— choose product —</option>
-          <optgroup label="Acrylic Poster Holders">
-            <option value="AS1-A0">AS1-A0 — A0</option><option value="AS1-A1">AS1-A1 — A1</option>
-            <option value="AS1-A2">AS1-A2 — A2</option><option value="AS1-A3">AS1-A3 — A3</option>
-            <option value="AS1-A4">AS1-A4 — A4</option><option value="AS1-A5">AS1-A5 — A5</option>
-          </optgroup>
-          <optgroup label="Waterproof Pavement Signs">
-            <option value="WPG1">WPG1</option><option value="WPG2">WPG2</option><option value="WPG3">WPG3</option>
-            <option value="WPG4">WPG4</option><option value="WPG5">WPG5</option><option value="WPG6">WPG6</option>
-            <option value="WPG7">WPG7</option><option value="WPG8">WPG8</option><option value="WPG9">WPG9</option>
-            <option value="WPG10">WPG10</option><option value="WPG11">WPG11</option><option value="WPG12">WPG12</option>
-            <option value="WPG13">WPG13</option><option value="WPG14">WPG14</option><option value="WPG15">WPG15</option>
-            <option value="WPG16">WPG16</option><option value="WPG17">WPG17</option><option value="WPG18">WPG18</option>
-          </optgroup>
-          <optgroup label="Aluminium Signs">
-            <option value="ABG1">ABG1</option><option value="ABG9">ABG9</option><option value="ABG10">ABG10</option>
-            <option value="ABG12">ABG12</option><option value="ABG13">ABG13</option>
-            <option value="ABM2A1">ABM2A1</option><option value="PABG">PABG</option>
-          </optgroup>
-          <optgroup label="Snap Frame Prints">
-            <option value="SF-A0">SF-A0</option><option value="SF-A1">SF-A1</option>
-            <option value="SF-A2">SF-A2</option><option value="SF-A3">SF-A3</option><option value="SF-A4">SF-A4</option>
-          </optgroup>
-          <optgroup label="Other">
-            <option value="BOLL05">BOLL05 — Bollard</option>
-            <option value="VINYL">VINYL — Vinyl Banner</option>
-          </optgroup>
-        </select>
-        <div id="skuSpecExpanded" style="display:none">
-          <div class="sku-spec-grid">
-            <div class="sku-spec-cell"><div class="sku-spec-key">Size</div><div class="sku-spec-val" id="ssSize">—</div></div>
-            <div class="sku-spec-cell"><div class="sku-spec-key">DPI min</div><div class="sku-spec-val" id="ssDpi">—</div></div>
-            <div class="sku-spec-cell"><div class="sku-spec-key">Colour</div><div class="sku-spec-val" id="ssColour">—</div></div>
-            <div class="sku-spec-cell"><div class="sku-spec-key">Bleed</div><div class="sku-spec-val" id="ssBleed">—</div></div>
-          </div>
-          <div class="flag-pills" id="ssFlags"></div>
-        </div>
-      </div>
+  <div class="step-block active" id="sb1">
+    <div class="step-header" onclick="toggleStep(1)">
+      <div class="step-num" id="sn1">1</div>
+      <span class="step-title">Select SKU</span>
+      <span class="step-chevron">▾</span>
     </div>
-
-    <!-- SKU summary — always visible after selection, outside step-body -->
-    <div class="sku-summary" id="skuSummary" onclick="toggleStep(1)">
-      <div class="sku-summary-top">
-        <span class="sku-summary-code" id="sSum_code">—</span>
-        <span class="sku-summary-name" id="sSum_name">—</span>
+    <div class="step-body">
+      <select class="sku-select" id="skuSelect" onchange="onSkuChange()">
+        <option value="">— choose product —</option>
+        <optgroup label="Acrylic Poster Holders">
+          <option value="AS1-A0">AS1-A0 — A0</option><option value="AS1-A1">AS1-A1 — A1</option>
+          <option value="AS1-A2">AS1-A2 — A2</option><option value="AS1-A3">AS1-A3 — A3</option>
+          <option value="AS1-A4">AS1-A4 — A4</option><option value="AS1-A5">AS1-A5 — A5</option>
+        </optgroup>
+        <optgroup label="Waterproof Pavement Signs">
+          <option value="WPG1">WPG1</option><option value="WPG2">WPG2</option><option value="WPG3">WPG3</option>
+          <option value="WPG4">WPG4</option><option value="WPG5">WPG5</option><option value="WPG6">WPG6</option>
+          <option value="WPG7">WPG7</option><option value="WPG8">WPG8</option><option value="WPG9">WPG9</option>
+          <option value="WPG10">WPG10</option><option value="WPG11">WPG11</option><option value="WPG12">WPG12</option>
+          <option value="WPG13">WPG13</option><option value="WPG14">WPG14</option><option value="WPG15">WPG15</option>
+          <option value="WPG16">WPG16</option><option value="WPG17">WPG17</option><option value="WPG18">WPG18</option>
+        </optgroup>
+        <optgroup label="Aluminium Signs">
+          <option value="ABG1">ABG1</option><option value="ABG9">ABG9</option><option value="ABG10">ABG10</option>
+          <option value="ABG12">ABG12</option><option value="ABG13">ABG13</option>
+          <option value="ABM2A1">ABM2A1</option><option value="PABG">PABG</option>
+        </optgroup>
+        <optgroup label="Snap Frame Prints">
+          <option value="SF-A0">SF-A0</option><option value="SF-A1">SF-A1</option>
+          <option value="SF-A2">SF-A2</option><option value="SF-A3">SF-A3</option><option value="SF-A4">SF-A4</option>
+        </optgroup>
+        <optgroup label="Other">
+          <option value="BOLL05">BOLL05 — Bollard</option>
+          <option value="VINYL">VINYL — Vinyl Banner</option>
+        </optgroup>
+      </select>
+      <div id="skuSpecExpanded" style="display:none">
+        <div class="sku-spec-grid">
+          <div class="sku-spec-cell"><div class="sku-spec-key">Size</div><div class="sku-spec-val" id="ssSize">—</div></div>
+          <div class="sku-spec-cell"><div class="sku-spec-key">DPI min</div><div class="sku-spec-val" id="ssDpi">—</div></div>
+          <div class="sku-spec-cell"><div class="sku-spec-key">Colour</div><div class="sku-spec-val" id="ssColour">—</div></div>
+          <div class="sku-spec-cell"><div class="sku-spec-key">Bleed</div><div class="sku-spec-val" id="ssBleed">—</div></div>
+        </div>
+        <div class="flag-pills" id="ssFlags"></div>
       </div>
-      <div class="sku-summary-dims" id="sSum_dims">—</div>
-      <div class="sku-summary-hint">Click to change SKU</div>
-    </div>
-
-    <!-- Step 2: Upload -->
-    <div class="step-block" id="sb2">
-      <div class="step-header" onclick="toggleStep(2)">
-        <div class="step-num" id="sn2">2</div>
-        <span class="step-title">Upload artwork</span>
-        <span class="step-chevron">▾</span>
-      </div>
-      <div class="step-body">
-        <div class="upload-drop" id="uploadDrop"
-          ondragover="event.preventDefault();this.classList.add('drag-over')"
-          ondragleave="this.classList.remove('drag-over')"
-          ondrop="handleDropOnZone(event)"
-          onclick="document.getElementById('fileIn').click()">
-          <span class="ud-icon">📂</span>
-          <strong>Drop artwork here</strong>
-          <div style="font-size:12px;color:#888780;margin-top:2px">or click anywhere to browse</div>
-          <div class="ud-formats">PDF · EPS · PNG · JPG · TIFF</div>
-        </div>
-        <input type="file" id="fileIn" accept=".png,.jpg,.jpeg,.pdf,.tif,.tiff,.eps" multiple onchange="handleFileInput(event)" style="display:none" />
-      </div>
-    </div>
-
-    <!-- Step 3: Position -->
-    <div class="step-block" id="sb3">
-      <div class="step-header" onclick="toggleStep(3)">
-        <div class="step-num" id="sn3">3</div>
-        <span class="step-title">Position &amp; scale</span>
-        <span class="step-chevron">▾</span>
-      </div>
-      <div class="step-body">
-        <div class="active-layer-tag" id="posActiveTag">
-          <div class="alt-dot"></div>
-          <span id="posActiveText">No layer selected</span>
-        </div>
-        <div class="ctrl-row">
-          <div class="ctrl-lbl"><span>Scale</span><span class="ctrl-val" id="scaleVal">100%</span></div>
-          <input type="range" id="scaleSlider" min="5" max="300" step="1" value="100" oninput="onScaleSlider(this.value)" />
-        </div>
-        <div class="btn-row">
-          <button class="mini-btn" onclick="fitToBleed()">Fit to bleed</button>
-          <button class="mini-btn" onclick="fitToTrim()">Fit to trim</button>
-        </div>
-        <div class="btn-row">
-          <button class="mini-btn" onclick="centreActive()">Centre</button>
-          <button class="mini-btn" onclick="resetActive()">Reset</button>
-        </div>
-        <div class="pos-info">Offset: <span id="posReadout">—</span></div>
-      </div>
-    </div>
-
-    <!-- Step 4: Opacity -->
-    <div class="step-block" id="sb4">
-      <div class="step-header" onclick="toggleStep(4)">
-        <div class="step-num" id="sn4">4</div>
-        <span class="step-title">Layer opacity</span>
-        <span class="step-chevron">▾</span>
-      </div>
-      <div class="step-body">
-        <div class="active-layer-tag" id="opActiveTag">
-          <div class="alt-dot"></div>
-          <span id="opActiveText">No layer selected</span>
-        </div>
-        <div class="op-row">
-          <span class="op-lbl">Selected</span>
-          <input type="range" min="0" max="100" step="1" value="92" id="layerOpacity" oninput="onLayerOpacity(this.value)" />
-          <span class="op-val" id="layerOpVal">92%</span>
-        </div>
-        <div class="op-row">
-          <span class="op-lbl">Template</span>
-          <input type="range" min="0" max="100" step="1" value="55" id="tmplOpacity" oninput="draw()" />
-          <span class="op-val" id="tmplOpVal">55%</span>
-        </div>
-      </div>
-    </div>
-
-    <div class="step-spacer"></div>
-
-    <div class="step-actions">
-      <button class="btn btn-green" id="btnSubmit" disabled onclick="submitToArtworkList()">Submit to artwork list →</button>
-      <button class="btn btn-blue" id="btnAssessor" disabled onclick="goToAssessor()">Run checks in assessor</button>
-      <a class="btn" href="/dashboard">← Artwork list</a>
     </div>
   </div>
 
-  <!-- ── CANVAS AREA ── -->
-  <div class="canvas-area">
-    <div class="canvas-toolbar">
-      <span class="ct-label">View</span>
-      <div class="size-toggle">
-        <button class="st-btn active" id="stWorking" onclick="setViewMode('working')">Working size</button>
-        <button class="st-btn" id="stFull" onclick="setViewMode('full')">Full size</button>
+  <div class="sku-summary" id="skuSummary" onclick="toggleStep(1)">
+    <div class="sku-summary-top">
+      <span class="sku-summary-code" id="sSum_code">—</span>
+      <span class="sku-summary-name" id="sSum_name">—</span>
+    </div>
+    <div class="sku-summary-dims" id="sSum_dims">—</div>
+    <div class="sku-summary-hint">Click to change</div>
+  </div>
+
+  <div class="step-block" id="sb2">
+    <div class="step-header" onclick="toggleStep(2)">
+      <div class="step-num" id="sn2">2</div>
+      <span class="step-title">Upload artwork</span>
+      <span class="step-chevron">▾</span>
+    </div>
+    <div class="step-body">
+      <div class="upload-drop" id="uploadDrop"
+        ondragover="event.preventDefault();this.classList.add('drag-over')"
+        ondragleave="this.classList.remove('drag-over')"
+        ondrop="handleDropOnZone(event)"
+        onclick="document.getElementById('fileIn').click()">
+        <span class="ud-icon">📂</span>
+        <strong>Drop artwork here</strong>
+        <div style="font-size:12px;color:#888780;margin-top:2px">or click to browse</div>
+        <div class="ud-formats">PDF · EPS · PNG · JPG · TIFF</div>
       </div>
-      <span class="ct-info" id="ctInfo">Scaled to fit screen</span>
-    </div>
-
-    <div class="canvas-scroll" id="canvasScroll">
-      <div class="canvas-wrap" id="canvasWrap">
-        <canvas id="mainCanvas" width="460" height="560"></canvas>
-      </div>
-    </div>
-
-    <div class="canvas-status cs-idle" id="canvasStatus">Select a SKU and upload artwork to begin</div>
-
-    <div class="bleed-callout" id="bleedCallout">
-      ⚠ <span id="bleedCalloutText">3mm bleed required — artwork must extend to the orange line</span>
-    </div>
-
-    <div class="canvas-legend">
-      <div class="cl-title">Guides</div>
-      <div class="cl-row"><div class="cl-dot" style="background:#F47920"></div>Bleed boundary</div>
-      <div class="cl-row"><div class="cl-dot" style="background:rgba(30,100,220,0.75)"></div>Trim line</div>
-      <div class="cl-row"><div class="cl-dot" style="background:rgba(30,100,220,0.2)"></div>Template area</div>
+      <input type="file" id="fileIn" accept=".png,.jpg,.jpeg,.pdf,.tif,.tiff,.eps" multiple onchange="handleFileInput(event)" style="display:none"/>
     </div>
   </div>
 
-  <!-- ── RIGHT LAYERS PANEL ── -->
-  <div class="layers-panel">
-    <div class="lp-header">
-      Layers
-      <button class="lp-add" onclick="document.getElementById('fileIn').click()">+ Add</button>
+  <div class="step-block" id="sb3">
+    <div class="step-header" onclick="toggleStep(3)">
+      <div class="step-num" id="sn3">3</div>
+      <span class="step-title">Position, scale &amp; rotate</span>
+      <span class="step-chevron">▾</span>
     </div>
-    <div class="layers-list" id="layersList">
-      <div style="padding:20px 12px;font-size:11px;color:#B4B2A9;text-align:center;line-height:1.5">
-        No layers yet.<br>Upload artwork to begin.
+    <div class="step-body">
+      <div class="active-layer-tag" id="posActiveTag"><div class="alt-dot"></div><span id="posActiveText">—</span></div>
+      <div class="ctrl-row">
+        <div class="ctrl-lbl"><span>Scale</span><span class="ctrl-val" id="scaleVal">100%</span></div>
+        <input type="range" id="scaleSlider" min="5" max="300" step="1" value="100" oninput="onScaleSlider(this.value)"/>
+      </div>
+      <div class="ctrl-row">
+        <div class="ctrl-lbl"><span>Rotation</span><span class="ctrl-val" id="rotVal">0°</span></div>
+        <input type="range" id="rotSlider" min="-180" max="180" step="1" value="0" oninput="onRotSlider(this.value)"/>
+      </div>
+      <div class="btn-row">
+        <button class="mini-btn rot" onclick="rotateFixed(-90)" title="Rotate 90° anticlockwise">↺ 90°</button>
+        <button class="mini-btn rot" onclick="rotateFixed(90)"  title="Rotate 90° clockwise">↻ 90°</button>
+        <button class="mini-btn rot" onclick="rotateFixed(180)" title="Flip 180°">↕ 180°</button>
+      </div>
+      <div class="btn-row">
+        <button class="mini-btn" onclick="fitToBleed()">Fit to bleed</button>
+        <button class="mini-btn" onclick="fitToTrim()">Fit to trim</button>
+      </div>
+      <div class="btn-row">
+        <button class="mini-btn" onclick="centreActive()">Centre</button>
+        <button class="mini-btn" onclick="resetActive()">Reset all</button>
+      </div>
+      <div class="pos-info">Offset: <span id="posReadout">—</span></div>
+
+      <!-- Template rotation — only shown if SKU is rotatable -->
+      <div class="tmpl-rotate-row" id="tmplRotRow" style="display:none">
+        <span class="tmpl-rotate-label">Template orientation</span>
+        <button class="mini-btn rot" onclick="rotateTemplate(-90)" title="Rotate template anticlockwise">↺</button>
+        <button class="mini-btn rot" onclick="rotateTemplate(90)"  title="Rotate template clockwise">↻</button>
       </div>
     </div>
-    <div class="lp-fixed">
-      <div class="lp-fixed-title">Fixed</div>
-      <div class="lp-fixed-row"><div class="lp-fixed-dot" style="background:#F47920"></div>Bleed + trim guides<span class="lp-fixed-meta">always on</span></div>
-      <div class="lp-fixed-row" id="tmplFixedRow" style="display:none"><div class="lp-fixed-dot" style="background:rgba(30,100,220,0.6)"></div>SKU template<span class="lp-fixed-meta" id="tmplFixedMeta">55%</span></div>
+  </div>
+
+  <div class="step-block" id="sb4">
+    <div class="step-header" onclick="toggleStep(4)">
+      <div class="step-num" id="sn4">4</div>
+      <span class="step-title">Layer opacity</span>
+      <span class="step-chevron">▾</span>
+    </div>
+    <div class="step-body">
+      <div class="active-layer-tag" id="opActiveTag"><div class="alt-dot"></div><span id="opActiveText">—</span></div>
+      <div class="op-row">
+        <span class="op-lbl">Selected</span>
+        <input type="range" min="0" max="100" step="1" value="92" id="layerOpacity" oninput="onLayerOpacity(this.value)"/>
+        <span class="op-val" id="layerOpVal">92%</span>
+      </div>
+      <div class="op-row">
+        <span class="op-lbl">Template</span>
+        <input type="range" min="0" max="100" step="1" value="55" id="tmplOpacity" oninput="draw()"/>
+        <span class="op-val" id="tmplOpVal">55%</span>
+      </div>
+    </div>
+  </div>
+
+  <div class="step-spacer"></div>
+  <div class="step-actions">
+    <button class="btn btn-green" id="btnSubmit" disabled onclick="submitToArtworkList()">Submit to artwork list →</button>
+    <button class="btn btn-blue" id="btnAssessor" disabled onclick="goToAssessor()">Run checks in assessor</button>
+    <a class="btn" href="/dashboard">← Artwork list</a>
+  </div>
+</div>
+
+<!-- CANVAS AREA -->
+<div class="canvas-area">
+  <div class="canvas-toolbar">
+    <span class="ct-label">View</span>
+    <div class="size-toggle">
+      <button class="st-btn active" id="stWorking" onclick="setViewMode('working')">Working size</button>
+      <button class="st-btn" id="stFull" onclick="setViewMode('full')">Full size</button>
+    </div>
+    <span class="ct-info" id="ctInfo">Scaled to fit screen</span>
+  </div>
+  <div class="canvas-scroll" id="canvasScroll">
+    <div class="canvas-outer" id="canvasOuter">
+      <div class="canvas-status cs-idle" id="canvasStatus">Select a SKU and upload artwork to begin</div>
+      <canvas id="mainCanvas" width="460" height="560"></canvas>
+      <div class="bleed-callout" id="bleedCallout">⚠ <span id="bleedCalloutText">Bleed required</span></div>
+      <div class="canvas-legend">
+        <div class="cl-title">Guides</div>
+        <div class="cl-row"><div class="cl-dot" style="background:#F47920"></div>Bleed boundary</div>
+        <div class="cl-row"><div class="cl-dot" style="background:rgba(30,100,220,0.75)"></div>Trim line</div>
+        <div class="cl-row"><div class="cl-dot" style="background:rgba(30,100,220,0.2)"></div>Template area</div>
+      </div>
     </div>
   </div>
 </div>
 
+<!-- RIGHT LAYERS PANEL -->
+<div class="layers-panel">
+  <div class="lp-header">
+    Layers
+    <button class="lp-add" onclick="document.getElementById('fileIn').click()">+ Add</button>
+  </div>
+  <div class="layers-list" id="layersList">
+    <div style="padding:20px 12px;font-size:11px;color:#B4B2A9;text-align:center;line-height:1.5">No layers yet.<br>Upload artwork to begin.</div>
+  </div>
+  <div class="lp-bottom-add" onclick="document.getElementById('fileIn').click()" title="Add layer">＋</div>
+  <div class="lp-fixed">
+    <div class="lp-fixed-title">Fixed</div>
+    <div class="lp-fixed-row"><div class="lp-fixed-dot" style="background:#F47920"></div>Bleed + trim guides<span class="lp-fixed-meta">always on</span></div>
+    <div class="lp-fixed-row" id="tmplFixedRow" style="display:none"><div class="lp-fixed-dot" style="background:rgba(30,100,220,0.6)"></div>SKU template<span class="lp-fixed-meta" id="tmplFixedMeta">55%</span></div>
+  </div>
+</div>
+
+</div><!-- end workspace -->
+
 <div class="action-bar">
-  <div class="as-dot idle" id="asDot"></div>
-  <span class="as-text idle" id="asText">Select a SKU and upload artwork to begin.</span>
+  <div class="as-dot" id="asDot"></div>
+  <span class="as-text" id="asText">Select a SKU and upload artwork to begin.</span>
   <button class="abtn" onclick="goToAssessor()">Open in assessor</button>
   <button class="abtn abtn-green" id="btnSubmitBar" disabled onclick="submitToArtworkList()">Submit to artwork list →</button>
 </div>
-
 <div class="toast" id="toast"></div>
 
 <script>
 const SKU_SPECS = {
-  'AS1-A0':  {label:'Acrylic Poster Holder A0', w:841, h:1189,dpi:150,colour:'CMYK',sides:1,bleed:3, notes:'',future_flags:[]},
-  'AS1-A1':  {label:'Acrylic Poster Holder A1', w:594, h:841, dpi:200,colour:'CMYK',sides:1,bleed:3, notes:'',future_flags:[]},
-  'AS1-A2':  {label:'Acrylic Poster Holder A2', w:420, h:594, dpi:200,colour:'CMYK',sides:1,bleed:3, notes:'',future_flags:[]},
-  'AS1-A3':  {label:'Acrylic Poster Holder A3', w:297, h:420, dpi:300,colour:'CMYK',sides:1,bleed:3, notes:'',future_flags:[]},
-  'AS1-A4':  {label:'Acrylic Poster Holder A4', w:210, h:297, dpi:300,colour:'CMYK',sides:1,bleed:3, notes:'',future_flags:[]},
-  'AS1-A5':  {label:'Acrylic Poster Holder A5', w:148, h:210, dpi:300,colour:'CMYK',sides:1,bleed:3, notes:'',future_flags:[]},
-  'WPG1':    {label:'Waterproof Pavement Sign WPG1', w:450,h:600,dpi:150,colour:'CMYK',sides:2,bleed:5,notes:'Double-sided.',future_flags:['cut_lines','double_sided']},
-  'WPG2':    {label:'Waterproof Pavement Sign WPG2', w:450,h:600,dpi:150,colour:'CMYK',sides:2,bleed:5,notes:'Double-sided.',future_flags:['cut_lines','double_sided']},
-  'WPG3':    {label:'Waterproof Pavement Sign WPG3', w:500,h:700,dpi:150,colour:'CMYK',sides:2,bleed:5,notes:'',future_flags:['cut_lines','double_sided']},
-  'WPG4':    {label:'Waterproof Pavement Sign WPG4', w:500,h:700,dpi:150,colour:'CMYK',sides:2,bleed:5,notes:'',future_flags:['cut_lines','double_sided']},
-  'WPG5':    {label:'Waterproof Pavement Sign WPG5', w:500,h:700,dpi:150,colour:'CMYK',sides:1,bleed:5,notes:'',future_flags:['cut_lines']},
-  'WPG6':    {label:'Waterproof Pavement Sign WPG6', w:500,h:700,dpi:150,colour:'CMYK',sides:1,bleed:5,notes:'',future_flags:['cut_lines']},
-  'WPG7':    {label:'Waterproof Pavement Sign WPG7', w:594,h:841,dpi:150,colour:'CMYK',sides:1,bleed:5,notes:'Shared A1 template.',future_flags:['cut_lines']},
-  'WPG8':    {label:'Waterproof Pavement Sign WPG8', w:594,h:841,dpi:150,colour:'CMYK',sides:2,bleed:5,notes:'Double-sided A1.',future_flags:['cut_lines','double_sided']},
-  'WPG9':    {label:'Waterproof Pavement Sign WPG9', w:594,h:841,dpi:150,colour:'CMYK',sides:1,bleed:5,notes:'Shared A1 template.',future_flags:['cut_lines']},
-  'WPG10':   {label:'Waterproof Pavement Sign WPG10',w:450,h:600,dpi:150,colour:'CMYK',sides:2,bleed:5,notes:'Verify dimensions.',future_flags:['cut_lines','double_sided']},
-  'WPG11':   {label:'Waterproof Pavement Sign WPG11',w:450,h:600,dpi:150,colour:'CMYK',sides:2,bleed:5,notes:'',future_flags:['cut_lines','double_sided']},
-  'WPG12':   {label:'Waterproof Pavement Sign WPG12',w:450,h:600,dpi:150,colour:'CMYK',sides:1,bleed:5,notes:'',future_flags:['cut_lines']},
-  'WPG13':   {label:'Waterproof Pavement Sign WPG13',w:594,h:841,dpi:150,colour:'CMYK',sides:2,bleed:5,notes:'',future_flags:['cut_lines','double_sided']},
-  'WPG14':   {label:'Waterproof Pavement Sign WPG14',w:594,h:841,dpi:150,colour:'CMYK',sides:2,bleed:5,notes:'',future_flags:['cut_lines','double_sided']},
-  'WPG15':   {label:'Waterproof Pavement Sign WPG15',w:594,h:841,dpi:150,colour:'CMYK',sides:1,bleed:5,notes:'',future_flags:['cut_lines']},
-  'WPG16':   {label:'Waterproof Pavement Sign WPG16',w:594,h:841,dpi:150,colour:'CMYK',sides:1,bleed:5,notes:'',future_flags:['cut_lines']},
-  'WPG17':   {label:'Waterproof Pavement Sign WPG17',w:594,h:841,dpi:150,colour:'CMYK',sides:2,bleed:5,notes:'',future_flags:['cut_lines','double_sided']},
-  'WPG18':   {label:'Waterproof Pavement Sign WPG18',w:594,h:841,dpi:150,colour:'CMYK',sides:2,bleed:5,notes:'',future_flags:['cut_lines','double_sided']},
-  'ABG1':    {label:'Aluminium Sign ABG1',  w:594,h:841,dpi:150,colour:'CMYK',sides:2,bleed:5,notes:'Shared A1 template.',future_flags:['cut_lines','double_sided']},
-  'ABG9':    {label:'Aluminium Sign ABG9',  w:594,h:841,dpi:150,colour:'CMYK',sides:2,bleed:5,notes:'Shared A1 template.',future_flags:['cut_lines','double_sided']},
-  'ABG10':   {label:'Aluminium Sign ABG10', w:594,h:841,dpi:150,colour:'CMYK',sides:2,bleed:5,notes:'Shared A1 template.',future_flags:['cut_lines','double_sided']},
-  'ABG12':   {label:'Aluminium Sign ABG12', w:594,h:841,dpi:150,colour:'CMYK',sides:2,bleed:5,notes:'Shared A1 template.',future_flags:['cut_lines','double_sided']},
-  'ABG13':   {label:'Aluminium Sign ABG13', w:594,h:841,dpi:150,colour:'CMYK',sides:2,bleed:5,notes:'Shared A1 template.',future_flags:['cut_lines','double_sided']},
-  'ABM2A1':  {label:'Aluminium Sign ABM2A1',w:594,h:841,dpi:150,colour:'CMYK',sides:2,bleed:5,notes:'Shared A1 template.',future_flags:['cut_lines','double_sided']},
-  'PABG':    {label:'Pavement Sign PABG',   w:594,h:841,dpi:150,colour:'CMYK',sides:2,bleed:5,notes:'Shared A1 template.',future_flags:['cut_lines','double_sided']},
-  'BOLL05':  {label:'Bollard Sign',         w:300,h:300,dpi:300,colour:'CMYK',sides:1,bleed:3,notes:'Circular print.',future_flags:['cut_lines']},
-  'SF-A0':   {label:'Snap Frame A0',w:841, h:1189,dpi:150,colour:'CMYK',sides:1,bleed:0,notes:'No bleed required.',future_flags:[]},
-  'SF-A1':   {label:'Snap Frame A1',w:594, h:841, dpi:200,colour:'CMYK',sides:1,bleed:0,notes:'No bleed required.',future_flags:[]},
-  'SF-A2':   {label:'Snap Frame A2',w:420, h:594, dpi:200,colour:'CMYK',sides:1,bleed:0,notes:'No bleed required.',future_flags:[]},
-  'SF-A3':   {label:'Snap Frame A3',w:297, h:420, dpi:300,colour:'CMYK',sides:1,bleed:0,notes:'No bleed required.',future_flags:[]},
-  'SF-A4':   {label:'Snap Frame A4',w:210, h:297, dpi:300,colour:'CMYK',sides:1,bleed:0,notes:'No bleed required.',future_flags:[]},
-  'VINYL':   {label:'Vinyl Banner (custom)',w:null,h:null,dpi:100,colour:'CMYK',sides:1,bleed:50,notes:'White→pink conversion before RIP.',future_flags:['vinyl_colour']},
+  'AS1-A0':  {label:'Acrylic Poster Holder A0', w:841, h:1189,dpi:150,colour:'CMYK',sides:1,bleed:3, rotatable:false,future_flags:[]},
+  'AS1-A1':  {label:'Acrylic Poster Holder A1', w:594, h:841, dpi:200,colour:'CMYK',sides:1,bleed:3, rotatable:false,future_flags:[]},
+  'AS1-A2':  {label:'Acrylic Poster Holder A2', w:420, h:594, dpi:200,colour:'CMYK',sides:1,bleed:3, rotatable:false,future_flags:[]},
+  'AS1-A3':  {label:'Acrylic Poster Holder A3', w:297, h:420, dpi:300,colour:'CMYK',sides:1,bleed:3, rotatable:false,future_flags:[]},
+  'AS1-A4':  {label:'Acrylic Poster Holder A4', w:210, h:297, dpi:300,colour:'CMYK',sides:1,bleed:3, rotatable:false,future_flags:[]},
+  'AS1-A5':  {label:'Acrylic Poster Holder A5', w:148, h:210, dpi:300,colour:'CMYK',sides:1,bleed:3, rotatable:false,future_flags:[]},
+  'WPG1':    {label:'WPG1 Pavement Sign', w:450,h:600,dpi:150,colour:'CMYK',sides:2,bleed:5,rotatable:false,future_flags:['cut_lines','double_sided']},
+  'WPG2':    {label:'WPG2 Pavement Sign', w:450,h:600,dpi:150,colour:'CMYK',sides:2,bleed:5,rotatable:false,future_flags:['cut_lines','double_sided']},
+  'WPG3':    {label:'WPG3 Pavement Sign', w:500,h:700,dpi:150,colour:'CMYK',sides:2,bleed:5,rotatable:false,future_flags:['cut_lines','double_sided']},
+  'WPG4':    {label:'WPG4 Pavement Sign', w:500,h:700,dpi:150,colour:'CMYK',sides:2,bleed:5,rotatable:false,future_flags:['cut_lines','double_sided']},
+  'WPG5':    {label:'WPG5 Pavement Sign', w:500,h:700,dpi:150,colour:'CMYK',sides:1,bleed:5,rotatable:false,future_flags:['cut_lines']},
+  'WPG6':    {label:'WPG6 Pavement Sign', w:500,h:700,dpi:150,colour:'CMYK',sides:1,bleed:5,rotatable:false,future_flags:['cut_lines']},
+  'WPG7':    {label:'WPG7 Pavement Sign', w:594,h:841,dpi:150,colour:'CMYK',sides:1,bleed:5,rotatable:false,future_flags:['cut_lines']},
+  'WPG8':    {label:'WPG8 Pavement Sign', w:594,h:841,dpi:150,colour:'CMYK',sides:2,bleed:5,rotatable:false,future_flags:['cut_lines','double_sided']},
+  'WPG9':    {label:'WPG9 Pavement Sign', w:594,h:841,dpi:150,colour:'CMYK',sides:1,bleed:5,rotatable:false,future_flags:['cut_lines']},
+  'WPG10':   {label:'WPG10 Pavement Sign',w:450,h:600,dpi:150,colour:'CMYK',sides:2,bleed:5,rotatable:false,future_flags:['cut_lines','double_sided']},
+  'WPG11':   {label:'WPG11 Pavement Sign',w:450,h:600,dpi:150,colour:'CMYK',sides:2,bleed:5,rotatable:false,future_flags:['cut_lines','double_sided']},
+  'WPG12':   {label:'WPG12 Pavement Sign',w:450,h:600,dpi:150,colour:'CMYK',sides:1,bleed:5,rotatable:false,future_flags:['cut_lines']},
+  'WPG13':   {label:'WPG13 Pavement Sign',w:594,h:841,dpi:150,colour:'CMYK',sides:2,bleed:5,rotatable:false,future_flags:['cut_lines','double_sided']},
+  'WPG14':   {label:'WPG14 Pavement Sign',w:594,h:841,dpi:150,colour:'CMYK',sides:2,bleed:5,rotatable:false,future_flags:['cut_lines','double_sided']},
+  'WPG15':   {label:'WPG15 Pavement Sign',w:594,h:841,dpi:150,colour:'CMYK',sides:1,bleed:5,rotatable:false,future_flags:['cut_lines']},
+  'WPG16':   {label:'WPG16 Pavement Sign',w:594,h:841,dpi:150,colour:'CMYK',sides:1,bleed:5,rotatable:false,future_flags:['cut_lines']},
+  'WPG17':   {label:'WPG17 Pavement Sign',w:594,h:841,dpi:150,colour:'CMYK',sides:2,bleed:5,rotatable:false,future_flags:['cut_lines','double_sided']},
+  'WPG18':   {label:'WPG18 Pavement Sign',w:594,h:841,dpi:150,colour:'CMYK',sides:2,bleed:5,rotatable:false,future_flags:['cut_lines','double_sided']},
+  'ABG1':    {label:'Aluminium Sign ABG1', w:594,h:841,dpi:150,colour:'CMYK',sides:2,bleed:5,rotatable:false,future_flags:['cut_lines','double_sided']},
+  'ABG9':    {label:'Aluminium Sign ABG9', w:594,h:841,dpi:150,colour:'CMYK',sides:2,bleed:5,rotatable:false,future_flags:['cut_lines','double_sided']},
+  'ABG10':   {label:'Aluminium Sign ABG10',w:594,h:841,dpi:150,colour:'CMYK',sides:2,bleed:5,rotatable:false,future_flags:['cut_lines','double_sided']},
+  'ABG12':   {label:'Aluminium Sign ABG12',w:594,h:841,dpi:150,colour:'CMYK',sides:2,bleed:5,rotatable:false,future_flags:['cut_lines','double_sided']},
+  'ABG13':   {label:'Aluminium Sign ABG13',w:594,h:841,dpi:150,colour:'CMYK',sides:2,bleed:5,rotatable:false,future_flags:['cut_lines','double_sided']},
+  'ABM2A1':  {label:'Aluminium Sign ABM2A1',w:594,h:841,dpi:150,colour:'CMYK',sides:2,bleed:5,rotatable:false,future_flags:['cut_lines','double_sided']},
+  'PABG':    {label:'Pavement Sign PABG', w:594,h:841,dpi:150,colour:'CMYK',sides:2,bleed:5,rotatable:false,future_flags:['cut_lines','double_sided']},
+  'BOLL05':  {label:'Bollard Sign',       w:300,h:300,dpi:300,colour:'CMYK',sides:1,bleed:3,rotatable:false,future_flags:['cut_lines']},
+  'SF-A0':   {label:'Snap Frame A0',w:841, h:1189,dpi:150,colour:'CMYK',sides:1,bleed:0,rotatable:false,future_flags:[]},
+  'SF-A1':   {label:'Snap Frame A1',w:594, h:841, dpi:200,colour:'CMYK',sides:1,bleed:0,rotatable:false,future_flags:[]},
+  'SF-A2':   {label:'Snap Frame A2',w:420, h:594, dpi:200,colour:'CMYK',sides:1,bleed:0,rotatable:false,future_flags:[]},
+  'SF-A3':   {label:'Snap Frame A3',w:297, h:420, dpi:300,colour:'CMYK',sides:1,bleed:0,rotatable:false,future_flags:[]},
+  'SF-A4':   {label:'Snap Frame A4',w:210, h:297, dpi:300,colour:'CMYK',sides:1,bleed:0,rotatable:false,future_flags:[]},
+  'VINYL':   {label:'Vinyl Banner (custom)',w:null,h:null,dpi:100,colour:'CMYK',sides:1,bleed:50,rotatable:false,future_flags:['vinyl_colour']},
 };
-const FLAG_LABELS = {cut_lines:'Cut lines required',vinyl_colour:'White→pink conversion',double_sided:'Double-sided'};
+const FLAG_LABELS={cut_lines:'Cut lines required',vinyl_colour:'White→pink conversion',double_sided:'Double-sided'};
 
 // ── State ──────────────────────────────────────────────────
-let currentSku = '';
-let viewMode = 'working';
-let jobId = null;
-// layers: [{id,name,img,srcB64,srcMime,scale,offsetX,offsetY,visible,opacity}]
-// Index 0 = topmost drawn (rendered in reverse so 0 is on top visually)
-let layers = [];
-let activeLayerId = null;
-let dragSrcId = null;
+let currentSku='', viewMode='working', jobId=null, openStep=1;
+let templateRotDeg=0; // template rotation in degrees
+// layers: [{id,name,img,srcB64,srcMime,scale,offsetX,offsetY,rotation,visible,opacity}]
+let layers=[], activeLayerId=null, dragSrcId=null;
 
 // Canvas geometry
-const canvas = document.getElementById('mainCanvas');
-const ctx = canvas.getContext('2d');
+const canvas=document.getElementById('mainCanvas');
+const ctx=canvas.getContext('2d');
 let CW=460,CH=560,TX,TY,TW,TH,BLEEDPX;
+// Working-to-full scale ratio (for view switch remapping)
+let workingTW=0,workingTH=0,workingTX=0,workingTY=0,workingBLEED=0;
 
-// Canvas drag
-let isDragging=false,dragSX=0,dragSY=0,dragAX=0,dragAY=0;
+// Interaction state
+const HANDLE_R=7; // handle radius px
+let interactMode=null; // null | 'drag' | 'handle'
+let activeHandle=null; // {type:'tl'|'tr'|'bl'|'br'|'t'|'b'|'l'|'r'|'rot'}
+let mouseStart={x:0,y:0};
+let layerSnap={scale:1,rotation:0,offsetX:0,offsetY:0};
 
 // ── Step UI ────────────────────────────────────────────────
-let openStep = 1;
-function toggleStep(n) {
-  if (openStep === n) return; // already open
-  // close current
+function toggleStep(n){
+  if(openStep===n)return;
   document.getElementById('sb'+openStep).classList.remove('active');
-  // mark previous steps done
-  for(let i=1;i<n;i++) {
+  for(let i=1;i<n;i++){
     const b=document.getElementById('sb'+i);
-    b.classList.remove('active');
-    if(i<n) b.classList.add('done');
+    b.classList.remove('active'); b.classList.add('done');
   }
-  openStep = n;
+  openStep=n;
   document.getElementById('sb'+n).classList.add('active');
   document.getElementById('sb'+n).classList.remove('done');
 }
 
 // ── SKU ────────────────────────────────────────────────────
-function onSkuChange() {
-  currentSku = document.getElementById('skuSelect').value;
-  const spec = currentSku ? SKU_SPECS[currentSku] : null;
-  if (!spec) { document.getElementById('skuSummary').classList.remove('show'); draw(); return; }
+function onSkuChange(){
+  currentSku=document.getElementById('skuSelect').value;
+  templateRotDeg=0;
+  const spec=currentSku?SKU_SPECS[currentSku]:null;
+  if(!spec){document.getElementById('skuSummary').classList.remove('show');draw();return;}
 
-  // Populate spec grid
-  document.getElementById('ssSize').textContent    = spec.w ? `${spec.w}×${spec.h}mm` : 'Custom';
+  document.getElementById('ssSize').textContent    = spec.w?`${spec.w}×${spec.h}mm`:'Custom';
   document.getElementById('ssDpi').textContent     = `${spec.dpi}`;
   document.getElementById('ssColour').textContent  = spec.colour;
-  document.getElementById('ssBleed').textContent   = spec.bleed ? `${spec.bleed}mm` : 'None';
+  document.getElementById('ssBleed').textContent   = spec.bleed?`${spec.bleed}mm`:'None';
   document.getElementById('ssFlags').innerHTML     = spec.future_flags.map(f=>`<span class="flag-pill">${FLAG_LABELS[f]||f}</span>`).join('');
-  document.getElementById('skuSpecExpanded').style.display = 'block';
+  document.getElementById('skuSpecExpanded').style.display='block';
 
-  // Summary pill (always visible when step 1 is collapsed)
   document.getElementById('sSum_code').textContent = currentSku;
   document.getElementById('sSum_name').textContent = spec.label;
-  document.getElementById('sSum_dims').textContent = spec.w ? `${spec.w}×${spec.h}mm · ${spec.dpi}dpi · ${spec.bleed}mm bleed` : 'Custom size';
+  document.getElementById('sSum_dims').textContent = spec.w?`${spec.w}×${spec.h}mm · ${spec.dpi}dpi · ${spec.bleed}mm bleed`:'Custom size';
   document.getElementById('skuSummary').classList.add('show');
-  document.getElementById('tmplFixedRow').style.display = 'flex';
+  document.getElementById('tmplFixedRow').style.display='flex';
+  document.getElementById('tmplRotRow').style.display = spec.rotatable?'flex':'none';
 
-  // Bleed callout
-  const bc = spec.bleed > 0
-    ? `${spec.bleed}mm bleed required — artwork must extend to the orange line`
-    : 'No bleed required — artwork must cover the trim line';
-  document.getElementById('bleedCalloutText').textContent = bc;
-  document.getElementById('bleedCallout').classList.toggle('show', !!spec.w);
+  const bc=spec.bleed>0?`${spec.bleed}mm bleed required — artwork must extend to the orange line`:'No bleed required — artwork must cover the trim line';
+  document.getElementById('bleedCalloutText').textContent=bc;
+  document.getElementById('bleedCallout').classList.toggle('show',!!spec.w);
 
   updateViewInfo();
   computeLayout();
-  layers.forEach(l => centreOnTemplate(l));
+  layers.forEach(l=>centreOnTemplate(l));
   draw();
-  if (layers.length === 0) toggleStep(2); else toggleStep(3);
+  if(layers.length===0)toggleStep(2); else toggleStep(3);
 }
 
 // ── Layout ─────────────────────────────────────────────────
-function computeLayout() {
-  const spec = SKU_SPECS[currentSku];
-  if (!spec || !spec.w) { TX=50;TY=50;TW=CW-100;TH=CH-100;BLEEDPX=20; canvas.width=CW;canvas.height=CH; return; }
-  if (viewMode==='full') {
-    const mmPerPx = 25.4/spec.dpi;
-    TW=Math.round(spec.w/mmPerPx); TH=Math.round(spec.h/mmPerPx);
-    BLEEDPX=Math.round(spec.bleed/mmPerPx);
+function computeLayout(){
+  const spec=SKU_SPECS[currentSku];
+  if(!spec||!spec.w){TX=50;TY=50;TW=360;TH=460;BLEEDPX=10;canvas.width=CW=460;canvas.height=CH=560;return;}
+
+  if(viewMode==='full'){
+    const mmPx=25.4/spec.dpi;
+    TW=Math.round(spec.w/mmPx); TH=Math.round(spec.h/mmPx);
+    BLEEDPX=Math.round(spec.bleed/mmPx);
     CW=TW+BLEEDPX*2+80; CH=TH+BLEEDPX*2+80;
   } else {
+    // Save working geometry for ratio calculation on switch
     CW=460;CH=560;
     const pad=42,ar=spec.w/spec.h;
     let tW=CW-pad*2,tH=tW/ar;
     if(tH>CH-pad*2){tH=CH-pad*2;tW=tH*ar;}
     TW=Math.round(tW);TH=Math.round(tH);
     BLEEDPX=Math.round(spec.bleed*(TW/spec.w));
+    workingTW=TW;workingTH=TH;workingTX=Math.round((CW-TW)/2);workingTY=Math.round((CH-TH)/2);workingBLEED=BLEEDPX;
   }
   TX=Math.round((CW-TW)/2); TY=Math.round((CH-TH)/2);
   canvas.width=CW; canvas.height=CH;
 }
 
+// Remap layer positions when switching view modes
+function remapLayersToNewLayout(oldTW,oldTH,oldTX,oldTY,newTW,newTH,newTX,newTY){
+  if(!oldTW||!newTW)return;
+  const scaleX=newTW/oldTW, scaleY=newTH/oldTH;
+  layers.forEach(l=>{
+    const relX=l.offsetX-oldTX-oldTW/2, relY=l.offsetY-oldTY-oldTH/2;
+    l.offsetX=newTX+newTW/2+relX*scaleX;
+    l.offsetY=newTY+newTH/2+relY*scaleY;
+    l.scale*=scaleX; // uniform scale (use X ratio; aspect-correct remapping)
+  });
+}
+
 // ── Draw ───────────────────────────────────────────────────
-function draw() {
-  const tmplA = parseInt(document.getElementById('tmplOpacity').value)/100;
-  document.getElementById('tmplOpVal').textContent = Math.round(tmplA*100)+'%';
-  document.getElementById('tmplFixedMeta').textContent = Math.round(tmplA*100)+'%';
+function draw(){
+  const tmplA=parseInt(document.getElementById('tmplOpacity').value)/100;
+  document.getElementById('tmplOpVal').textContent=Math.round(tmplA*100)+'%';
+  document.getElementById('tmplFixedMeta').textContent=Math.round(tmplA*100)+'%';
 
   ctx.clearRect(0,0,CW,CH);
-  ctx.fillStyle = '#C8C8C4';
-  ctx.fillRect(0,0,CW,CH);
+  ctx.fillStyle='#C8C8C4'; ctx.fillRect(0,0,CW,CH);
 
-  if (!currentSku) { updateStatusUI(); return; }
-  const spec = SKU_SPECS[currentSku];
+  if(!currentSku){updateStatusUI();return;}
+  const spec=SKU_SPECS[currentSku];
+
+  // Bleed tint
   const bx=TX-BLEEDPX,by=TY-BLEEDPX,bw=TW+BLEEDPX*2,bh=TH+BLEEDPX*2;
+  ctx.globalAlpha=0.15; ctx.fillStyle='#fff'; ctx.fillRect(bx,by,bw,bh); ctx.globalAlpha=1;
 
-  // Bleed zone tint
-  ctx.globalAlpha=0.15; ctx.fillStyle='#ffffff'; ctx.fillRect(bx,by,bw,bh); ctx.globalAlpha=1;
-
-  // Draw layers — index 0 = top, so draw in reverse
+  // Draw layers bottom→top (array index 0=top so iterate reversed)
   for(let i=layers.length-1;i>=0;i--){
-    const l=layers[i];
-    if(!l.visible||!l.img) continue;
-    ctx.globalAlpha=l.opacity;
+    const l=layers[i]; if(!l.visible||!l.img)continue;
     const aw=l.img.width*l.scale, ah=l.img.height*l.scale;
-    ctx.drawImage(l.img, l.offsetX-aw/2, l.offsetY-ah/2, aw, ah);
+    ctx.save();
+    ctx.globalAlpha=l.opacity;
+    ctx.translate(l.offsetX,l.offsetY);
+    ctx.rotate(l.rotation||0);
+    ctx.drawImage(l.img,-aw/2,-ah/2,aw,ah);
+    ctx.restore();
     ctx.globalAlpha=1;
-    // Active layer selection outline
-    if(l.id===activeLayerId){
-      ctx.strokeStyle='rgba(24,95,165,0.7)';
-      ctx.lineWidth=2; ctx.setLineDash([5,3]);
-      ctx.strokeRect(l.offsetX-aw/2-1, l.offsetY-ah/2-1, aw+2, ah+2);
-      ctx.setLineDash([]);
-    }
   }
 
-  // Template overlay
+  // Template overlay (with its own rotation)
+  ctx.save();
   ctx.globalAlpha=tmplA;
-  ctx.fillStyle='rgba(30,100,220,0.12)'; ctx.fillRect(TX,TY,TW,TH);
-  ctx.strokeStyle='rgba(30,100,220,0.8)'; ctx.lineWidth=1.5; ctx.strokeRect(TX+0.75,TY+0.75,TW-1.5,TH-1.5);
+  ctx.translate(TX+TW/2,TY+TH/2);
+  ctx.rotate((templateRotDeg*Math.PI)/180);
+  ctx.fillStyle='rgba(30,100,220,0.12)'; ctx.fillRect(-TW/2,-TH/2,TW,TH);
+  ctx.strokeStyle='rgba(30,100,220,0.8)'; ctx.lineWidth=1.5;
+  ctx.strokeRect(-TW/2+0.75,-TH/2+0.75,TW-1.5,TH-1.5);
+  ctx.restore();
   ctx.globalAlpha=1;
 
-  // Bleed dashed line — orange, prominent
+  // Bleed line (orange dashed, always on)
   if(spec.bleed>0){
+    ctx.save();
+    ctx.translate(TX+TW/2,TY+TH/2);
+    ctx.rotate((templateRotDeg*Math.PI)/180);
     ctx.strokeStyle='#F47920'; ctx.lineWidth=2.5; ctx.setLineDash([7,4]);
-    ctx.strokeRect(bx+1.25,by+1.25,bw-2.5,bh-2.5); ctx.setLineDash([]);
+    ctx.strokeRect(-TW/2-BLEEDPX+1.25,-TH/2-BLEEDPX+1.25,TW+BLEEDPX*2-2.5,TH+BLEEDPX*2-2.5);
+    ctx.setLineDash([]);
+    ctx.restore();
   }
 
   // Guide labels
   ctx.font='bold 9px -apple-system,sans-serif'; ctx.globalAlpha=0.8; ctx.textAlign='left';
-  if(spec.bleed>0){ ctx.fillStyle='#C75E0A'; ctx.fillText(`Bleed ${spec.bleed}mm`,bx+4,by+12); }
-  ctx.fillStyle='#1245A8'; ctx.fillText(`Trim ${spec.w||'?'}×${spec.h||'?'}mm`,TX+4,TY+12);
+  if(spec.bleed>0){ctx.fillStyle='#C75E0A';ctx.fillText(`Bleed ${spec.bleed}mm`,bx+4,by+12);}
+  ctx.fillStyle='#1245A8';ctx.fillText(`Trim ${spec.w}×${spec.h}mm`,TX+4,TY+12);
   ctx.globalAlpha=1; ctx.textAlign='start';
 
+  // Transform handles on active layer
+  drawHandles();
   updateStatusUI();
   updatePosReadout();
 }
 
-// ── Status ─────────────────────────────────────────────────
-function updateStatusUI(){
-  const statusEl=document.getElementById('canvasStatus');
-  const asDot=document.getElementById('asDot');
-  const asText=document.getElementById('asText');
-  const btnSubmit=document.getElementById('btnSubmit');
-  const btnAssessor=document.getElementById('btnAssessor');
-  const btnSubmitBar=document.getElementById('btnSubmitBar');
-
-  function set(cls,msg,dotCls,enableSubmit){
-    statusEl.className='canvas-status '+cls; statusEl.textContent=msg;
-    asDot.className='as-dot '+dotCls; asText.textContent=msg; asText.className='as-text '+dotCls;
-    btnSubmit.disabled=!enableSubmit; btnSubmitBar.disabled=!enableSubmit;
-    btnAssessor.disabled=layers.length===0;
-  }
-
-  if(!currentSku){ set('cs-idle','Select a SKU and upload artwork to begin','idle',false); return; }
-  const visLayers=layers.filter(l=>l.visible&&l.img);
-  if(visLayers.length===0){ set('cs-idle','Upload artwork to continue','idle',false); return; }
-
-  const spec=SKU_SPECS[currentSku];
-  const bx=TX-BLEEDPX,by=TY-BLEEDPX,bw=TW+BLEEDPX*2,bh=TH+BLEEDPX*2;
-  // Check topmost visible layer
-  const top=visLayers[0];
-  const aw=top.img.width*top.scale, ah=top.img.height*top.scale;
-  const al=top.offsetX-aw/2, at=top.offsetY-ah/2;
-  const coversBleed=al<=bx&&at<=by&&(al+aw)>=(bx+bw)&&(at+ah)>=(by+bh);
-  const coversTrim=al<=TX&&at<=TY&&(al+aw)>=(TX+TW)&&(at+ah)>=(TY+TH);
-
-  if(spec.bleed===0?coversTrim:coversBleed){
-    set('cs-ok','✓ Artwork covers the '+(spec.bleed>0?'bleed':'trim')+' area — ready to submit','ok',true);
-  } else {
-    // Always amber/warning — partial coverage may be intentional
-    const msg = coversTrim && spec.bleed>0
-      ? '⚠ Artwork covers trim but not the bleed boundary — scale up if full-bleed print required'
-      : '⚠ Artwork does not cover the trim area — reposition or scale if a full print is intended';
-    set('cs-warn',msg,'warn',true); // still allow submit — staff can override
-  }
+// ── Transform handles ──────────────────────────────────────
+function getLayerBounds(l){
+  if(!l||!l.img)return null;
+  const aw=l.img.width*l.scale, ah=l.img.height*l.scale;
+  const rot=l.rotation||0;
+  // Corners in local space
+  const corners=[[-aw/2,-ah/2],[aw/2,-ah/2],[aw/2,ah/2],[-aw/2,ah/2]];
+  const cosR=Math.cos(rot),sinR=Math.sin(rot);
+  return corners.map(([x,y])=>({
+    x:l.offsetX+x*cosR-y*sinR,
+    y:l.offsetY+x*sinR+y*cosR
+  }));
 }
 
-function updatePosReadout(){
-  const l=getActiveLayer();
-  if(!l||!TW){ document.getElementById('posReadout').textContent='—'; return; }
-  const ox=Math.round(l.offsetX-TX-TW/2), oy=Math.round(l.offsetY-TY-TH/2);
-  document.getElementById('posReadout').textContent=`x ${ox}, y ${oy}`;
+function getHandlePositions(l){
+  if(!l||!l.img)return {};
+  const aw=l.img.width*l.scale, ah=l.img.height*l.scale;
+  const rot=l.rotation||0;
+  const cosR=Math.cos(rot),sinR=Math.sin(rot);
+  function pt(lx,ly){return{x:l.offsetX+lx*cosR-ly*sinR,y:l.offsetY+lx*sinR+ly*cosR};}
+  const ROT_DIST=24;
+  return {
+    tl:pt(-aw/2,-ah/2), tc:pt(0,-ah/2), tr:pt(aw/2,-ah/2),
+    ml:pt(-aw/2,0),                       mr:pt(aw/2,0),
+    bl:pt(-aw/2,ah/2), bc:pt(0,ah/2),   br:pt(aw/2,ah/2),
+    rot:pt(0,-ah/2-ROT_DIST)
+  };
 }
+
+function drawHandles(){
+  const l=getActiveLayer(); if(!l||!l.img)return;
+  const aw=l.img.width*l.scale,ah=l.img.height*l.scale;
+  const rot=l.rotation||0;
+  const hp=getHandlePositions(l);
+
+  // Dashed bounding box
+  ctx.save();
+  ctx.translate(l.offsetX,l.offsetY); ctx.rotate(rot);
+  ctx.strokeStyle='rgba(24,95,165,0.85)'; ctx.lineWidth=1.5; ctx.setLineDash([5,4]);
+  ctx.strokeRect(-aw/2,-ah/2,aw,ah);
+  ctx.setLineDash([]);
+  ctx.restore();
+
+  // Rotation connector line
+  const tc=hp.tc;
+  ctx.beginPath(); ctx.moveTo(tc.x,tc.y); ctx.lineTo(hp.rot.x,hp.rot.y);
+  ctx.strokeStyle='rgba(24,95,165,0.5)'; ctx.lineWidth=1; ctx.stroke();
+
+  // Draw scale handles (squares)
+  const scaleHandles=['tl','tc','tr','ml','mr','bl','bc','br'];
+  scaleHandles.forEach(k=>{
+    const p=hp[k];
+    ctx.fillStyle='#fff'; ctx.strokeStyle='#185FA5'; ctx.lineWidth=1.5;
+    ctx.beginPath(); ctx.rect(p.x-HANDLE_R/2,p.y-HANDLE_R/2,HANDLE_R,HANDLE_R);
+    ctx.fill(); ctx.stroke();
+  });
+
+  // Rotation handle (circle)
+  ctx.fillStyle='#185FA5'; ctx.strokeStyle='#fff'; ctx.lineWidth=2;
+  ctx.beginPath(); ctx.arc(hp.rot.x,hp.rot.y,HANDLE_R,0,Math.PI*2);
+  ctx.fill(); ctx.stroke();
+  // Rotation icon inside
+  ctx.fillStyle='#fff'; ctx.font='bold 9px sans-serif'; ctx.textAlign='center'; ctx.textBaseline='middle';
+  ctx.fillText('↻',hp.rot.x,hp.rot.y);
+  ctx.textAlign='start'; ctx.textBaseline='alphabetic';
+}
+
+function hitTestHandle(x,y){
+  const l=getActiveLayer(); if(!l)return null;
+  const hp=getHandlePositions(l);
+  for(const [k,p] of Object.entries(hp)){
+    const dist=Math.hypot(x-p.x,y-p.y);
+    if(k==='rot'&&dist<=HANDLE_R+2)return k;
+    if(k!=='rot'&&Math.abs(x-p.x)<=HANDLE_R&&Math.abs(y-p.y)<=HANDLE_R)return k;
+  }
+  return null;
+}
+
+function pointInLayer(x,y,l){
+  if(!l||!l.img)return false;
+  const rot=l.rotation||0;
+  const cosR=Math.cos(-rot),sinR=Math.sin(-rot);
+  const dx=x-l.offsetX,dy=y-l.offsetY;
+  const lx=dx*cosR-dy*sinR, ly=dx*sinR+dy*cosR;
+  const hw=l.img.width*l.scale/2,hh=l.img.height*l.scale/2;
+  return lx>=-hw&&lx<=hw&&ly>=-hh&&ly<=hh;
+}
+
+// ── Canvas mouse events ────────────────────────────────────
+function getCanvasXY(e){
+  const r=canvas.getBoundingClientRect();
+  return {x:e.clientX-r.left,y:e.clientY-r.top};
+}
+
+canvas.addEventListener('mousedown',e=>{
+  const {x,y}=getCanvasXY(e);
+  // Hit-test handles first
+  const hk=hitTestHandle(x,y);
+  if(hk){
+    interactMode='handle'; activeHandle=hk;
+    const l=getActiveLayer();
+    layerSnap={scale:l.scale,rotation:l.rotation||0,offsetX:l.offsetX,offsetY:l.offsetY,
+               imgW:l.img.width,imgH:l.img.height};
+    mouseStart={x,y};
+    canvas.style.cursor=hk==='rot'?'crosshair':'nwse-resize';
+    return;
+  }
+  // Hit-test layers top→bottom to select and drag
+  for(const l of layers){
+    if(!l.visible)continue;
+    if(pointInLayer(x,y,l)){
+      if(l.id!==activeLayerId){setActive(l.id);}
+      interactMode='drag'; mouseStart={x,y};
+      const la=getActiveLayer();
+      layerSnap={offsetX:la.offsetX,offsetY:la.offsetY};
+      canvas.style.cursor='grabbing'; return;
+    }
+  }
+});
+
+window.addEventListener('mousemove',e=>{
+  if(!interactMode)return;
+  const {x,y}=getCanvasXY(e);
+  const l=getActiveLayer(); if(!l)return;
+  const dx=x-mouseStart.x, dy=y-mouseStart.y;
+
+  if(interactMode==='drag'){
+    l.offsetX=layerSnap.offsetX+dx;
+    l.offsetY=layerSnap.offsetY+dy;
+    draw(); return;
+  }
+
+  if(interactMode==='handle'){
+    const h=activeHandle;
+    if(h==='rot'){
+      const cx=l.offsetX,cy=l.offsetY;
+      const startAngle=Math.atan2(mouseStart.y-cy,mouseStart.x-cx);
+      const nowAngle=Math.atan2(y-cy,x-cx);
+      l.rotation=layerSnap.rotation+(nowAngle-startAngle);
+      syncControlsToActive();
+    } else {
+      // Scale: use distance from centre to current mouse vs distance from centre to handle start
+      const cx=l.offsetX,cy=l.offsetY;
+      const startDist=Math.hypot(mouseStart.x-cx,mouseStart.y-cy);
+      const nowDist=Math.hypot(x-cx,y-cy);
+      if(startDist>2){
+        const ratio=nowDist/startDist;
+        l.scale=Math.max(0.02,layerSnap.scale*ratio);
+      }
+      syncControlsToActive();
+    }
+    draw();
+  }
+});
+
+window.addEventListener('mouseup',()=>{
+  interactMode=null; activeHandle=null; canvas.style.cursor='';
+  renderLayersList();
+});
+
+// Cursor hint on hover
+canvas.addEventListener('mousemove',e=>{
+  if(interactMode)return;
+  const {x,y}=getCanvasXY(e);
+  const hk=hitTestHandle(x,y);
+  if(hk) canvas.style.cursor=hk==='rot'?'crosshair':'nwse-resize';
+  else {
+    const hitAny=layers.some(l=>l.visible&&pointInLayer(x,y,l));
+    canvas.style.cursor=hitAny?'grab':'default';
+  }
+});
+
+canvas.addEventListener('wheel',e=>{
+  const l=getActiveLayer();if(!l)return; e.preventDefault();
+  l.scale=Math.max(0.02,Math.min(5,l.scale*(e.deltaY>0?0.95:1.05)));
+  syncControlsToActive(); draw();
+},{passive:false});
+
+// Touch drag
+let tStart={x:0,y:0},tLayerSnap={offsetX:0,offsetY:0};
+canvas.addEventListener('touchstart',e=>{
+  const l=getActiveLayer();if(!l)return; e.preventDefault();
+  const t=e.touches[0],r=canvas.getBoundingClientRect();
+  tStart={x:t.clientX-r.left,y:t.clientY-r.top};
+  tLayerSnap={offsetX:l.offsetX,offsetY:l.offsetY};
+},{passive:false});
+canvas.addEventListener('touchmove',e=>{
+  const l=getActiveLayer();if(!l)return; e.preventDefault();
+  const t=e.touches[0],r=canvas.getBoundingClientRect();
+  l.offsetX=tLayerSnap.offsetX+(t.clientX-r.left-tStart.x);
+  l.offsetY=tLayerSnap.offsetY+(t.clientY-r.top-tStart.y);
+  draw();
+},{passive:false});
+canvas.addEventListener('touchend',()=>{renderLayersList();});
+
+// Page drop
+document.addEventListener('dragover',e=>{if(!e.target.closest('.layers-panel')&&!e.target.closest('.upload-drop'))e.preventDefault();});
+document.addEventListener('drop',e=>{
+  if(e.target.closest('.layers-panel')||e.target.closest('.upload-drop'))return;
+  e.preventDefault(); Array.from(e.dataTransfer.files).forEach(loadLayerFile);
+});
 
 // ── Layer helpers ──────────────────────────────────────────
-function getActiveLayer(){ return layers.find(l=>l.id===activeLayerId)||null; }
+function getActiveLayer(){return layers.find(l=>l.id===activeLayerId)||null;}
 
 function setActive(id){
-  activeLayerId=id;
-  syncControlsToActive();
-  renderLayersList();
-  draw();
+  activeLayerId=id; syncControlsToActive(); renderLayersList(); draw();
 }
 
 function syncControlsToActive(){
   const l=getActiveLayer();
-  // Scale
   const pct=l?Math.min(300,Math.max(5,Math.round(l.scale*100))):100;
   document.getElementById('scaleSlider').value=pct;
   document.getElementById('scaleVal').textContent=pct+'%';
-  // Opacity
-  const opPct=l?Math.round(l.opacity*100):92;
-  document.getElementById('layerOpacity').value=opPct;
-  document.getElementById('layerOpVal').textContent=opPct+'%';
-  // Active tags in steps 3 and 4
+  const rotDeg=l?Math.round(((l.rotation||0)*180/Math.PI)):0;
+  document.getElementById('rotSlider').value=Math.max(-180,Math.min(180,rotDeg));
+  document.getElementById('rotVal').textContent=rotDeg+'°';
+  const op=l?Math.round(l.opacity*100):92;
+  document.getElementById('layerOpacity').value=op;
+  document.getElementById('layerOpVal').textContent=op+'%';
   const name=l?l.name:'No layer selected';
   const short=name.length>22?name.slice(0,20)+'…':name;
   document.getElementById('posActiveText').textContent=short;
@@ -675,188 +816,201 @@ function syncControlsToActive(){
   document.getElementById('opActiveTag').classList.toggle('show',!!l);
 }
 
-function centreOnTemplate(l){ l.offsetX=TX+TW/2; l.offsetY=TY+TH/2; }
+function centreOnTemplate(l){l.offsetX=TX+TW/2;l.offsetY=TY+TH/2;}
 
 function fitLayerToBleed(l){
-  if(!l.img||!currentSku) return;
-  const bw=TW+BLEEDPX*2, bh=TH+BLEEDPX*2;
-  l.scale=Math.max(bw/l.img.width, bh/l.img.height);
+  if(!l.img||!currentSku)return;
+  const bw=TW+BLEEDPX*2,bh=TH+BLEEDPX*2;
+  l.scale=Math.max(bw/l.img.width,bh/l.img.height);
   centreOnTemplate(l);
 }
 
-// ── Position controls ──────────────────────────────────────
-function fitToBleed(){ const l=getActiveLayer();if(l){fitLayerToBleed(l);syncControlsToActive();draw();} }
+// ── Position / scale / rotate controls ────────────────────
+function fitToBleed(){const l=getActiveLayer();if(l){fitLayerToBleed(l);syncControlsToActive();draw();}}
 function fitToTrim(){
   const l=getActiveLayer();if(!l||!l.img)return;
   l.scale=Math.max(TW/l.img.width,TH/l.img.height);
-  centreOnTemplate(l); syncControlsToActive(); draw();
+  centreOnTemplate(l);syncControlsToActive();draw();
 }
-function centreActive(){ const l=getActiveLayer();if(l){centreOnTemplate(l);draw();updatePosReadout();} }
-function resetActive(){ const l=getActiveLayer();if(l){l.scale=1;centreOnTemplate(l);syncControlsToActive();draw();} }
-function onScaleSlider(v){ const l=getActiveLayer();if(!l)return; l.scale=parseInt(v)/100; document.getElementById('scaleVal').textContent=Math.round(l.scale*100)+'%'; draw(); }
-function onLayerOpacity(v){ const l=getActiveLayer();if(!l)return; l.opacity=parseInt(v)/100; document.getElementById('layerOpVal').textContent=v+'%'; draw(); renderLayersList(); }
+function centreActive(){const l=getActiveLayer();if(l){centreOnTemplate(l);updatePosReadout();draw();}}
+function resetActive(){
+  const l=getActiveLayer();if(!l)return;
+  l.scale=1;l.rotation=0;centreOnTemplate(l);syncControlsToActive();draw();
+}
+function onScaleSlider(v){const l=getActiveLayer();if(!l)return;l.scale=parseInt(v)/100;document.getElementById('scaleVal').textContent=Math.round(l.scale*100)+'%';draw();}
+function onRotSlider(v){
+  const l=getActiveLayer();if(!l)return;
+  l.rotation=parseInt(v)*Math.PI/180;
+  document.getElementById('rotVal').textContent=v+'°'; draw();
+}
+function rotateFixed(deg){
+  const l=getActiveLayer();if(!l)return;
+  l.rotation=(l.rotation||0)+deg*Math.PI/180;
+  syncControlsToActive();draw();
+}
+function rotateTemplate(deg){
+  templateRotDeg=(templateRotDeg+deg+360)%360; draw();
+}
+function onLayerOpacity(v){const l=getActiveLayer();if(!l)return;l.opacity=parseInt(v)/100;document.getElementById('layerOpVal').textContent=v+'%';draw();renderLayersList();}
+
+function updatePosReadout(){
+  const l=getActiveLayer();
+  if(!l||!TW){document.getElementById('posReadout').textContent='—';return;}
+  document.getElementById('posReadout').textContent=`x ${Math.round(l.offsetX-TX-TW/2)}, y ${Math.round(l.offsetY-TY-TH/2)}`;
+}
 
 // ── File loading ───────────────────────────────────────────
-function handleFileInput(e){ Array.from(e.target.files).forEach(loadLayerFile); e.target.value=''; }
-function handleDropOnZone(e){ e.preventDefault(); document.getElementById('uploadDrop').classList.remove('drag-over'); Array.from(e.dataTransfer.files).forEach(loadLayerFile); }
+function handleFileInput(e){Array.from(e.target.files).forEach(loadLayerFile);e.target.value='';}
+function handleDropOnZone(e){e.preventDefault();document.getElementById('uploadDrop').classList.remove('drag-over');Array.from(e.dataTransfer.files).forEach(loadLayerFile);}
 
 function loadLayerFile(file){
   if(file.type.startsWith('image/')){
     const reader=new FileReader();
     reader.onload=ev=>{
       const img=new Image();
-      img.onload=()=>{ addLayer(file.name,img,ev.target.result,file.type); };
+      img.onload=()=>addLayer(file.name,img,ev.target.result,file.type);
       img.src=ev.target.result;
     };
     reader.readAsDataURL(file);
   } else {
-    // Placeholder for non-image files
     const oc=document.createElement('canvas');
-    oc.width=Math.max(TW||300,200); oc.height=Math.max(TH||400,200);
+    oc.width=Math.max(TW||300,200);oc.height=Math.max(TH||400,200);
     const c=oc.getContext('2d');
-    c.fillStyle='#ddeeff'; c.fillRect(0,0,oc.width,oc.height);
-    c.fillStyle='#3366aa'; c.font=`bold ${Math.round(oc.width/10)}px sans-serif`; c.textAlign='center';
+    c.fillStyle='#ddeeff';c.fillRect(0,0,oc.width,oc.height);
+    c.fillStyle='#3366aa';c.font=`bold ${Math.round(oc.width/10)}px sans-serif`;c.textAlign='center';
     c.fillText(file.name.split('.').pop().toUpperCase(),oc.width/2,oc.height/2-12);
-    c.font=`${Math.round(oc.width/18)}px sans-serif`; c.fillStyle='#5588bb';
+    c.font=`${Math.round(oc.width/18)}px sans-serif`;c.fillStyle='#5588bb';
     c.fillText('Preview unavailable',oc.width/2,oc.height/2+16);
     const img=new Image();
-    img.onload=()=>{ addLayer(file.name,img,null,file.type); };
+    img.onload=()=>addLayer(file.name,img,null,file.type);
     img.src=oc.toDataURL();
   }
 }
 
 function addLayer(name,img,srcB64,srcMime){
   const id='layer_'+Date.now()+'_'+Math.random().toString(36).slice(2,5);
-  const layer={id,name,img,srcB64,srcMime:srcMime||'image/png',scale:1,offsetX:TX+TW/2||230,offsetY:TY+TH/2||280,visible:true,opacity:0.92};
-  layers.unshift(layer); // add to top
+  const layer={id,name,img,srcB64,srcMime:srcMime||'image/png',
+    scale:1,offsetX:TX+TW/2||230,offsetY:TY+TH/2||280,rotation:0,visible:true,opacity:0.92};
+  layers.unshift(layer);
   activeLayerId=id;
   computeLayout();
   fitLayerToBleed(layer);
   syncControlsToActive();
   renderLayersList();
   draw();
-  if(openStep<3) toggleStep(3);
+  if(openStep<3)toggleStep(3);
 }
 
-// ── Layer panel ────────────────────────────────────────────
+// ── Layers panel ───────────────────────────────────────────
 function renderLayersList(){
   const list=document.getElementById('layersList');
-  if(layers.length===0){
+  if(!layers.length){
     list.innerHTML='<div style="padding:20px 12px;font-size:11px;color:#B4B2A9;text-align:center;line-height:1.5">No layers yet.<br>Upload artwork to begin.</div>';
     return;
   }
-  list.innerHTML=layers.map((l,i)=>{
+  list.innerHTML=layers.map(l=>{
     const sel=l.id===activeLayerId;
-    const visIcon=l.visible?'👁':'🚫';
+    const rotDeg=Math.round((l.rotation||0)*180/Math.PI);
     return `<div class="layer-item${sel?' selected':''}${!l.visible?' hidden-layer':''}"
-      id="li_${l.id}"
       draggable="true"
       ondragstart="onLDragStart(event,'${l.id}')"
       ondragover="event.preventDefault()"
       ondrop="onLDrop(event,'${l.id}')"
       ondragend="onLDragEnd()"
       onclick="setActive('${l.id}')">
-      <span class="li-drag" title="Drag to reorder">⠿</span>
+      <span class="li-drag">⠿</span>
       <canvas class="li-thumb" id="th_${l.id}" width="30" height="30"></canvas>
       <div class="li-info">
         <div class="li-name" title="${l.name}">${l.name}</div>
-        <div class="li-meta">${Math.round(l.scale*100)}% · ${Math.round(l.opacity*100)}% opacity</div>
+        <div class="li-meta">${Math.round(l.scale*100)}%${rotDeg?` · ${rotDeg}°`:''} · ${Math.round(l.opacity*100)}%</div>
       </div>
       <div class="li-btns">
-        <button class="li-btn vis-on" onclick="event.stopPropagation();toggleVis('${l.id}')" title="${l.visible?'Hide layer':'Show layer'}">${visIcon}</button>
-        <button class="li-btn del" onclick="event.stopPropagation();delLayer('${l.id}')" title="Delete layer">✕</button>
+        <button class="li-btn${l.visible?' vis-on':''}" onclick="event.stopPropagation();toggleVis('${l.id}')" title="${l.visible?'Hide':'Show'}">${l.visible?'👁':'🚫'}</button>
+        <button class="li-btn del" onclick="event.stopPropagation();delLayer('${l.id}')" title="Delete">✕</button>
       </div>
     </div>`;
   }).join('');
 
-  // Render thumbnails after DOM update
   requestAnimationFrame(()=>{
     layers.forEach(l=>{
-      if(!l.img) return;
-      const tc=document.getElementById('th_'+l.id); if(!tc) return;
-      const c=tc.getContext('2d'); c.clearRect(0,0,30,30);
+      if(!l.img)return;
+      const tc=document.getElementById('th_'+l.id);if(!tc)return;
+      const c=tc.getContext('2d');c.clearRect(0,0,30,30);
       const ar=l.img.width/l.img.height;
       let tw=30,th=30;
-      if(ar>1) th=Math.round(30/ar); else tw=Math.round(30*ar);
+      if(ar>1)th=Math.round(30/ar);else tw=Math.round(30*ar);
       c.drawImage(l.img,(30-tw)/2,(30-th)/2,tw,th);
     });
   });
 }
 
-function toggleVis(id){
-  const l=layers.find(x=>x.id===id); if(!l)return;
-  l.visible=!l.visible; renderLayersList(); draw();
-}
-
+function toggleVis(id){const l=layers.find(x=>x.id===id);if(!l)return;l.visible=!l.visible;renderLayersList();draw();}
 function delLayer(id){
   layers=layers.filter(x=>x.id!==id);
-  if(activeLayerId===id) activeLayerId=layers[0]?.id||null;
-  syncControlsToActive(); renderLayersList(); draw();
+  if(activeLayerId===id)activeLayerId=layers[0]?.id||null;
+  syncControlsToActive();renderLayersList();draw();
 }
-
-function onLDragStart(e,id){ dragSrcId=id; e.dataTransfer.effectAllowed='move'; }
+function onLDragStart(e,id){dragSrcId=id;e.dataTransfer.effectAllowed='move';}
 function onLDrop(e,id){
-  e.preventDefault(); if(dragSrcId===id)return;
-  const fi=layers.findIndex(x=>x.id===dragSrcId), ti=layers.findIndex(x=>x.id===id);
+  e.preventDefault();if(dragSrcId===id)return;
+  const fi=layers.findIndex(x=>x.id===dragSrcId),ti=layers.findIndex(x=>x.id===id);
   if(fi===-1||ti===-1)return;
-  const [m]=layers.splice(fi,1); layers.splice(ti,0,m);
-  renderLayersList(); draw();
+  const[m]=layers.splice(fi,1);layers.splice(ti,0,m);
+  renderLayersList();draw();
 }
-function onLDragEnd(){ dragSrcId=null; }
+function onLDragEnd(){dragSrcId=null;}
 
-// ── Canvas drag ────────────────────────────────────────────
-canvas.addEventListener('mousedown',e=>{
-  const l=getActiveLayer(); if(!l)return;
-  isDragging=true;
-  const r=canvas.getBoundingClientRect();
-  dragSX=e.clientX-r.left; dragSY=e.clientY-r.top;
-  dragAX=l.offsetX; dragAY=l.offsetY;
-  document.getElementById('canvasWrap').classList.add('dragging');
-});
-window.addEventListener('mousemove',e=>{
-  if(!isDragging)return;
-  const l=getActiveLayer(); if(!l)return;
-  const r=canvas.getBoundingClientRect();
-  l.offsetX=dragAX+(e.clientX-r.left-dragSX);
-  l.offsetY=dragAY+(e.clientY-r.top-dragSY);
-  draw();
-});
-window.addEventListener('mouseup',()=>{
-  if(!isDragging)return; isDragging=false;
-  document.getElementById('canvasWrap').classList.remove('dragging');
-  renderLayersList();
-});
-canvas.addEventListener('wheel',e=>{
-  const l=getActiveLayer(); if(!l)return; e.preventDefault();
-  l.scale=Math.max(0.02,Math.min(5,l.scale*(e.deltaY>0?0.95:1.05)));
-  syncControlsToActive(); draw();
-},{passive:false});
-canvas.addEventListener('touchstart',e=>{
-  const l=getActiveLayer(); if(!l)return; e.preventDefault();
-  const t=e.touches[0],r=canvas.getBoundingClientRect();
-  isDragging=true; dragSX=t.clientX-r.left; dragSY=t.clientY-r.top; dragAX=l.offsetX; dragAY=l.offsetY;
-},{passive:false});
-canvas.addEventListener('touchmove',e=>{
-  if(!isDragging)return; e.preventDefault();
-  const t=e.touches[0],r=canvas.getBoundingClientRect(),l=getActiveLayer(); if(!l)return;
-  l.offsetX=dragAX+(t.clientX-r.left-dragSX); l.offsetY=dragAY+(t.clientY-r.top-dragSY); draw();
-},{passive:false});
-canvas.addEventListener('touchend',()=>{ isDragging=false; renderLayersList(); });
+// ── Status ─────────────────────────────────────────────────
+function updateStatusUI(){
+  const statusEl=document.getElementById('canvasStatus');
+  const asDot=document.getElementById('asDot');
+  const asText=document.getElementById('asText');
+  const enbl=v=>{document.getElementById('btnSubmit').disabled=!v;document.getElementById('btnSubmitBar').disabled=!v;document.getElementById('btnAssessor').disabled=layers.length===0;};
 
-// Page-level drop
-document.addEventListener('dragover',e=>{if(!e.target.closest('.layers-panel')&&!e.target.closest('.layer-item'))e.preventDefault();});
-document.addEventListener('drop',e=>{
-  if(e.target.closest('.layers-panel')||e.target.closest('.layer-item')||e.target.closest('.upload-drop'))return;
-  e.preventDefault(); Array.from(e.dataTransfer.files).forEach(loadLayerFile);
-});
+  function set(cls,msg,dotCls){
+    statusEl.className='canvas-status '+cls;statusEl.textContent=msg;
+    asDot.className='as-dot '+dotCls;asText.textContent=msg;asText.className='as-text '+dotCls;
+  }
+  if(!currentSku){set('cs-idle','Select a SKU and upload artwork to begin','');enbl(false);return;}
+  const vis=layers.filter(l=>l.visible&&l.img);
+  if(!vis.length){set('cs-idle','Upload artwork to continue','');enbl(false);return;}
+
+  const spec=SKU_SPECS[currentSku];
+  const bx=TX-BLEEDPX,by=TY-BLEEDPX,bw=TW+BLEEDPX*2,bh=TH+BLEEDPX*2;
+  const top=vis[0];
+  const aw=top.img.width*top.scale,ah=top.img.height*top.scale;
+  const al=top.offsetX-aw/2,at=top.offsetY-ah/2;
+  const coversBleed=al<=bx&&at<=by&&(al+aw)>=(bx+bw)&&(at+ah)>=(by+bh);
+  const coversTrim=al<=TX&&at<=TY&&(al+aw)>=(TX+TW)&&(at+ah)>=(TY+TH);
+
+  if(spec.bleed===0?coversTrim:coversBleed){
+    set('cs-ok','✓ Artwork covers the '+(spec.bleed>0?'bleed':'trim')+' area — ready to submit','ok');enbl(true);
+  } else {
+    const msg=coversTrim&&spec.bleed>0
+      ?'⚠ Covers trim but not the bleed boundary — scale up if full-bleed print required'
+      :'⚠ Artwork does not cover the trim area — intentional (logo) or reposition for full print';
+    set('cs-warn',msg,'warn');enbl(true);
+  }
+}
 
 // ── View mode ──────────────────────────────────────────────
 function setViewMode(m){
+  const spec=currentSku?SKU_SPECS[currentSku]:null;
+  if(!spec||!spec.w){viewMode=m;return;}
+
+  // Capture old geometry before recompute
+  const oldTW=TW,oldTH=TH,oldTX=TX,oldTY=TY;
+
   viewMode=m;
   document.getElementById('stWorking').classList.toggle('active',m==='working');
   document.getElementById('stFull').classList.toggle('active',m==='full');
-  updateViewInfo(); computeLayout(); layers.forEach(l=>centreOnTemplate(l)); draw();
+  computeLayout();
+  // Remap layers proportionally
+  remapLayersToNewLayout(oldTW,oldTH,oldTX,oldTY,TW,TH,TX,TY);
+  updateViewInfo();
+  draw();
 }
+
 function updateViewInfo(){
   const spec=currentSku?SKU_SPECS[currentSku]:null;
   const info=document.getElementById('ctInfo');
@@ -868,75 +1022,49 @@ function updateViewInfo(){
   }
 }
 
-// ── Submit to artwork list ─────────────────────────────────
+// ── Submit ─────────────────────────────────────────────────
 async function submitToArtworkList(){
-  if(layers.length===0){showToast('No artwork to submit');return;}
-  const spec=currentSku?SKU_SPECS[currentSku]:null;
+  if(!layers.length){showToast('No artwork to submit');return;}
   showToast('Saving…');
-
-  // Build a reference from the top layer filename
   const topLayer=layers[0];
   const ref=(topLayer.name||'designer-upload').replace(/\.[^.]+$/,'').substring(0,40);
-
-  // Create job record
   let job=null;
-  try {
-    const r=await fetch('/api/jobs',{
-      method:'POST',
-      headers:{'Content-Type':'application/json'},
-      body:JSON.stringify({
-        reference:ref,
-        file_name:topLayer.name||'artwork',
+  try{
+    const r=await fetch('/api/jobs',{method:'POST',headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({reference:ref,file_name:topLayer.name||'artwork',
         file_type:(topLayer.srcMime||'').split('/').pop().toUpperCase()||'IMG',
-        source:'Designer',
-        sku:currentSku||null,
-        customer_name:null,
-        order_number:null
-      })
-    });
-    const d=await r.json();
-    job=Array.isArray(d)?d[0]:d;
-  } catch(e){ showToast('Failed to create job: '+e.message); return; }
-
-  if(!job||!job.id){ showToast('Job creation failed'); return; }
+        source:'Designer',sku:currentSku||null,customer_name:null,order_number:null})});
+    const d=await r.json();job=Array.isArray(d)?d[0]:d;
+  }catch(e){showToast('Failed: '+e.message);return;}
+  if(!job?.id){showToast('Job creation failed');return;}
   jobId=job.id;
-
-  // Upload top layer to storage if we have srcB64
   if(topLayer.srcB64){
-    try {
+    try{
       const ext=(topLayer.srcMime||'image/png').split('/').pop().replace('jpeg','jpg');
       const path=`${job.id}.${ext}`;
-      await fetch('/api/upload',{
-        method:'POST',
-        headers:{'Content-Type':'application/json'},
-        body:JSON.stringify({path,mediaType:topLayer.srcMime,data:topLayer.srcB64.split(',')[1]})
-      });
-      // Patch storage path onto job
-      await fetch(`/api/job?id=${job.id}`,{
-        method:'PATCH',
-        headers:{'Content-Type':'application/json'},
-        body:JSON.stringify({storage_path:path})
-      });
-    } catch(e){ console.error('storage upload failed',e); }
+      await fetch('/api/upload',{method:'POST',headers:{'Content-Type':'application/json'},
+        body:JSON.stringify({path,mediaType:topLayer.srcMime,data:topLayer.srcB64.split(',')[1]})});
+      await fetch(`/api/job?id=${job.id}`,{method:'PATCH',headers:{'Content-Type':'application/json'},
+        body:JSON.stringify({storage_path:path})});
+    }catch(e){console.error('storage upload failed',e);}
   }
-
-  showToast('Saved to artwork list');
+  showToast('Saved — redirecting…');
   setTimeout(()=>window.location.href='/dashboard',1200);
 }
 
 function goToAssessor(){
   const p=new URLSearchParams();
-  if(jobId) p.set('job',jobId);
-  if(currentSku) p.set('sku',currentSku);
+  if(jobId)p.set('job',jobId);
+  if(currentSku)p.set('sku',currentSku);
   window.location.href='/artwork-assessor'+(p.toString()?'?'+p.toString():'');
 }
 
 function showToast(msg){
-  const t=document.getElementById('toast'); t.textContent=msg; t.classList.add('show');
+  const t=document.getElementById('toast');t.textContent=msg;t.classList.add('show');
   setTimeout(()=>t.classList.remove('show'),2200);
 }
 
-// ── Init from URL ──────────────────────────────────────────
+// ── Init ───────────────────────────────────────────────────
 const _p=new URLSearchParams(window.location.search);
 jobId=_p.get('job')||null;
 const urlSku=_p.get('sku')||'';
@@ -949,13 +1077,14 @@ if(jobId){
     document.getElementById('jbCustomer').textContent=job.customer_name||'—';
     document.getElementById('jbOrder').textContent=job.order_number||'—';
     const sku=job.sku||urlSku;
-    if(sku&&SKU_SPECS[sku]){ document.getElementById('skuSelect').value=sku; onSkuChange(); }
+    if(sku&&SKU_SPECS[sku]){document.getElementById('skuSelect').value=sku;onSkuChange();}
     if(job.storage_path){
       fetch('/api/file?path='+encodeURIComponent(job.storage_path)).then(r=>r.ok?r.json():null).then(d=>{
-        if(!d||!d.b64)return;
+        if(!d?.b64)return;
         const img=new Image();
-        img.onload=()=>{ addLayer(job.file_name||'Stored file',img,'data:'+d.mediaType+';base64,'+d.b64,d.mediaType); };
-        img.src='data:'+d.mediaType+';base64,'+d.b64;
+        const dataUrl='data:'+d.mediaType+';base64,'+d.b64;
+        img.onload=()=>addLayer(job.file_name||'Stored file',img,dataUrl,d.mediaType);
+        img.src=dataUrl;
       });
     }
   }).catch(e=>console.error('job load',e));
@@ -964,7 +1093,7 @@ if(jobId){
   onSkuChange();
 }
 
-computeLayout(); draw();
+computeLayout();draw();
 </script>
 </body>
 </html>
