@@ -1129,9 +1129,6 @@ function drawHandles(ctx){
   const l=getActiveLayer();if(!l||!l.img)return;
   const aw=l.img.width*l.scale,ah=l.img.height*l.scale,rot=l.rotation||0;
   const hp=getHandlePositions(l);
-  ctx.save();ctx.translate(l.offsetX,l.offsetY);ctx.rotate(rot);
-  ctx.strokeStyle='rgba(24,95,165,0.85)';ctx.lineWidth=1.5;ctx.setLineDash([5,4]);
-  ctx.strokeRect(-aw/2,-ah/2,aw,ah);ctx.setLineDash([]);ctx.restore();
   const tc=hp.tc;
   ctx.beginPath();ctx.moveTo(tc.x,tc.y);ctx.lineTo(hp.rot.x,hp.rot.y);
   ctx.strokeStyle='rgba(24,95,165,0.5)';ctx.lineWidth=1;ctx.stroke();
