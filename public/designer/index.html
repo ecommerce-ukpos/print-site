@@ -293,6 +293,27 @@ canvas{display:block}
 .rp-btn-green:hover{opacity:0.88;background:#3B6D11}
 .rp-btn-green:disabled{background:#D3D1C7;border-color:#D3D1C7;cursor:not-allowed;opacity:1}
 
+/* Copy design button — floats top-left of active canvas in dual mode */
+.copy-design-btn{
+  display:none;
+  position:absolute;top:14px;left:14px;
+  z-index:10;
+  background:#185FA5;color:#fff;
+  border:none;border-radius:7px;
+  padding:7px 13px;font-size:12px;font-weight:600;
+  cursor:pointer;white-space:nowrap;
+  box-shadow:0 2px 8px rgba(0,0,0,0.18);
+  transition:background 0.12s;
+}
+.copy-design-btn:hover{background:#0C447C}
+.copy-design-btn.show{display:block}
+
+/* Flip buttons row in step 4 */
+.flip-row{display:flex;gap:5px;margin-bottom:6px}
+.flip-btn{flex:1;padding:6px 4px;font-size:12px;font-weight:600;border-radius:6px;border:1px solid #E8E6DE;background:#FAFAF8;color:#2C2C2A;cursor:pointer;text-align:center;transition:all 0.12s}
+.flip-btn:hover{background:#EEF5FF;border-color:#B5D4F4;color:#185FA5}
+.flip-btn.flipped{background:#185FA5;color:#fff;border-color:#185FA5}
+
 .toast{position:fixed;bottom:20px;left:50%;transform:translateX(-50%);background:#2C2C2A;color:#fff;padding:9px 18px;border-radius:8px;font-size:13px;opacity:0;transition:opacity 0.2s;pointer-events:none;z-index:999;white-space:nowrap}
 .toast.show{opacity:1}
 </style>
@@ -470,6 +491,10 @@ canvas{display:block}
         <button class="mini-btn" onclick="centreActive()">Centre</button>
         <button class="mini-btn" onclick="resetActive()">Reset all</button>
       </div>
+      <div class="flip-row">
+        <button class="flip-btn" id="flipHBtn" onclick="flipLayer('h')" title="Flip horizontal">↔ Flip H</button>
+        <button class="flip-btn" id="flipVBtn" onclick="flipLayer('v')" title="Flip vertical">↕ Flip V</button>
+      </div>
       <div class="pos-info">Offset: <span id="posReadout">—</span></div>
       <div class="tmpl-rotate-row" id="tmplRotRow" style="display:none">
         <span class="tmpl-rotate-label">Template rotation</span>
@@ -522,6 +547,9 @@ canvas{display:block}
 
   <!-- Single-sided status pill -->
   <div class="canvas-status cs-idle" id="canvasStatus">Select a SKU and upload artwork to begin</div>
+
+  <!-- Copy design button — dual-sided only, floats top-left of active canvas -->
+  <button class="copy-design-btn" id="copyDesignBtn" onclick="copyDesignToOtherSide()">Copy design →</button>
 
   <!-- Canvas scroll — populated dynamically for single vs dual -->
   <div class="canvas-scroll single-sided" id="canvasScroll">
@@ -784,15 +812,20 @@ function switchToSide(sideIdx){
 
 function updateSideTags(){
   const banner=document.getElementById('rpSideBanner');
+  const copyBtn=document.getElementById('copyDesignBtn');
   if(!isDoubleSided){
     banner.classList.remove('show');
     document.getElementById('panelSideTag').style.display='none';
+    copyBtn.classList.remove('show');
     return;
   }
   banner.classList.add('show');
   banner.textContent='Side '+(activeSide+1)+' of 2';
   document.getElementById('panelSideTag').style.display='inline-block';
   document.getElementById('panelSideTag').textContent='Side '+(activeSide+1)+' of 2';
+  copyBtn.classList.add('show');
+  // Update arrow direction based on which side is active
+  copyBtn.textContent=activeSide===0?'Copy design →':'← Copy design';
 }
 
 // Draw the inactive side canvas (keeps it visually up to date without switching)
@@ -1050,6 +1083,7 @@ function drawToContext(ctx, layers, bgColor, drawHandlesFlag, tmplA){
     const aw=l.img.width*l.scale,ah=l.img.height*l.scale;
     ctx.save();ctx.globalAlpha=l.opacity;
     ctx.translate(l.offsetX,l.offsetY);ctx.rotate(l.rotation||0);
+    if(l.flipX||l.flipY)ctx.scale(l.flipX?-1:1,l.flipY?-1:1);
     ctx.drawImage(l.img,-aw/2,-ah/2,aw,ah);
     ctx.restore();ctx.globalAlpha=1;
   }
@@ -1264,6 +1298,9 @@ function syncControlsToActive(){
   document.getElementById('posActiveText').textContent=short;document.getElementById('opActiveText').textContent=short;
   document.getElementById('posActiveTag').classList.toggle('show',!!l);
   document.getElementById('opActiveTag').classList.toggle('show',!!l);
+  // Flip button states
+  document.getElementById('flipHBtn').classList.toggle('flipped',!!(l&&l.flipX));
+  document.getElementById('flipVBtn').classList.toggle('flipped',!!(l&&l.flipY));
 }
 function centreOnTemplate(l){l.offsetX=TX+TW/2;l.offsetY=TY+TH/2;}
 function fitLayerToBleed(l){if(!l.img||!currentSku)return;const bw=TW+BLEEDPX*2,bh=TH+BLEEDPX*2;l.scale=Math.max(bw/l.img.width,bh/l.img.height);centreOnTemplate(l);}
@@ -1328,7 +1365,7 @@ function loadLayerFile(file){
 }
 function addLayer(name,img,srcB64,srcMime){
   const id='layer_'+Date.now()+'_'+Math.random().toString(36).slice(2,5);
-  const layer={id,name,img,srcB64,srcMime:srcMime||'image/png',scale:1,offsetX:TX+TW/2||230,offsetY:TY+TH/2||280,rotation:0,visible:true,opacity:0.92};
+  const layer={id,name,img,srcB64,srcMime:srcMime||'image/png',scale:1,offsetX:TX+TW/2||230,offsetY:TY+TH/2||280,rotation:0,visible:true,opacity:0.92,flipX:false,flipY:false};
   S().layers.unshift(layer);
   setActiveLayerId(id);
   computeLayout();fitLayerToBleed(layer);
@@ -1343,12 +1380,13 @@ function renderLayersList(){
   if(!layers.length){list.innerHTML='<div style="padding:16px 12px;font-size:11px;color:#B4B2A9;text-align:center;line-height:1.5">No layers yet.<br>Upload artwork to begin.</div>';return;}
   list.innerHTML=layers.map(l=>{
     const sel=l.id===getActiveLayerId(),rotDeg=Math.round((l.rotation||0)*180/Math.PI);
+    const flipStr=(l.flipX?'↔':'')+( l.flipY?'↕':'');
     return `<div class="layer-item${sel?' selected':''}${!l.visible?' hidden-layer':''}" draggable="true" data-id="${l.id}">
       <span class="li-drag">⠿</span>
       <canvas class="li-thumb" id="th_${l.id}" width="28" height="28"></canvas>
       <div class="li-info">
         <div class="li-name" title="${l.name}">${l.name}</div>
-        <div class="li-meta">${Math.round(l.scale*100)}%${rotDeg?` · ${rotDeg}°`:''}</div>
+        <div class="li-meta">${Math.round(l.scale*100)}%${rotDeg?` · ${rotDeg}°`:''}${flipStr?` · ${flipStr}`:''}</div>
       </div>
       <div class="li-btns">
         <button class="li-btn${l.visible?' vis-on':''}" data-action="vis" data-id="${l.id}" title="${l.visible?'Hide':'Show'}">${l.visible?'👁':'🚫'}</button>
@@ -1474,6 +1512,35 @@ function updateViewInfo(){
   const spec=currentSku?SKU_SPECS[currentSku]:null;const info=document.getElementById('ctInfo');
   if(viewMode==='full'&&spec&&spec.w){const mmPx=25.4/spec.dpi;info.textContent=`Full size: ${Math.round(spec.w/mmPx)}×${Math.round(spec.h/mmPx)}px at ${spec.dpi}dpi`;}
   else info.textContent='Scaled to fit screen';
+}
+
+// ── Flip ───────────────────────────────────────────────────
+function flipLayer(axis){
+  const l=getActiveLayer();if(!l)return;
+  captureState('Flip '+(axis==='h'?'horizontal':'vertical'));
+  if(axis==='h') l.flipX=!l.flipX;
+  else           l.flipY=!l.flipY;
+  syncControlsToActive();renderLayersList();draw();
+}
+
+// ── Copy design to other side ──────────────────────────────
+function copyDesignToOtherSide(){
+  if(!isDoubleSided)return;
+  const destIdx=activeSide===0?1:0;
+  const destLabel='Side '+(destIdx+1);
+  const srcLabel='Side '+(activeSide+1);
+  if(!confirm(`Copy ${srcLabel} to ${destLabel}?\n\nThis will overwrite any artwork already on ${destLabel}.`))return;
+  // Deep copy layers — share img references (read-only), copy all other props
+  const srcState=S();
+  const copiedLayers=srcState.layers.map(l=>({...l}));
+  sides[destIdx].layers=copiedLayers;
+  sides[destIdx].activeLayerId=srcState.activeLayerId;
+  sides[destIdx].bgColor=srcState.bgColor;
+  sides[destIdx].undoStack=[];
+  sides[destIdx].redoStack=[];
+  showToast(`${srcLabel} copied to ${destLabel}`);
+  // Redraw inactive side to show the copy
+  drawInactiveSide();
 }
 
 // ── Submit ─────────────────────────────────────────────────
