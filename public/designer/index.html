@@ -1,0 +1,1508 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Designer — UKPOS Print Site</title>
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",system-ui,sans-serif;background:#FAFAF8;color:#2C2C2A;height:100vh;display:flex;flex-direction:column;overflow:hidden;font-size:14px}
+nav{border-bottom:1px solid #E8E6DE;padding:0 28px;background:#fff;display:flex;align-items:center;height:48px;flex-shrink:0;z-index:20}
+.nav-logo{font-size:14px;font-weight:500;color:#2C2C2A;text-decoration:none;margin-right:20px}
+.nav-links{display:flex;align-items:stretch;height:100%}
+.nav-link{display:flex;align-items:center;padding:0 13px;font-size:13px;color:#5F5E5A;text-decoration:none;border-bottom:2px solid transparent;white-space:nowrap}
+.nav-link:hover{color:#2C2C2A}
+.nav-link.active{color:#185FA5;border-bottom-color:#185FA5;font-weight:500}
+.nav-link.assessor-link.active{color:#534AB7;border-bottom-color:#534AB7;font-weight:500}
+.nav-spacer{flex:1}
+.nav-badge{font-size:11px;padding:3px 9px;border-radius:12px;background:#E6F1FB;color:#185FA5;font-weight:500;border:1px solid #B5D4F4}
+.job-bar{display:none;align-items:center;gap:16px;padding:7px 28px;background:#EEEDFE;border-bottom:1px solid #AFA9EC;font-size:13px;flex-shrink:0}
+.job-bar.show{display:flex}
+.jb-label{font-size:11px;color:#7F77DD;font-weight:500;text-transform:uppercase;letter-spacing:0.05em;margin-right:4px}
+.jb-val{color:#3C3489;font-weight:500}
+.jb-back{margin-left:auto;font-size:12px;color:#534AB7;text-decoration:none}
+.workspace{display:flex;flex:1;overflow:hidden}
+
+/* ── LEFT SETUP PANEL ── */
+.step-panel{width:234px;flex-shrink:0;background:#fff;border-right:1px solid #E8E6DE;display:flex;flex-direction:column;overflow-y:auto}
+.step-panel-title{padding:13px 18px 7px;font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:0.1em;color:#B4B2A9;flex-shrink:0}
+/* Side indicator in panel title */
+.panel-side-tag{display:inline-block;margin-left:6px;font-size:10px;font-weight:700;padding:1px 7px;border-radius:3px;background:#185FA5;color:#fff;letter-spacing:0.03em;vertical-align:middle}
+.step-block{border-bottom:1px solid #F1EFE8;flex-shrink:0}
+.step-header{display:flex;align-items:center;gap:10px;padding:10px 16px;cursor:pointer;user-select:none}
+.step-header:hover{background:#FAFAF8}
+.step-num{width:22px;height:22px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;flex-shrink:0;border:2px solid #D3D1C7;color:#B4B2A9;background:#fff;transition:all 0.15s}
+.step-title{font-size:13px;font-weight:500;color:#888780;flex:1}
+.step-chevron{font-size:11px;color:#D3D1C7;transition:transform 0.15s}
+.step-block.active .step-num{background:#185FA5;border-color:#185FA5;color:#fff}
+.step-block.active .step-title{color:#185FA5}
+.step-block.active .step-chevron{transform:rotate(180deg);color:#185FA5}
+.step-block.done .step-num{background:#639922;border-color:#639922;color:#fff}
+.step-block.done .step-title{color:#3B6D11}
+.step-body{display:none;padding:0 16px 14px}
+.step-block.active .step-body{display:block}
+
+.sku-summary{display:none;margin:0 16px;padding:7px 10px;background:#EEF5FF;border:1px solid #B5D4F4;border-radius:7px;font-size:11px;cursor:pointer}
+.sku-summary.show{display:block}
+.sku-summary-top{display:flex;align-items:center;gap:6px;margin-bottom:3px}
+.sku-summary-code{font-weight:700;font-size:11px;background:#185FA5;color:#fff;padding:1px 6px;border-radius:3px}
+.sku-summary-name{color:#0C447C;font-weight:500;flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.sku-summary-dims{color:#185FA5;font-size:10px}
+.sku-summary-hint{font-size:10px;color:#93C5E8;margin-top:2px}
+.sku-select{width:100%;font-size:13px;padding:7px 9px;border:1.5px solid #E8E6DE;border-radius:8px;background:#FAFAF8;color:#2C2C2A;cursor:pointer;margin-bottom:8px}
+.sku-select:focus{outline:none;border-color:#185FA5}
+.sku-spec-grid{display:grid;grid-template-columns:1fr 1fr;gap:4px;margin-bottom:6px}
+.sku-spec-cell{background:#F7FAFF;border:1px solid #ddeeff;border-radius:5px;padding:5px 7px}
+.sku-spec-key{font-size:10px;color:#185FA5;font-weight:600;text-transform:uppercase;letter-spacing:0.04em}
+.sku-spec-val{font-size:12px;color:#0C447C;font-weight:700;margin-top:1px}
+.flag-pills{display:flex;flex-wrap:wrap;gap:4px;margin-top:6px}
+.flag-pill{font-size:10px;font-weight:500;padding:2px 7px;border-radius:3px;background:#FAEEDA;color:#854F0B;border:1px solid #FAC775}
+
+.upload-drop{border:1.5px dashed #C8C6BC;border-radius:8px;padding:18px 12px;text-align:center;cursor:pointer;background:#FAFAF8;transition:border-color 0.15s,background 0.15s;font-size:12px;color:#5F5E5A}
+.upload-drop:hover,.upload-drop.drag-over{border-color:#185FA5;background:#EEF5FF;color:#185FA5}
+.upload-drop .ud-icon{font-size:22px;display:block;margin-bottom:6px}
+.upload-drop strong{color:#2C2C2A;display:block;margin-bottom:2px}
+.ud-formats{font-size:10px;color:#B4B2A9;margin-top:3px}
+
+/* Background fill */
+.bg-swatches{display:flex;gap:5px;flex-wrap:wrap;margin-bottom:8px}
+.bg-sw{width:22px;height:22px;border-radius:4px;border:1.5px solid rgba(0,0,0,0.1);cursor:pointer;transition:transform 0.1s;flex-shrink:0}
+.bg-sw:hover{transform:scale(1.15)}
+.bg-sw.active{border-color:#185FA5;box-shadow:0 0 0 2px #B5D4F4}
+.bg-transparent{background:repeating-conic-gradient(#ccc 0% 25%,#fff 0% 50%) 0 0/10px 10px}
+.bg-custom-row{display:flex;align-items:center;gap:7px;font-size:11px;color:#5F5E5A}
+.bg-custom-row input[type=color]{width:30px;height:24px;border:1px solid #E8E6DE;border-radius:4px;cursor:pointer;padding:1px}
+.bg-none-btn{font-size:11px;color:#A32D2D;background:#FCEBEB;border:1px solid #F09595;border-radius:5px;padding:3px 8px;cursor:pointer;white-space:nowrap}
+.bg-none-btn:hover{background:#F7C1C1}
+
+/* Position controls */
+.ctrl-row{display:flex;flex-direction:column;gap:5px;margin-bottom:10px}
+.ctrl-lbl{display:flex;justify-content:space-between;font-size:11px;color:#5F5E5A}
+.ctrl-val{font-weight:700;color:#2C2C2A;font-size:11px}
+input[type=range]{width:100%;cursor:pointer;accent-color:#185FA5}
+.btn-row{display:flex;gap:5px;margin-bottom:6px}
+.mini-btn{flex:1;padding:6px 4px;font-size:11px;border-radius:6px;border:1px solid #E8E6DE;background:#FAFAF8;color:#2C2C2A;cursor:pointer;text-align:center;white-space:nowrap;transition:all 0.12s}
+.mini-btn:hover{background:#EEF5FF;border-color:#B5D4F4;color:#185FA5}
+.mini-btn.active-preset{background:#185FA5;color:#fff;border-color:#185FA5}
+.pos-info{font-size:10px;color:#B4B2A9;margin-top:3px}
+.pos-info span{color:#5F5E5A;font-weight:500}
+.active-layer-tag{display:none;align-items:center;gap:5px;padding:5px 8px;background:#FFF8E6;border:1px solid #FAC775;border-radius:5px;font-size:11px;color:#854F0B;margin-bottom:8px;font-weight:500}
+.active-layer-tag.show{display:flex}
+.alt-dot{width:7px;height:7px;border-radius:50%;background:#EF9F27;flex-shrink:0}
+
+/* Rotation dial — in step panel */
+.dial-wrap{display:flex;align-items:center;gap:12px;margin-bottom:10px}
+.dial-svg-wrap{flex-shrink:0;cursor:crosshair;touch-action:none}
+.dial-right{flex:1;display:flex;flex-direction:column;gap:6px}
+.dial-readout{font-size:18px;font-weight:700;color:#185FA5;text-align:center;letter-spacing:-0.02em}
+.dial-presets{display:grid;grid-template-columns:1fr 1fr;gap:4px}
+.dial-preset{padding:5px 4px;font-size:11px;font-weight:600;border-radius:5px;border:1px solid #E8E6DE;background:#FAFAF8;color:#5F5E5A;cursor:pointer;text-align:center;transition:all 0.12s}
+.dial-preset:hover{background:#EEF5FF;border-color:#B5D4F4;color:#185FA5}
+.dial-preset.active-rot{background:#185FA5;color:#fff;border-color:#185FA5}
+
+.op-row{display:flex;align-items:center;gap:6px;margin-bottom:6px}
+.op-lbl{font-size:11px;color:#5F5E5A;min-width:52px}
+.op-row input[type=range]{flex:1}
+.op-val{font-size:11px;font-weight:700;color:#2C2C2A;min-width:26px;text-align:right}
+.tmpl-rotate-row{display:flex;align-items:center;gap:6px;padding:7px 0;border-top:1px solid #F1EFE8;margin-top:4px}
+.tmpl-rotate-label{font-size:11px;color:#5F5E5A;flex:1}
+
+/* Undo bar */
+.undo-bar{display:flex;align-items:center;gap:5px;padding:6px 16px;border-bottom:1px solid #F1EFE8;flex-shrink:0;background:#FAFAF8}
+.undo-btn{display:flex;align-items:center;gap:4px;padding:4px 9px;font-size:11px;border-radius:5px;border:1px solid #E8E6DE;background:#fff;color:#5F5E5A;cursor:pointer}
+.undo-btn:hover:not(:disabled){background:#EEF5FF;border-color:#B5D4F4;color:#185FA5}
+.undo-btn:disabled{opacity:0.35;cursor:not-allowed}
+.undo-label{font-size:10px;color:#B4B2A9;margin-left:auto;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;max-width:80px}
+
+.step-spacer{flex:1;min-height:8px}
+
+/* ── CANVAS AREA ── */
+.canvas-area{flex:1;background:#C4C4C0;display:flex;flex-direction:column;overflow:hidden;min-width:0;position:relative}
+.canvas-toolbar{display:flex;align-items:center;gap:8px;padding:6px 14px;background:#fff;border-bottom:1px solid #E8E6DE;flex-shrink:0;z-index:5}
+.size-toggle{display:flex;border:1.5px solid #D3D1C7;border-radius:7px;overflow:hidden}
+.st-btn{padding:4px 12px;font-size:12px;font-weight:500;cursor:pointer;background:#FAFAF8;color:#888780;border:none;transition:all 0.12s}
+.st-btn.active{background:#185FA5;color:#fff}
+.st-btn:not(.active):hover{background:#EEF5FF;color:#185FA5}
+.ct-sep{width:1px;height:20px;background:#E8E6DE}
+.zoom-group{display:flex;align-items:center;gap:4px}
+.zoom-btn{width:26px;height:26px;border-radius:5px;border:1px solid #E8E6DE;background:#FAFAF8;color:#2C2C2A;cursor:pointer;font-size:15px;display:flex;align-items:center;justify-content:center;font-weight:700;transition:all 0.12s}
+.zoom-btn:hover{background:#EEF5FF;border-color:#B5D4F4;color:#185FA5}
+.zoom-val{font-size:12px;font-weight:600;color:#2C2C2A;min-width:38px;text-align:center}
+.ct-info{font-size:11px;color:#5F5E5A;margin-left:auto;font-style:italic}
+
+/* ── DUAL CANVAS LAYOUT ── */
+.canvas-scroll{flex:1;overflow:auto;display:flex;align-items:flex-start;justify-content:center;padding:44px 20px 32px;gap:0}
+
+/* Single-sided: original layout */
+.canvas-scroll.single-sided{padding:52px 32px 32px}
+
+/* Dual-sided: side wrappers */
+.dual-side{display:flex;flex-direction:column;align-items:center;transition:flex 0.2s ease;position:relative;flex-shrink:0}
+.dual-side.side-active{flex:62}
+.dual-side.side-inactive{flex:38;cursor:pointer}
+.dual-gutter{width:12px;flex-shrink:0}
+
+/* Dim overlay on inactive side */
+.dual-side.side-inactive::after{
+  content:'';position:absolute;
+  top:0;left:0;right:0;
+  bottom:28px; /* leave room for label */
+  background:rgba(0,0,0,0.32);
+  pointer-events:none;
+  border-radius:3px;
+  transition:opacity 0.15s;
+}
+
+/* Canvas label — anchored inside canvas area at bottom of each side */
+.canvas-side-label{
+  position:absolute;bottom:6px;left:0;right:0;
+  text-align:center;
+  font-size:11px;font-weight:700;
+  letter-spacing:0.06em;text-transform:uppercase;
+  pointer-events:none;
+  transition:color 0.15s;
+}
+.dual-side.side-active .canvas-side-label{color:#185FA5}
+.dual-side.side-inactive .canvas-side-label{color:rgba(255,255,255,0.55)}
+
+.canvas-outer{position:relative;flex-shrink:0}
+.canvas-transform{transform-origin:top left;position:relative}
+canvas{display:block}
+.main-canvas{box-shadow:0 3px 18px rgba(0,0,0,0.22)}
+.snap-canvas{position:absolute;top:0;left:0;pointer-events:none}
+
+/* Status pill — single-sided only, floats in canvas-area */
+.canvas-status{
+  position:absolute;top:56px;left:50%;transform:translateX(-50%);
+  font-size:16px;font-weight:700;padding:9px 22px;border-radius:28px;
+  white-space:nowrap;pointer-events:none;letter-spacing:-0.01em;
+  box-shadow:0 2px 10px rgba(0,0,0,0.15);z-index:10
+}
+.cs-idle{background:rgba(44,44,42,0.65);color:#fff}
+.cs-ok{background:rgba(59,109,17,0.92);color:#fff}
+.cs-warn{background:rgba(239,159,39,0.92);color:#fff}
+
+/* Floating guides legend on canvas */
+.guides-float{
+  position:absolute;bottom:24px;left:24px;
+  background:rgba(255,255,255,0.93);
+  border:1px solid rgba(0,0,0,0.1);
+  border-radius:10px;padding:10px 12px;
+  font-size:11px;pointer-events:none;z-index:8;
+  box-shadow:0 2px 8px rgba(0,0,0,0.08)
+}
+.gf-title{font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:0.08em;color:#888780;margin-bottom:7px}
+.gf-row{display:flex;align-items:center;gap:8px;padding:3px 0}
+.gf-dot{width:10px;height:10px;border-radius:50%;flex-shrink:0}
+.gf-label{color:#2C2C2A;font-weight:500;min-width:70px}
+.gf-sub{color:#888780;font-size:10px}
+
+/* Bleed callout at bottom */
+.bleed-callout{
+  position:absolute;bottom:24px;left:50%;transform:translateX(-50%);
+  background:rgba(244,121,32,0.93);color:#fff;
+  font-size:12px;font-weight:600;padding:6px 16px;
+  border-radius:20px;white-space:nowrap;pointer-events:none;
+  display:none;align-items:center;gap:6px;z-index:9
+}
+.bleed-callout.show{display:flex}
+
+/* ── RIGHT PANEL (Layers + Preflight + Actions) ── */
+.right-panel{width:220px;flex-shrink:0;border-left:1px solid #E8E6DE;background:#fff;display:flex;flex-direction:column;overflow:hidden}
+
+/* Layers section */
+.rp-section-title{padding:10px 14px 7px;font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:0.1em;color:#B4B2A9;border-bottom:1px solid #E8E6DE;display:flex;align-items:center;justify-content:space-between;flex-shrink:0}
+.rp-side-tag{font-size:10px;font-weight:700;padding:1px 6px;border-radius:3px;background:#185FA5;color:#fff;letter-spacing:0.02em;text-transform:none}
+.rp-add{font-size:12px;color:#185FA5;cursor:pointer;font-weight:600;background:none;border:none;padding:2px 6px;border-radius:5px}
+.rp-add:hover{background:#EEF5FF}
+.layers-list{flex:0 0 auto;max-height:200px;overflow-y:auto;border-bottom:1px solid #E8E6DE}
+.layer-item{display:flex;align-items:center;gap:6px;padding:7px 10px;border-bottom:1px solid #F1EFE8;cursor:pointer;user-select:none;border-left:3px solid transparent}
+.layer-item:hover{background:#FAFAF8}
+.layer-item.selected{background:#EEF5FF;border-left-color:#185FA5}
+.layer-item.hidden-layer{opacity:0.4}
+.li-drag{color:#D3D1C7;font-size:15px;cursor:grab;flex-shrink:0}
+.li-thumb{width:28px;height:28px;border-radius:4px;flex-shrink:0;border:1px solid #E8E6DE;background:#F1EFE8;display:block}
+.li-info{flex:1;min-width:0}
+.li-name{font-size:11px;font-weight:500;color:#2C2C2A;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.li-meta{font-size:10px;color:#B4B2A9;margin-top:1px}
+.li-btns{display:flex;gap:2px;flex-shrink:0}
+.li-btn{font-size:14px;cursor:pointer;color:#B4B2A9;background:none;border:none;padding:3px;border-radius:4px;line-height:1}
+.li-btn:hover{background:#F1EFE8;color:#2C2C2A}
+.li-btn.del:hover{background:#FCEBEB;color:#E24B4A}
+.li-btn.vis-on{color:#185FA5}
+
+/* Add layer button */
+.lp-add-bottom{display:flex;align-items:center;justify-content:center;gap:7px;padding:9px;cursor:pointer;font-size:12px;font-weight:600;color:#185FA5;background:#EEF5FF;border:none;border-bottom:2px dashed #B5D4F4;width:100%;transition:background 0.12s;flex-shrink:0}
+.lp-add-bottom:hover{background:#B5D4F4;color:#0C447C}
+
+/* Fixed layers */
+.lp-fixed{padding:7px 10px;border-bottom:1px solid #E8E6DE;background:#FAFAF8;flex-shrink:0}
+.lp-fixed-title{font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:0.07em;color:#B4B2A9;margin-bottom:5px}
+.lp-fixed-row{display:flex;align-items:center;gap:6px;padding:2px 0;font-size:11px;color:#5F5E5A}
+.lp-fixed-dot{width:7px;height:7px;border-radius:50%;flex-shrink:0}
+.lp-fixed-meta{margin-left:auto;font-size:10px;color:#B4B2A9}
+
+/* Preflight */
+.preflight-section{flex:1;overflow-y:auto;padding:10px 12px}
+.pf-title{font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:0.08em;color:#B4B2A9;margin-bottom:8px}
+.pf-item{border-radius:7px;padding:8px 10px;margin-bottom:6px;border:1px solid transparent}
+.pf-item.pass{background:#EAF3DE;border-color:#C0DD97}
+.pf-item.warn{background:#FAEEDA;border-color:#FAC775}
+.pf-item.fail{background:#FCEBEB;border-color:#F09595}
+.pf-item.idle{background:#F7F6F2;border-color:#E8E6DE}
+.pf-item-top{display:flex;align-items:center;gap:7px}
+.pf-dot{width:8px;height:8px;border-radius:50%;flex-shrink:0}
+.pf-dot.pass{background:#639922}.pf-dot.warn{background:#EF9F27}.pf-dot.fail{background:#E24B4A}.pf-dot.idle{background:#D3D1C7}
+.pf-label{font-size:12px;font-weight:500;color:#2C2C2A;flex:1}
+.pf-val{font-size:11px;font-weight:700}
+.pf-val.pass{color:#3B6D11}.pf-val.warn{color:#854F0B}.pf-val.fail{color:#A32D2D}.pf-val.idle{color:#888780}
+.pf-detail{font-size:11px;color:#5F5E5A;margin-top:3px;line-height:1.4}
+
+/* Action buttons in right panel */
+.rp-actions{padding:10px 12px;border-top:1px solid #E8E6DE;display:flex;flex-direction:column;gap:7px;flex-shrink:0}
+.rp-btn{width:100%;padding:9px 14px;font-size:13px;border-radius:7px;cursor:pointer;border:1px solid #E8E6DE;background:#fff;color:#2C2C2A;transition:background 0.12s;text-align:center;display:block;text-decoration:none}
+.rp-btn:hover{background:#F1EFE8}
+.rp-btn-blue{background:#185FA5;color:#fff;border-color:#185FA5}
+.rp-btn-blue:hover{opacity:0.88;background:#185FA5}
+.rp-btn-blue:disabled{background:#D3D1C7;border-color:#D3D1C7;cursor:not-allowed;opacity:1}
+.rp-btn-green{background:#3B6D11;color:#fff;border-color:#3B6D11}
+.rp-btn-green:hover{opacity:0.88;background:#3B6D11}
+.rp-btn-green:disabled{background:#D3D1C7;border-color:#D3D1C7;cursor:not-allowed;opacity:1}
+
+.toast{position:fixed;bottom:20px;left:50%;transform:translateX(-50%);background:#2C2C2A;color:#fff;padding:9px 18px;border-radius:8px;font-size:13px;opacity:0;transition:opacity 0.2s;pointer-events:none;z-index:999;white-space:nowrap}
+.toast.show{opacity:1}
+</style>
+</head>
+<body>
+<nav>
+  <a class="nav-logo" href="/">UKPOS Print Site</a>
+  <div class="nav-links">
+    <a class="nav-link active" href="/designer">Designer</a>
+    <a class="nav-link" href="/dashboard">Artwork list</a>
+    <a class="nav-link assessor-link" href="/artwork-assessor">Artwork assessor</a>
+  </div>
+  <span class="nav-spacer"></span>
+  <span class="nav-badge">Internal tool</span>
+</nav>
+<div class="job-bar" id="jobBar">
+  <span class="jb-label">Ref</span><span class="jb-val" id="jbRef">—</span>
+  <span class="jb-label" style="margin-left:12px">Customer</span><span class="jb-val" id="jbCustomer">—</span>
+  <span class="jb-label" style="margin-left:12px">Order</span><span class="jb-val" id="jbOrder">—</span>
+  <a class="jb-back" href="/dashboard">← Back to artwork list</a>
+</div>
+<div class="workspace">
+
+<!-- ── LEFT SETUP PANEL ── -->
+<div class="step-panel">
+  <div class="step-panel-title">Artwork setup <span class="panel-side-tag" id="panelSideTag" style="display:none"></span></div>
+
+  <div class="undo-bar">
+    <button class="undo-btn" id="undoBtn" onclick="undo()" disabled title="Undo (Ctrl+Z)">↩ Undo</button>
+    <button class="undo-btn" id="redoBtn" onclick="redo()" disabled title="Redo (Ctrl+Y)">↪ Redo</button>
+    <span class="undo-label" id="undoLabel"></span>
+  </div>
+
+  <!-- Step 1: SKU -->
+  <div class="step-block active" id="sb1">
+    <div class="step-header" onclick="toggleStep(1)">
+      <div class="step-num">1</div><span class="step-title">Select SKU</span><span class="step-chevron">▾</span>
+    </div>
+    <div class="step-body">
+      <select class="sku-select" id="skuSelect" onchange="onSkuChange()">
+        <option value="">— choose product —</option>
+        <optgroup label="Acrylic Poster Holders">
+          <option value="AS1-A0">AS1-A0 — A0</option><option value="AS1-A1">AS1-A1 — A1</option>
+          <option value="AS1-A2">AS1-A2 — A2</option><option value="AS1-A3">AS1-A3 — A3</option>
+          <option value="AS1-A4">AS1-A4 — A4</option><option value="AS1-A5">AS1-A5 — A5</option>
+        </optgroup>
+        <optgroup label="Waterproof Pavement Signs">
+          <option value="WPG1">WPG1</option><option value="WPG2">WPG2</option><option value="WPG3">WPG3</option>
+          <option value="WPG4">WPG4</option><option value="WPG5">WPG5</option><option value="WPG6">WPG6</option>
+          <option value="WPG7">WPG7</option><option value="WPG8">WPG8</option><option value="WPG9">WPG9</option>
+          <option value="WPG10">WPG10</option><option value="WPG11">WPG11</option><option value="WPG12">WPG12</option>
+          <option value="WPG13">WPG13</option><option value="WPG14">WPG14</option><option value="WPG15">WPG15</option>
+          <option value="WPG16">WPG16</option><option value="WPG17">WPG17</option><option value="WPG18">WPG18</option>
+        </optgroup>
+        <optgroup label="Aluminium Signs">
+          <option value="ABG1">ABG1</option><option value="ABG9">ABG9</option><option value="ABG10">ABG10</option>
+          <option value="ABG12">ABG12</option><option value="ABG13">ABG13</option>
+          <option value="ABM2A1">ABM2A1</option><option value="PABG">PABG</option>
+        </optgroup>
+        <optgroup label="Snap Frame Prints">
+          <option value="SF-A0">SF-A0</option><option value="SF-A1">SF-A1</option>
+          <option value="SF-A2">SF-A2</option><option value="SF-A3">SF-A3</option><option value="SF-A4">SF-A4</option>
+        </optgroup>
+        <optgroup label="Other">
+          <option value="BOLL05">BOLL05 — Bollard</option>
+          <option value="VINYL">VINYL — Vinyl Banner</option>
+        </optgroup>
+      </select>
+      <div id="skuSpecExpanded" style="display:none">
+        <div class="sku-spec-grid">
+          <div class="sku-spec-cell"><div class="sku-spec-key">Size</div><div class="sku-spec-val" id="ssSize">—</div></div>
+          <div class="sku-spec-cell"><div class="sku-spec-key">DPI min</div><div class="sku-spec-val" id="ssDpi">—</div></div>
+          <div class="sku-spec-cell"><div class="sku-spec-key">Colour</div><div class="sku-spec-val" id="ssColour">—</div></div>
+          <div class="sku-spec-cell"><div class="sku-spec-key">Bleed</div><div class="sku-spec-val" id="ssBleed">—</div></div>
+        </div>
+        <div class="flag-pills" id="ssFlags"></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="sku-summary" id="skuSummary" onclick="toggleStep(1)">
+    <div class="sku-summary-top">
+      <span class="sku-summary-code" id="sSum_code">—</span>
+      <span class="sku-summary-name" id="sSum_name">—</span>
+    </div>
+    <div class="sku-summary-dims" id="sSum_dims">—</div>
+    <div class="sku-summary-hint">Click to change</div>
+  </div>
+
+  <!-- Step 2: Upload -->
+  <div class="step-block" id="sb2">
+    <div class="step-header" onclick="toggleStep(2)">
+      <div class="step-num">2</div><span class="step-title">Upload artwork</span><span class="step-chevron">▾</span>
+    </div>
+    <div class="step-body">
+      <div class="upload-drop" id="uploadDrop"
+        ondragover="event.preventDefault();this.classList.add('drag-over')"
+        ondragleave="this.classList.remove('drag-over')"
+        ondrop="handleDropOnZone(event)"
+        onclick="document.getElementById('fileIn').click()">
+        <span class="ud-icon">📂</span>
+        <strong>Drop artwork here</strong>
+        <div style="font-size:12px;color:#888780;margin-top:2px">or click to browse</div>
+        <div class="ud-formats">PDF · EPS · PNG · JPG · TIFF</div>
+      </div>
+      <input type="file" id="fileIn" accept=".png,.jpg,.jpeg,.pdf,.tif,.tiff,.eps" multiple onchange="handleFileInput(event)" style="display:none"/>
+    </div>
+  </div>
+
+  <!-- Step 3: Background -->
+  <div class="step-block" id="sb3">
+    <div class="step-header" onclick="toggleStep(3)">
+      <div class="step-num">3</div><span class="step-title">Background fill</span><span class="step-chevron">▾</span>
+    </div>
+    <div class="step-body">
+      <div class="bg-swatches" id="bgSwatches"></div>
+      <div class="bg-custom-row">
+        <input type="color" id="bgColorPicker" value="#FFFFFF" oninput="setBgColor(this.value)"/>
+        <span>Custom</span>
+        <button class="bg-none-btn" onclick="clearBg()">✕ None</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Step 4: Position / Scale / Rotate -->
+  <div class="step-block" id="sb4">
+    <div class="step-header" onclick="toggleStep(4)">
+      <div class="step-num">4</div><span class="step-title">Position, scale &amp; rotate</span><span class="step-chevron">▾</span>
+    </div>
+    <div class="step-body">
+      <div class="active-layer-tag" id="posActiveTag"><div class="alt-dot"></div><span id="posActiveText">—</span></div>
+
+      <!-- Rotation dial -->
+      <div class="dial-wrap">
+        <div class="dial-svg-wrap" id="dialSvgWrap">
+          <svg id="rotDial" width="100" height="100" viewBox="0 0 100 100" style="display:block;touch-action:none">
+            <circle cx="50" cy="50" r="42" fill="#F7F6F2" stroke="#E8E6DE" stroke-width="3"/>
+            <circle cx="50" cy="50" r="42" fill="none" stroke="#185FA5" stroke-width="3"
+              stroke-dasharray="264" stroke-dashoffset="264" id="dialArc"
+              stroke-linecap="round" transform="rotate(-90 50 50)"/>
+            <line x1="50" y1="8"  x2="50" y2="18" stroke="#B4B2A9" stroke-width="2"/>
+            <line x1="92" y1="50" x2="82" y2="50" stroke="#B4B2A9" stroke-width="2"/>
+            <line x1="50" y1="92" x2="50" y2="82" stroke="#B4B2A9" stroke-width="2"/>
+            <line x1="8"  y1="50" x2="18" y2="50" stroke="#B4B2A9" stroke-width="2"/>
+            <line x1="79.6" y1="20.4" x2="73.5" y2="26.5" stroke="#D3D1C7" stroke-width="1"/>
+            <line x1="79.6" y1="79.6" x2="73.5" y2="73.5" stroke="#D3D1C7" stroke-width="1"/>
+            <line x1="20.4" y1="79.6" x2="26.5" y2="73.5" stroke="#D3D1C7" stroke-width="1"/>
+            <line x1="20.4" y1="20.4" x2="26.5" y2="26.5" stroke="#D3D1C7" stroke-width="1"/>
+            <line id="dialNeedle" x1="50" y1="50" x2="50" y2="10" stroke="#185FA5" stroke-width="2.5" stroke-linecap="round"/>
+            <circle cx="50" cy="50" r="5" fill="#185FA5"/>
+            <circle id="dialKnob" cx="50" cy="10" r="10" fill="#185FA5" stroke="#fff" stroke-width="2.5"/>
+            <text id="dialKnobTxt" x="50" y="14" text-anchor="middle" dominant-baseline="middle" fill="#fff" font-size="11" font-weight="700">↻</text>
+          </svg>
+        </div>
+        <div class="dial-right">
+          <div class="dial-readout" id="rotDialReadout">0°</div>
+          <div class="dial-presets">
+            <button class="dial-preset active-rot" id="rp0d"   onclick="setAbsoluteRot(0)">0°</button>
+            <button class="dial-preset" id="rp90d"  onclick="setAbsoluteRot(90)">90°</button>
+            <button class="dial-preset" id="rpn90d" onclick="setAbsoluteRot(-90)">−90°</button>
+            <button class="dial-preset" id="rp180d" onclick="setAbsoluteRot(180)">180°</button>
+          </div>
+        </div>
+      </div>
+
+      <div class="ctrl-row">
+        <div class="ctrl-lbl"><span>Scale</span><span class="ctrl-val" id="scaleVal">100%</span></div>
+        <input type="range" id="scaleSlider" min="5" max="300" step="1" value="100" oninput="onScaleSlider(this.value)"/>
+      </div>
+      <div class="btn-row">
+        <button class="mini-btn" onclick="fitToBleed()">Fit to bleed</button>
+        <button class="mini-btn" onclick="fitToTrim()">Fit to trim</button>
+      </div>
+      <div class="btn-row">
+        <button class="mini-btn" onclick="centreActive()">Centre</button>
+        <button class="mini-btn" onclick="resetActive()">Reset all</button>
+      </div>
+      <div class="pos-info">Offset: <span id="posReadout">—</span></div>
+      <div class="tmpl-rotate-row" id="tmplRotRow" style="display:none">
+        <span class="tmpl-rotate-label">Template rotation</span>
+        <button class="mini-btn" style="max-width:36px" onclick="rotateTemplate(-90)">↺</button>
+        <button class="mini-btn" style="max-width:36px" onclick="rotateTemplate(90)">↻</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Step 5: Opacity -->
+  <div class="step-block" id="sb5">
+    <div class="step-header" onclick="toggleStep(5)">
+      <div class="step-num">5</div><span class="step-title">Layer opacity</span><span class="step-chevron">▾</span>
+    </div>
+    <div class="step-body">
+      <div class="active-layer-tag" id="opActiveTag"><div class="alt-dot"></div><span id="opActiveText">—</span></div>
+      <div class="op-row">
+        <span class="op-lbl">Selected</span>
+        <input type="range" min="0" max="100" step="1" value="92" id="layerOpacity" oninput="onLayerOpacity(this.value)"/>
+        <span class="op-val" id="layerOpVal">92%</span>
+      </div>
+      <div class="op-row">
+        <span class="op-lbl">Template</span>
+        <input type="range" min="0" max="100" step="1" value="55" id="tmplOpacity" oninput="draw()"/>
+        <span class="op-val" id="tmplOpVal">55%</span>
+      </div>
+    </div>
+  </div>
+
+  <div class="step-spacer"></div>
+</div>
+
+<!-- ── CANVAS AREA ── -->
+<div class="canvas-area">
+  <div class="canvas-toolbar">
+    <span style="font-size:11px;color:#888780">View</span>
+    <div class="size-toggle">
+      <button class="st-btn active" id="stWorking" onclick="setViewMode('working')">Working</button>
+      <button class="st-btn" id="stFull" onclick="setViewMode('full')">Full size</button>
+    </div>
+    <div class="ct-sep"></div>
+    <div class="zoom-group">
+      <button class="zoom-btn" onclick="zoomBy(-0.25)" title="Zoom out">−</button>
+      <span class="zoom-val" id="zoomVal">100%</span>
+      <button class="zoom-btn" onclick="zoomBy(0.25)" title="Zoom in">+</button>
+      <button class="zoom-btn" onclick="zoomReset()" style="font-size:11px;width:32px" title="Fit">Fit</button>
+    </div>
+    <span class="ct-info" id="ctInfo">Scaled to fit screen</span>
+  </div>
+
+  <!-- Single-sided status pill -->
+  <div class="canvas-status cs-idle" id="canvasStatus">Select a SKU and upload artwork to begin</div>
+
+  <!-- Canvas scroll — populated dynamically for single vs dual -->
+  <div class="canvas-scroll single-sided" id="canvasScroll">
+    <!-- Single-sided default: one canvas-outer -->
+    <div class="canvas-outer" id="canvasOuter">
+      <div class="canvas-transform" id="canvasTransform">
+        <canvas id="mainCanvas" class="main-canvas" width="460" height="560"></canvas>
+        <canvas id="snapCanvas" class="snap-canvas" width="460" height="560"></canvas>
+      </div>
+    </div>
+  </div>
+
+  <!-- Floating guides legend -->
+  <div class="guides-float" id="guidesFloat" style="display:none">
+    <div class="gf-title">Guides</div>
+    <div class="gf-row"><div class="gf-dot" style="background:#F47920;border:1.5px dashed #C75E0A"></div><span class="gf-label">Bleed</span><span class="gf-sub" id="gfBleed">—</span></div>
+    <div class="gf-row"><div class="gf-dot" style="background:rgba(30,100,220,0.7)"></div><span class="gf-label">Trim line</span><span class="gf-sub" id="gfTrim">—</span></div>
+    <div class="gf-row"><div class="gf-dot" style="background:#22AA66"></div><span class="gf-label">Safe zone</span><span class="gf-sub" id="gfSafe">—</span></div>
+  </div>
+
+  <div class="bleed-callout" id="bleedCallout">⚠ <span id="bleedCalloutText">Bleed required</span></div>
+</div>
+
+<!-- ── RIGHT PANEL ── -->
+<div class="right-panel">
+  <div class="rp-section-title">
+    <span>Layers <span class="rp-side-tag" id="rpLayersSideTag" style="display:none"></span></span>
+    <button class="rp-add" onclick="document.getElementById('fileIn').click()">+ Add</button>
+  </div>
+  <div class="layers-list" id="layersList">
+    <div style="padding:16px 12px;font-size:11px;color:#B4B2A9;text-align:center;line-height:1.5">No layers yet.<br>Upload artwork to begin.</div>
+  </div>
+  <button class="lp-add-bottom" onclick="document.getElementById('fileIn').click()">
+    <span style="font-size:16px;line-height:1">＋</span><span>Add layer</span>
+  </button>
+  <div class="lp-fixed">
+    <div class="lp-fixed-title">Fixed</div>
+    <div class="lp-fixed-row"><div class="lp-fixed-dot" style="background:#F47920"></div>Guides &amp; template<span class="lp-fixed-meta">always on</span></div>
+  </div>
+
+  <!-- Preflight -->
+  <div class="rp-section-title" style="margin-top:0">Preflight <span class="rp-side-tag" id="rpPreflightSideTag" style="display:none"></span></div>
+  <div class="preflight-section" id="preflightSection">
+    <div class="pf-item idle" id="pfBleed">
+      <div class="pf-item-top"><div class="pf-dot idle"></div><span class="pf-label">Bleed coverage</span><span class="pf-val idle" id="pfBleedVal">—</span></div>
+      <div class="pf-detail" id="pfBleedDetail"></div>
+    </div>
+    <div class="pf-item idle" id="pfDpi">
+      <div class="pf-item-top"><div class="pf-dot idle"></div><span class="pf-label">Resolution (DPI)</span><span class="pf-val idle" id="pfDpiVal">—</span></div>
+      <div class="pf-detail" id="pfDpiDetail"></div>
+    </div>
+    <div class="pf-item idle" id="pfSafe">
+      <div class="pf-item-top"><div class="pf-dot idle"></div><span class="pf-label">Safe zone</span><span class="pf-val idle" id="pfSafeVal">—</span></div>
+      <div class="pf-detail" id="pfSafeDetail"></div>
+    </div>
+    <div class="pf-item idle" id="pfColour">
+      <div class="pf-item-top"><div class="pf-dot idle"></div><span class="pf-label">Colour mode</span><span class="pf-val idle" id="pfColourVal">—</span></div>
+      <div class="pf-detail" id="pfColourDetail"></div>
+    </div>
+  </div>
+
+  <!-- Action buttons -->
+  <div class="rp-actions">
+    <button class="rp-btn rp-btn-green" id="btnSubmit" disabled onclick="submitToArtworkList()">Submit to artwork list →</button>
+    <button class="rp-btn rp-btn-blue" id="btnAssessor" disabled onclick="goToAssessor()">Run checks in assessor</button>
+    <a class="rp-btn" href="/dashboard">← Artwork list</a>
+  </div>
+</div>
+
+</div><!-- end workspace -->
+<div class="toast" id="toast"></div>
+
+<script>
+// ── SKU Specs ──────────────────────────────────────────────
+const SKU_SPECS = {
+  'AS1-A0':  {label:'Acrylic Poster Holder A0', w:841, h:1189,dpi:150,colour:'CMYK',sides:1,bleed:3, safe_zone:5,rotatable:false,future_flags:[]},
+  'AS1-A1':  {label:'Acrylic Poster Holder A1', w:594, h:841, dpi:200,colour:'CMYK',sides:1,bleed:3, safe_zone:5,rotatable:false,future_flags:[]},
+  'AS1-A2':  {label:'Acrylic Poster Holder A2', w:420, h:594, dpi:200,colour:'CMYK',sides:1,bleed:3, safe_zone:5,rotatable:false,future_flags:[]},
+  'AS1-A3':  {label:'Acrylic Poster Holder A3', w:297, h:420, dpi:300,colour:'CMYK',sides:1,bleed:3, safe_zone:5,rotatable:false,future_flags:[]},
+  'AS1-A4':  {label:'Acrylic Poster Holder A4', w:210, h:297, dpi:300,colour:'CMYK',sides:1,bleed:3, safe_zone:5,rotatable:false,future_flags:[]},
+  'AS1-A5':  {label:'Acrylic Poster Holder A5', w:148, h:210, dpi:300,colour:'CMYK',sides:1,bleed:3, safe_zone:5,rotatable:false,future_flags:[]},
+  'WPG1':    {label:'WPG1 Pavement Sign',w:450,h:600,dpi:150,colour:'CMYK',sides:2,bleed:5,safe_zone:5,rotatable:false,future_flags:['cut_lines','double_sided']},
+  'WPG2':    {label:'WPG2 Pavement Sign',w:450,h:600,dpi:150,colour:'CMYK',sides:2,bleed:5,safe_zone:5,rotatable:false,future_flags:['cut_lines','double_sided']},
+  'WPG3':    {label:'WPG3 Pavement Sign',w:500,h:700,dpi:150,colour:'CMYK',sides:2,bleed:5,safe_zone:5,rotatable:false,future_flags:['cut_lines','double_sided']},
+  'WPG4':    {label:'WPG4 Pavement Sign',w:500,h:700,dpi:150,colour:'CMYK',sides:2,bleed:5,safe_zone:5,rotatable:false,future_flags:['cut_lines','double_sided']},
+  'WPG5':    {label:'WPG5 Pavement Sign',w:500,h:700,dpi:150,colour:'CMYK',sides:1,bleed:5,safe_zone:5,rotatable:false,future_flags:['cut_lines']},
+  'WPG6':    {label:'WPG6 Pavement Sign',w:500,h:700,dpi:150,colour:'CMYK',sides:1,bleed:5,safe_zone:5,rotatable:false,future_flags:['cut_lines']},
+  'WPG7':    {label:'WPG7 Pavement Sign',w:594,h:841,dpi:150,colour:'CMYK',sides:1,bleed:5,safe_zone:5,rotatable:false,future_flags:['cut_lines']},
+  'WPG8':    {label:'WPG8 Pavement Sign',w:594,h:841,dpi:150,colour:'CMYK',sides:2,bleed:5,safe_zone:5,rotatable:false,future_flags:['cut_lines','double_sided']},
+  'WPG9':    {label:'WPG9 Pavement Sign',w:594,h:841,dpi:150,colour:'CMYK',sides:1,bleed:5,safe_zone:5,rotatable:false,future_flags:['cut_lines']},
+  'WPG10':   {label:'WPG10 Pavement Sign',w:450,h:600,dpi:150,colour:'CMYK',sides:2,bleed:5,safe_zone:5,rotatable:false,future_flags:['cut_lines','double_sided']},
+  'WPG11':   {label:'WPG11 Pavement Sign',w:450,h:600,dpi:150,colour:'CMYK',sides:2,bleed:5,safe_zone:5,rotatable:false,future_flags:['cut_lines','double_sided']},
+  'WPG12':   {label:'WPG12 Pavement Sign',w:450,h:600,dpi:150,colour:'CMYK',sides:1,bleed:5,safe_zone:5,rotatable:false,future_flags:['cut_lines']},
+  'WPG13':   {label:'WPG13 Pavement Sign',w:594,h:841,dpi:150,colour:'CMYK',sides:2,bleed:5,safe_zone:5,rotatable:false,future_flags:['cut_lines','double_sided']},
+  'WPG14':   {label:'WPG14 Pavement Sign',w:594,h:841,dpi:150,colour:'CMYK',sides:2,bleed:5,safe_zone:5,rotatable:false,future_flags:['cut_lines','double_sided']},
+  'WPG15':   {label:'WPG15 Pavement Sign',w:594,h:841,dpi:150,colour:'CMYK',sides:1,bleed:5,safe_zone:5,rotatable:false,future_flags:['cut_lines']},
+  'WPG16':   {label:'WPG16 Pavement Sign',w:594,h:841,dpi:150,colour:'CMYK',sides:1,bleed:5,safe_zone:5,rotatable:false,future_flags:['cut_lines']},
+  'WPG17':   {label:'WPG17 Pavement Sign',w:594,h:841,dpi:150,colour:'CMYK',sides:2,bleed:5,safe_zone:5,rotatable:false,future_flags:['cut_lines','double_sided']},
+  'WPG18':   {label:'WPG18 Pavement Sign',w:594,h:841,dpi:150,colour:'CMYK',sides:2,bleed:5,safe_zone:5,rotatable:false,future_flags:['cut_lines','double_sided']},
+  'ABG1':    {label:'Aluminium Sign ABG1', w:594,h:841,dpi:150,colour:'CMYK',sides:2,bleed:5,safe_zone:5,rotatable:false,future_flags:['cut_lines','double_sided']},
+  'ABG9':    {label:'Aluminium Sign ABG9', w:594,h:841,dpi:150,colour:'CMYK',sides:2,bleed:5,safe_zone:5,rotatable:false,future_flags:['cut_lines','double_sided']},
+  'ABG10':   {label:'Aluminium Sign ABG10',w:594,h:841,dpi:150,colour:'CMYK',sides:2,bleed:5,safe_zone:5,rotatable:false,future_flags:['cut_lines','double_sided']},
+  'ABG12':   {label:'Aluminium Sign ABG12',w:594,h:841,dpi:150,colour:'CMYK',sides:2,bleed:5,safe_zone:5,rotatable:false,future_flags:['cut_lines','double_sided']},
+  'ABG13':   {label:'Aluminium Sign ABG13',w:594,h:841,dpi:150,colour:'CMYK',sides:2,bleed:5,safe_zone:5,rotatable:false,future_flags:['cut_lines','double_sided']},
+  'ABM2A1':  {label:'Aluminium Sign ABM2A1',w:594,h:841,dpi:150,colour:'CMYK',sides:2,bleed:5,safe_zone:5,rotatable:false,future_flags:['cut_lines','double_sided']},
+  'PABG':    {label:'Pavement Sign PABG', w:594,h:841,dpi:150,colour:'CMYK',sides:2,bleed:5,safe_zone:5,rotatable:false,future_flags:['cut_lines','double_sided']},
+  'BOLL05':  {label:'Bollard Sign',       w:300,h:300,dpi:300,colour:'CMYK',sides:1,bleed:3,safe_zone:5,rotatable:false,future_flags:['cut_lines']},
+  'SF-A0':   {label:'Snap Frame A0',w:841, h:1189,dpi:150,colour:'CMYK',sides:1,bleed:0,safe_zone:3,rotatable:false,future_flags:[]},
+  'SF-A1':   {label:'Snap Frame A1',w:594, h:841, dpi:200,colour:'CMYK',sides:1,bleed:0,safe_zone:3,rotatable:false,future_flags:[]},
+  'SF-A2':   {label:'Snap Frame A2',w:420, h:594, dpi:200,colour:'CMYK',sides:1,bleed:0,safe_zone:3,rotatable:false,future_flags:[]},
+  'SF-A3':   {label:'Snap Frame A3',w:297, h:420, dpi:300,colour:'CMYK',sides:1,bleed:0,safe_zone:3,rotatable:false,future_flags:[]},
+  'SF-A4':   {label:'Snap Frame A4',w:210, h:297, dpi:300,colour:'CMYK',sides:1,bleed:0,safe_zone:3,rotatable:false,future_flags:[]},
+  'VINYL':   {label:'Vinyl Banner (custom)',w:null,h:null,dpi:100,colour:'CMYK',sides:1,bleed:50,safe_zone:10,rotatable:false,future_flags:['vinyl_colour']},
+};
+const FLAG_LABELS={cut_lines:'Cut lines required',vinyl_colour:'White→pink conversion',double_sided:'Double-sided'};
+const BG_PRESETS=['transparent','#FFFFFF','#000000','#F47920','#1A2233','#D4E8FF','#FFF8E6','#E8F5E9','#FCE4EC','#F5F5F5'];
+
+// ── Core state ─────────────────────────────────────────────
+let currentSku='', viewMode='working', jobId=null, openStep=1;
+let templateRotDeg=0, zoomLevel=1;
+let dragSrcId=null;
+let dialDragging=false;
+let interactMode=null, activeHandle=null, mouseStart={}, layerSnap={};
+const SNAP_THRESH=6, HANDLE_R=7;
+
+// ── Dual-sided state ───────────────────────────────────────
+// Each side holds: layers, activeLayerId, bgColor, undoStack, redoStack
+function blankSideState(){
+  return {layers:[], activeLayerId:null, bgColor:null, undoStack:[], redoStack:[]};
+}
+let sides=[blankSideState(), blankSideState()];
+let activeSide=0; // 0=left(side1), 1=right(side2)
+let isDoubleSided=false;
+
+// Convenience accessors — always operate on activeSide
+function S(){ return sides[activeSide]; }
+function getLayers(){ return S().layers; }
+function getActiveLayerId(){ return S().activeLayerId; }
+function setActiveLayerId(id){ S().activeLayerId=id; }
+function getBgColor(){ return S().bgColor; }
+function setBgColorState(c){ S().bgColor=c; }
+
+// Canvas geometry — shared (same SKU both sides)
+let CW=460, CH=560, TX, TY, TW, TH, BLEEDPX, SAFEPX;
+
+// ── Canvas element references ──────────────────────────────
+// Single-sided uses #mainCanvas / #snapCanvas
+// Dual-sided builds two sets dynamically
+let activeCanvas=null, activeSnapCanvas=null, activeCtx=null, activeSnapCtx=null;
+
+function getActiveCanvas(){ return activeCanvas; }
+function getActiveCtx(){ return activeCtx; }
+function getActiveSnapCtx(){ return activeSnapCtx; }
+
+function initSingleSidedCanvas(){
+  const scroll=document.getElementById('canvasScroll');
+  scroll.className='canvas-scroll single-sided';
+  scroll.innerHTML=`
+    <div class="canvas-outer" id="canvasOuter">
+      <div class="canvas-transform" id="canvasTransform">
+        <canvas id="mainCanvas" class="main-canvas" width="${CW}" height="${CH}"></canvas>
+        <canvas id="snapCanvas" class="snap-canvas" width="${CW}" height="${CH}"></canvas>
+      </div>
+    </div>`;
+  activeCanvas=document.getElementById('mainCanvas');
+  activeSnapCanvas=document.getElementById('snapCanvas');
+  activeCtx=activeCanvas.getContext('2d');
+  activeSnapCtx=activeSnapCanvas.getContext('2d');
+  document.getElementById('canvasStatus').style.display='';
+  bindCanvasEvents(activeCanvas);
+}
+
+function initDualSidedCanvas(){
+  const scroll=document.getElementById('canvasScroll');
+  scroll.className='canvas-scroll';
+  scroll.innerHTML=`
+    <div class="dual-side side-active" id="dualSide0" onclick="handleDualSideClick(event,0)" style="position:relative;display:flex;flex-direction:column;align-items:center;min-width:0">
+      <div class="canvas-outer" id="canvasOuter0">
+        <div class="canvas-transform" id="canvasTransform0">
+          <canvas id="mainCanvas0" class="main-canvas" width="${CW}" height="${CH}"></canvas>
+          <canvas id="snapCanvas0" class="snap-canvas" width="${CW}" height="${CH}"></canvas>
+        </div>
+      </div>
+      <div class="canvas-side-label">Side 1 — Active</div>
+    </div>
+    <div class="dual-gutter"></div>
+    <div class="dual-side side-inactive" id="dualSide1" onclick="handleDualSideClick(event,1)" style="position:relative;display:flex;flex-direction:column;align-items:center;min-width:0">
+      <div class="canvas-outer" id="canvasOuter1">
+        <div class="canvas-transform" id="canvasTransform1">
+          <canvas id="mainCanvas1" class="main-canvas" width="${CW}" height="${CH}"></canvas>
+          <canvas id="snapCanvas1" class="snap-canvas" width="${CW}" height="${CH}"></canvas>
+        </div>
+      </div>
+      <div class="canvas-side-label">Side 2 — Inactive</div>
+    </div>`;
+
+  // Hide single-sided status pill in dual mode
+  document.getElementById('canvasStatus').style.display='none';
+
+  // Set active canvas to current activeSide
+  setDualActiveCanvas(activeSide);
+
+  // Bind mouse events only to the active canvas — rebound on side switch
+  bindCanvasEvents(document.getElementById('mainCanvas'+activeSide));
+}
+
+function setDualActiveCanvas(sideIdx){
+  activeCanvas=document.getElementById('mainCanvas'+sideIdx);
+  activeSnapCanvas=document.getElementById('snapCanvas'+sideIdx);
+  activeCtx=activeCanvas ? activeCanvas.getContext('2d') : null;
+  activeSnapCtx=activeSnapCanvas ? activeSnapCanvas.getContext('2d') : null;
+}
+
+function handleDualSideClick(e, sideIdx){
+  // If clicking on the already-active side, don't switch (let canvas interaction handle it)
+  if(sideIdx===activeSide) return;
+  switchToSide(sideIdx);
+}
+
+function switchToSide(sideIdx){
+  if(sideIdx===activeSide) return;
+  activeSide=sideIdx;
+  setDualActiveCanvas(sideIdx);
+
+  // Update dim/active classes
+  const side0=document.getElementById('dualSide0');
+  const side1=document.getElementById('dualSide1');
+  if(side0&&side1){
+    side0.className='dual-side '+(activeSide===0?'side-active':'side-inactive');
+    side1.className='dual-side '+(activeSide===1?'side-active':'side-inactive');
+    // Update labels
+    side0.querySelector('.canvas-side-label').textContent='Side 1 — '+(activeSide===0?'Active':'Inactive');
+    side1.querySelector('.canvas-side-label').textContent='Side 2 — '+(activeSide===1?'Active':'Inactive');
+  }
+
+  // Rebind mouse events to new active canvas
+  bindCanvasEvents(activeCanvas);
+
+  // Update panel tags
+  updateSideTags();
+  // Sync controls to new active side's state
+  syncControlsToActive();
+  renderLayersList();
+  draw();
+  // Also redraw the inactive side (it stays rendered but we don't need to re-draw unless state changed)
+}
+
+function updateSideTags(){
+  if(!isDoubleSided){
+    document.getElementById('panelSideTag').style.display='none';
+    document.getElementById('rpLayersSideTag').style.display='none';
+    document.getElementById('rpPreflightSideTag').style.display='none';
+    return;
+  }
+  const label='Side '+(activeSide+1)+' of 2';
+  const tag=document.getElementById('panelSideTag');
+  tag.style.display='inline-block'; tag.textContent=label;
+  const lt=document.getElementById('rpLayersSideTag');
+  lt.style.display='inline-block'; lt.textContent=label;
+  const pt=document.getElementById('rpPreflightSideTag');
+  pt.style.display='inline-block'; pt.textContent=label;
+}
+
+// Draw the inactive side canvas (keeps it visually up to date without switching)
+function drawInactiveSide(){
+  if(!isDoubleSided) return;
+  const inactiveIdx=activeSide===0?1:0;
+  const inactiveCanvas=document.getElementById('mainCanvas'+inactiveIdx);
+  if(!inactiveCanvas) return;
+  const ictx=inactiveCanvas.getContext('2d');
+  const inactiveSide=sides[inactiveIdx];
+  drawToContext(ictx, inactiveSide.layers, inactiveSide.bgColor, false);
+}
+
+// ── Undo/Redo ──────────────────────────────────────────────
+function captureState(label){
+  const s=S();
+  s.undoStack.push({label,
+    layers:s.layers.map(l=>({...l,img:undefined})),
+    layerImgs:s.layers.map(l=>l.img),
+    activeLayerId:s.activeLayerId,
+    bgColor:s.bgColor,
+    templateRotDeg});
+  if(s.undoStack.length>50) s.undoStack.shift();
+  s.redoStack=[];
+  updateUndoUI();
+}
+function applyState(snap){
+  const s=S();
+  s.layers=snap.layers.map((l,i)=>({...l,img:snap.layerImgs[i]}));
+  s.activeLayerId=snap.activeLayerId;
+  s.bgColor=snap.bgColor;
+  templateRotDeg=snap.templateRotDeg;
+  syncControlsToActive();renderLayersList();draw();updateUndoUI();
+}
+function undo(){
+  const s=S();if(!s.undoStack.length)return;
+  const cur={label:'',layers:s.layers.map(l=>({...l,img:undefined})),layerImgs:s.layers.map(l=>l.img),activeLayerId:s.activeLayerId,bgColor:s.bgColor,templateRotDeg};
+  s.redoStack.push(cur);applyState(s.undoStack.pop());
+}
+function redo(){
+  const s=S();if(!s.redoStack.length)return;
+  const cur={label:'',layers:s.layers.map(l=>({...l,img:undefined})),layerImgs:s.layers.map(l=>l.img),activeLayerId:s.activeLayerId,bgColor:s.bgColor,templateRotDeg};
+  s.undoStack.push(cur);applyState(s.redoStack.pop());
+}
+function updateUndoUI(){
+  const s=S();
+  document.getElementById('undoBtn').disabled=!s.undoStack.length;
+  document.getElementById('redoBtn').disabled=!s.redoStack.length;
+  const last=s.undoStack[s.undoStack.length-1];
+  document.getElementById('undoLabel').textContent=last?last.label:'';
+}
+document.addEventListener('keydown',e=>{
+  if((e.ctrlKey||e.metaKey)&&!e.shiftKey&&e.key==='z'){e.preventDefault();undo();}
+  if((e.ctrlKey||e.metaKey)&&(e.key==='y'||(e.shiftKey&&e.key==='z'))){e.preventDefault();redo();}
+});
+
+// ── Step nav ───────────────────────────────────────────────
+function toggleStep(n){
+  if(openStep===n)return;
+  document.getElementById('sb'+openStep).classList.remove('active');
+  for(let i=1;i<n;i++){const b=document.getElementById('sb'+i);b.classList.remove('active');b.classList.add('done');}
+  openStep=n;
+  document.getElementById('sb'+n).classList.add('active');
+  document.getElementById('sb'+n).classList.remove('done');
+}
+
+// ── Background ─────────────────────────────────────────────
+function initBgSwatches(){
+  document.getElementById('bgSwatches').innerHTML=BG_PRESETS.map(c=>{
+    const cls=c==='transparent'?'bg-sw bg-transparent':'bg-sw';
+    const style=c==='transparent'?'':'background:'+c;
+    return `<div class="${cls}" data-color="${c}" style="${style}" title="${c==='transparent'?'Transparent':c}" onclick="setBgColor('${c}')"></div>`;
+  }).join('');
+}
+function setBgColor(c){
+  setBgColorState(c==='transparent'?null:c);
+  if(c!=='transparent') document.getElementById('bgColorPicker').value=c;
+  document.querySelectorAll('.bg-sw').forEach(s=>s.classList.toggle('active',s.dataset.color===c));
+  captureState('Background');draw();
+}
+function clearBg(){
+  setBgColorState(null);
+  document.querySelectorAll('.bg-sw').forEach(s=>s.classList.remove('active'));
+  captureState('Remove background');draw();
+}
+
+// ── SKU ────────────────────────────────────────────────────
+function onSkuChange(){
+  currentSku=document.getElementById('skuSelect').value;
+  templateRotDeg=0;
+  const spec=currentSku?SKU_SPECS[currentSku]:null;
+
+  // Determine if double-sided from spec
+  const wasDoubleSided=isDoubleSided;
+  isDoubleSided=spec ? (spec.sides===2) : false;
+
+  document.getElementById('guidesFloat').style.display=spec?'block':'none';
+  if(!spec){
+    document.getElementById('skuSummary').classList.remove('show');
+    // Revert to single if needed
+    if(wasDoubleSided){ sides=[blankSideState(),blankSideState()]; activeSide=0; initSingleSidedCanvas(); updateSideTags(); }
+    draw();return;
+  }
+
+  document.getElementById('ssSize').textContent    = spec.w?`${spec.w}×${spec.h}mm`:'Custom';
+  document.getElementById('ssDpi').textContent     = spec.dpi+'';
+  document.getElementById('ssColour').textContent  = spec.colour;
+  document.getElementById('ssBleed').textContent   = spec.bleed?`${spec.bleed}mm`:'None';
+  document.getElementById('ssFlags').innerHTML     = spec.future_flags.map(f=>`<span class="flag-pill">${FLAG_LABELS[f]||f}</span>`).join('');
+  document.getElementById('skuSpecExpanded').style.display='block';
+  document.getElementById('sSum_code').textContent=currentSku;
+  document.getElementById('sSum_name').textContent=spec.label;
+  document.getElementById('sSum_dims').textContent=spec.w?`${spec.w}×${spec.h}mm · ${spec.dpi}dpi · ${spec.bleed}mm bleed`:'Custom';
+  document.getElementById('skuSummary').classList.add('show');
+  document.getElementById('tmplRotRow').style.display=spec.rotatable?'flex':'none';
+  document.getElementById('bleedCalloutText').textContent=spec.bleed>0?`${spec.bleed}mm bleed required — artwork must reach the orange line`:'No bleed required — cover the trim line';
+  document.getElementById('bleedCallout').classList.toggle('show',!!spec.w);
+
+  document.getElementById('gfBleed').textContent=spec.bleed>0?`${spec.bleed}mm`:'None required';
+  document.getElementById('gfTrim').textContent=spec.w?`${spec.w}×${spec.h}mm`:'—';
+  document.getElementById('gfSafe').textContent=`${spec.safe_zone||5}mm inset`;
+
+  // Switch canvas layout if sidedness changed
+  if(isDoubleSided !== wasDoubleSided || (!wasDoubleSided && !isDoubleSided)){
+    if(isDoubleSided){
+      // Reset both sides when switching to double
+      sides=[blankSideState(),blankSideState()];
+      activeSide=0;
+      computeLayout();
+      initDualSidedCanvas();
+    } else {
+      sides=[blankSideState(),blankSideState()];
+      activeSide=0;
+      computeLayout();
+      initSingleSidedCanvas();
+    }
+  }
+
+  updateSideTags();
+  updateViewInfo();
+  computeLayout();
+  S().layers.forEach(l=>centreOnTemplate(l));
+  draw();
+  if(S().layers.length===0) toggleStep(2); else toggleStep(4);
+}
+
+// ── Layout ─────────────────────────────────────────────────
+function computeLayout(){
+  const spec=SKU_SPECS[currentSku];
+  if(!spec||!spec.w){TX=50;TY=50;TW=360;TH=460;BLEEDPX=10;SAFEPX=8;
+    setCanvasSize(460,560);return;}
+
+  if(viewMode==='full'){
+    const mmPx=25.4/spec.dpi;
+    TW=Math.round(spec.w/mmPx);TH=Math.round(spec.h/mmPx);
+    BLEEDPX=Math.round(spec.bleed/mmPx);SAFEPX=Math.round((spec.safe_zone||5)/mmPx);
+    CW=TW+BLEEDPX*2+80;CH=TH+BLEEDPX*2+80;
+  }else{
+    // In dual mode, each canvas gets ~62% or ~38% of available area
+    // We compute for a "working" canvas; the CSS flex handles visual sizing
+    // but we keep canvas pixel dimensions the same for both sides
+    const scrollEl=document.getElementById('canvasScroll');
+    const availW=isDoubleSided
+      ? Math.floor((scrollEl.clientWidth - 40 - 12) * 0.62) // 62% for active
+      : scrollEl.clientWidth - 64;
+    const availH=scrollEl.clientHeight - 80;
+    const pad=44, ar=spec.w/spec.h;
+    let tW=Math.min(availW-pad*2, 460), tH=tW/ar;
+    if(tH>availH-pad*2){tH=availH-pad*2;tW=tH*ar;}
+    TW=Math.round(tW);TH=Math.round(tH);
+    BLEEDPX=Math.round(spec.bleed*(TW/spec.w));
+    SAFEPX=Math.round((spec.safe_zone||5)*(TW/spec.w));
+    CW=TW+BLEEDPX*2+80; if(CW<200)CW=460;
+    CH=TH+BLEEDPX*2+80; if(CH<200)CH=560;
+  }
+  TX=Math.round((CW-TW)/2);TY=Math.round((CH-TH)/2);
+  setCanvasSize(CW,CH);
+}
+
+function setCanvasSize(w,h){
+  CW=w;CH=h;
+  // Set size on all canvases that exist
+  ['mainCanvas','snapCanvas','mainCanvas0','snapCanvas0','mainCanvas1','snapCanvas1'].forEach(id=>{
+    const el=document.getElementById(id);
+    if(el){el.width=w;el.height=h;}
+  });
+  applyZoom();
+}
+
+function remapLayersToNewLayout(oTW,oTH,oTX,oTY,nTW,nTH,nTX,nTY){
+  if(!oTW||!nTW)return;
+  const sx=nTW/oTW,sy=nTH/oTH;
+  S().layers.forEach(l=>{const rx=l.offsetX-oTX-oTW/2,ry=l.offsetY-oTY-oTH/2;l.offsetX=nTX+nTW/2+rx*sx;l.offsetY=nTY+nTH/2+ry*sy;l.scale*=sx;});
+}
+
+// ── Zoom ───────────────────────────────────────────────────
+function applyZoom(){
+  ['canvasTransform','canvasTransform0','canvasTransform1'].forEach(id=>{
+    const t=document.getElementById(id);
+    if(!t)return;
+    t.style.transform=`scale(${zoomLevel})`;t.style.transformOrigin='top left';
+    t.style.width=CW+'px';t.style.height=CH+'px';
+  });
+  ['canvasOuter','canvasOuter0','canvasOuter1'].forEach(id=>{
+    const outer=document.getElementById(id);
+    if(!outer)return;
+    outer.style.width=Math.round(CW*zoomLevel)+'px';
+    outer.style.height=Math.round(CH*zoomLevel)+'px';
+  });
+  document.getElementById('zoomVal').textContent=Math.round(zoomLevel*100)+'%';
+}
+function zoomBy(delta){zoomLevel=Math.max(0.2,Math.min(4,zoomLevel+delta));applyZoom();}
+function zoomReset(){
+  const s=document.getElementById('canvasScroll');
+  zoomLevel=Math.min(1,Math.min((s.clientWidth-64)/CW,(s.clientHeight-64)/CH));
+  applyZoom();
+}
+
+// ── Draw ───────────────────────────────────────────────────
+function draw(){
+  if(!activeCtx) return;
+  const tmplA=parseInt(document.getElementById('tmplOpacity').value)/100;
+  document.getElementById('tmplOpVal').textContent=Math.round(tmplA*100)+'%';
+  drawToContext(activeCtx, S().layers, S().bgColor, true, tmplA);
+  updateStatusUI();
+  updatePreflight();
+  updatePosReadout();
+  // Keep inactive side rendered
+  drawInactiveSide();
+}
+
+function drawToContext(ctx, layers, bgColor, drawHandlesFlag, tmplA){
+  if(!ctx) return;
+  tmplA = tmplA!==undefined ? tmplA : (parseInt(document.getElementById('tmplOpacity').value)/100);
+
+  ctx.clearRect(0,0,CW,CH);
+  ctx.fillStyle='#C4C4C0';ctx.fillRect(0,0,CW,CH);
+
+  if(!currentSku){return;}
+  const spec=SKU_SPECS[currentSku];
+  const bx=TX-BLEEDPX,by=TY-BLEEDPX,bw=TW+BLEEDPX*2,bh=TH+BLEEDPX*2;
+
+  // Bleed zone tint
+  ctx.globalAlpha=0.15;ctx.fillStyle='#fff';ctx.fillRect(bx,by,bw,bh);ctx.globalAlpha=1;
+
+  // Background fill
+  if(bgColor){
+    ctx.save();ctx.beginPath();ctx.rect(bx,by,bw,bh);ctx.clip();
+    ctx.fillStyle=bgColor;ctx.fillRect(bx,by,bw,bh);ctx.restore();
+  }
+
+  // Layers (index 0=top, draw reversed)
+  for(let i=layers.length-1;i>=0;i--){
+    const l=layers[i];if(!l.visible||!l.img)continue;
+    const aw=l.img.width*l.scale,ah=l.img.height*l.scale;
+    ctx.save();ctx.globalAlpha=l.opacity;
+    ctx.translate(l.offsetX,l.offsetY);ctx.rotate(l.rotation||0);
+    ctx.drawImage(l.img,-aw/2,-ah/2,aw,ah);
+    ctx.restore();ctx.globalAlpha=1;
+  }
+
+  // Template overlay
+  ctx.save();ctx.globalAlpha=tmplA;
+  ctx.translate(TX+TW/2,TY+TH/2);ctx.rotate(templateRotDeg*Math.PI/180);
+  ctx.fillStyle='rgba(30,100,220,0.10)';ctx.fillRect(-TW/2,-TH/2,TW,TH);
+  ctx.strokeStyle='rgba(30,100,220,0.75)';ctx.lineWidth=1.5;
+  ctx.strokeRect(-TW/2+0.75,-TH/2+0.75,TW-1.5,TH-1.5);
+  ctx.restore();ctx.globalAlpha=1;
+
+  // Safe zone
+  if(SAFEPX>0){
+    ctx.save();ctx.translate(TX+TW/2,TY+TH/2);ctx.rotate(templateRotDeg*Math.PI/180);
+    ctx.strokeStyle='rgba(34,170,102,0.85)';ctx.lineWidth=1;ctx.setLineDash([4,3]);
+    ctx.strokeRect(-TW/2+SAFEPX,-TH/2+SAFEPX,TW-SAFEPX*2,TH-SAFEPX*2);
+    ctx.setLineDash([]);ctx.restore();
+    const spec2=SKU_SPECS[currentSku];
+    ctx.globalAlpha=0.75;ctx.fillStyle='#1A8855';
+    ctx.font='bold 8px -apple-system,sans-serif';ctx.textAlign='left';
+    ctx.fillText(`Safe ${spec2.safe_zone||5}mm`,TX+SAFEPX+3,TY+TH-SAFEPX-4);
+    ctx.globalAlpha=1;
+  }
+
+  // Bleed line
+  if(spec.bleed>0){
+    ctx.save();ctx.translate(TX+TW/2,TY+TH/2);ctx.rotate(templateRotDeg*Math.PI/180);
+    ctx.strokeStyle='#F47920';ctx.lineWidth=2.5;ctx.setLineDash([7,4]);
+    ctx.strokeRect(-TW/2-BLEEDPX+1.25,-TH/2-BLEEDPX+1.25,TW+BLEEDPX*2-2.5,TH+BLEEDPX*2-2.5);
+    ctx.setLineDash([]);ctx.restore();
+    ctx.globalAlpha=0.8;ctx.fillStyle='#C75E0A';
+    ctx.font='bold 8px -apple-system,sans-serif';ctx.textAlign='left';
+    ctx.fillText(`Bleed ${spec.bleed}mm`,bx+3,by+10);
+    ctx.globalAlpha=1;
+  }
+
+  // Trim label
+  ctx.globalAlpha=0.75;ctx.fillStyle='rgba(30,100,220,0.9)';
+  ctx.font='bold 8px -apple-system,sans-serif';ctx.textAlign='right';
+  ctx.fillText(`${spec.w||'?'}×${spec.h||'?'}mm`,TX+TW-3,TY+10);
+  ctx.globalAlpha=1;ctx.textAlign='start';
+
+  if(drawHandlesFlag) drawHandles(ctx);
+}
+
+// ── Snap guides ────────────────────────────────────────────
+function clearSnaps(){if(activeSnapCtx)activeSnapCtx.clearRect(0,0,CW,CH);}
+function checkSnaps(l){
+  if(!l)return;clearSnaps();
+  const xTargets=[TX+TW/2,TX,TX+TW];const yTargets=[TY+TH/2,TY,TY+TH];
+  const thresh=SNAP_THRESH/zoomLevel;
+  xTargets.forEach(xt=>{if(Math.abs(l.offsetX-xt)<thresh){l.offsetX=xt;drawSnapLine('v',xt);}});
+  yTargets.forEach(yt=>{if(Math.abs(l.offsetY-yt)<thresh){l.offsetY=yt;drawSnapLine('h',yt);}});
+}
+function drawSnapLine(dir,val){
+  if(!activeSnapCtx)return;
+  activeSnapCtx.strokeStyle='rgba(0,200,255,0.85)';activeSnapCtx.lineWidth=1;activeSnapCtx.setLineDash([4,3]);
+  activeSnapCtx.beginPath();
+  if(dir==='v'){activeSnapCtx.moveTo(val,0);activeSnapCtx.lineTo(val,CH);}
+  else{activeSnapCtx.moveTo(0,val);activeSnapCtx.lineTo(CW,val);}
+  activeSnapCtx.stroke();activeSnapCtx.setLineDash([]);
+}
+
+// ── Transform handles ──────────────────────────────────────
+function getHandlePositions(l){
+  if(!l||!l.img)return{};
+  const aw=l.img.width*l.scale,ah=l.img.height*l.scale,rot=l.rotation||0;
+  const c=Math.cos(rot),s=Math.sin(rot);
+  const ROT_DIST=28;
+  function pt(lx,ly){return{x:l.offsetX+lx*c-ly*s,y:l.offsetY+lx*s+ly*c};}
+  return{tl:pt(-aw/2,-ah/2),tc:pt(0,-ah/2),tr:pt(aw/2,-ah/2),
+    ml:pt(-aw/2,0),mr:pt(aw/2,0),
+    bl:pt(-aw/2,ah/2),bc:pt(0,ah/2),br:pt(aw/2,ah/2),rot:pt(0,-ah/2-ROT_DIST)};
+}
+function drawHandles(ctx){
+  const l=getActiveLayer();if(!l||!l.img)return;
+  const aw=l.img.width*l.scale,ah=l.img.height*l.scale,rot=l.rotation||0;
+  const hp=getHandlePositions(l);
+  ctx.save();ctx.translate(l.offsetX,l.offsetY);ctx.rotate(rot);
+  ctx.strokeStyle='rgba(24,95,165,0.85)';ctx.lineWidth=1.5;ctx.setLineDash([5,4]);
+  ctx.strokeRect(-aw/2,-ah/2,aw,ah);ctx.setLineDash([]);ctx.restore();
+  const tc=hp.tc;
+  ctx.beginPath();ctx.moveTo(tc.x,tc.y);ctx.lineTo(hp.rot.x,hp.rot.y);
+  ctx.strokeStyle='rgba(24,95,165,0.5)';ctx.lineWidth=1;ctx.stroke();
+  ['tl','tc','tr','ml','mr','bl','bc','br'].forEach(k=>{
+    const p=hp[k];ctx.fillStyle='#fff';ctx.strokeStyle='#185FA5';ctx.lineWidth=1.5;
+    ctx.beginPath();ctx.rect(p.x-HANDLE_R/2,p.y-HANDLE_R/2,HANDLE_R,HANDLE_R);ctx.fill();ctx.stroke();
+  });
+  ctx.fillStyle='#185FA5';ctx.strokeStyle='#fff';ctx.lineWidth=2;
+  ctx.beginPath();ctx.arc(hp.rot.x,hp.rot.y,HANDLE_R+1,0,Math.PI*2);ctx.fill();ctx.stroke();
+  ctx.fillStyle='#fff';ctx.font='bold 10px sans-serif';ctx.textAlign='center';ctx.textBaseline='middle';
+  ctx.fillText('↻',hp.rot.x,hp.rot.y);ctx.textAlign='start';ctx.textBaseline='alphabetic';
+}
+function hitTestHandle(x,y){
+  const l=getActiveLayer();if(!l)return null;
+  const hp=getHandlePositions(l);
+  for(const[k,p]of Object.entries(hp)){
+    const d=Math.hypot(x-p.x,y-p.y);
+    if(k==='rot'&&d<=HANDLE_R+3)return k;
+    if(k!=='rot'&&Math.abs(x-p.x)<=HANDLE_R&&Math.abs(y-p.y)<=HANDLE_R)return k;
+  }return null;
+}
+function pointInLayer(x,y,l){
+  if(!l||!l.img)return false;
+  const rot=l.rotation||0,c=Math.cos(-rot),s=Math.sin(-rot);
+  const dx=x-l.offsetX,dy=y-l.offsetY,lx=dx*c-dy*s,ly=dx*s+dy*c;
+  const hw=l.img.width*l.scale/2,hh=l.img.height*l.scale/2;
+  return lx>=-hw&&lx<=hw&&ly>=-hh&&ly<=hh;
+}
+function getCanvasXY(e){
+  const c=activeCanvas;if(!c)return{x:0,y:0};
+  const r=c.getBoundingClientRect();
+  return{x:(e.clientX-r.left)/zoomLevel,y:(e.clientY-r.top)/zoomLevel};
+}
+
+// ── Canvas event binding ───────────────────────────────────
+// We re-bind on side switch so events always go to active canvas
+let _boundMousedown=null, _boundMousemove=null, _boundMouseup=null,
+    _boundMousemoveCanvas=null, _boundWheel=null,
+    _boundTouchstart=null, _boundTouchmove=null, _boundTouchend=null;
+
+function bindCanvasEvents(canvas){
+  if(!canvas)return;
+  // Remove old listeners if any
+  if(_boundMousedown) document.removeEventListener('mousemove',_boundMousemove);
+  if(_boundMouseup)   document.removeEventListener('mouseup',_boundMouseup);
+
+  _boundMousedown=function(e){
+    const{x,y}=getCanvasXY(e);
+    const hk=hitTestHandle(x,y);
+    if(hk){
+      captureState('Transform');interactMode='handle';activeHandle=hk;
+      const l=getActiveLayer();
+      layerSnap={scale:l.scale,rotation:l.rotation||0,offsetX:l.offsetX,offsetY:l.offsetY};
+      mouseStart={x,y};canvas.style.cursor=hk==='rot'?'crosshair':'nwse-resize';return;
+    }
+    const layers=getLayers();
+    for(const l of layers){
+      if(!l.visible)continue;
+      if(pointInLayer(x,y,l)){
+        if(l.id!==getActiveLayerId())setActive(l.id);
+        captureState('Move');interactMode='drag';mouseStart={x,y};
+        const la=getActiveLayer();layerSnap={offsetX:la.offsetX,offsetY:la.offsetY};
+        canvas.style.cursor='grabbing';return;
+      }
+    }
+  };
+  canvas.addEventListener('mousedown',_boundMousedown);
+
+  _boundMousemove=function(e){
+    if(!interactMode)return;
+    const{x,y}=getCanvasXY(e);const l=getActiveLayer();if(!l)return;
+    const dx=x-mouseStart.x,dy=y-mouseStart.y;
+    if(interactMode==='drag'){
+      l.offsetX=layerSnap.offsetX+dx;l.offsetY=layerSnap.offsetY+dy;
+      checkSnaps(l);draw();return;
+    }
+    if(interactMode==='handle'){
+      if(activeHandle==='rot'){
+        const sa=Math.atan2(mouseStart.y-l.offsetY,mouseStart.x-l.offsetX);
+        const na=Math.atan2(y-l.offsetY,x-l.offsetX);
+        l.rotation=layerSnap.rotation+(na-sa);syncControlsToActive();
+      }else{
+        const sd=Math.hypot(mouseStart.x-l.offsetX,mouseStart.y-l.offsetY);
+        const nd=Math.hypot(x-l.offsetX,y-l.offsetY);
+        if(sd>2)l.scale=Math.max(0.02,layerSnap.scale*(nd/sd));
+        syncControlsToActive();
+      }
+      draw();
+    }
+  };
+  document.addEventListener('mousemove',_boundMousemove);
+
+  _boundMouseup=function(){
+    if(interactMode){interactMode=null;activeHandle=null;canvas.style.cursor='';clearSnaps();renderLayersList();}
+  };
+  document.addEventListener('mouseup',_boundMouseup);
+
+  canvas.addEventListener('mousemove',function(e){
+    if(interactMode)return;
+    const{x,y}=getCanvasXY(e);
+    const hk=hitTestHandle(x,y);
+    if(hk)canvas.style.cursor=hk==='rot'?'crosshair':'nwse-resize';
+    else canvas.style.cursor=getLayers().some(l=>l.visible&&pointInLayer(x,y,l))?'grab':'default';
+  });
+
+  canvas.addEventListener('wheel',function(e){
+    const l=getActiveLayer();if(!l)return;e.preventDefault();
+    l.scale=Math.max(0.02,Math.min(5,l.scale*(e.deltaY>0?0.95:1.05)));
+    syncControlsToActive();draw();
+  },{passive:false});
+
+  let tS={x:0,y:0},tL={};
+  canvas.addEventListener('touchstart',function(e){const l=getActiveLayer();if(!l)return;e.preventDefault();const t=e.touches[0],r=canvas.getBoundingClientRect();tS={x:(t.clientX-r.left)/zoomLevel,y:(t.clientY-r.top)/zoomLevel};tL={offsetX:l.offsetX,offsetY:l.offsetY};},{passive:false});
+  canvas.addEventListener('touchmove',function(e){const l=getActiveLayer();if(!l)return;e.preventDefault();const t=e.touches[0],r=canvas.getBoundingClientRect();l.offsetX=tL.offsetX+(t.clientX-r.left)/zoomLevel-tS.x;l.offsetY=tL.offsetY+(t.clientY-r.top)/zoomLevel-tS.y;checkSnaps(l);draw();},{passive:false});
+  canvas.addEventListener('touchend',function(){clearSnaps();renderLayersList();});
+}
+
+document.addEventListener('dragover',e=>{if(!e.target.closest('.right-panel')&&!e.target.closest('.upload-drop'))e.preventDefault();});
+document.addEventListener('drop',e=>{if(e.target.closest('.right-panel')||e.target.closest('.upload-drop'))return;e.preventDefault();Array.from(e.dataTransfer.files).forEach(loadLayerFile);});
+
+// ── Layer helpers ──────────────────────────────────────────
+function getActiveLayer(){return getLayers().find(l=>l.id===getActiveLayerId())||null;}
+function setActive(id){setActiveLayerId(id);syncControlsToActive();renderLayersList();draw();}
+function syncControlsToActive(){
+  const l=getActiveLayer();
+  const pct=l?Math.min(300,Math.max(5,Math.round(l.scale*100))):100;
+  document.getElementById('scaleSlider').value=pct;document.getElementById('scaleVal').textContent=pct+'%';
+  const rotDeg=l?Math.round((l.rotation||0)*180/Math.PI):0;
+  updateDial(rotDeg);
+  const op=l?Math.round(l.opacity*100):92;
+  document.getElementById('layerOpacity').value=op;document.getElementById('layerOpVal').textContent=op+'%';
+  const name=l?l.name:'No layer selected',short=name.length>22?name.slice(0,20)+'…':name;
+  document.getElementById('posActiveText').textContent=short;document.getElementById('opActiveText').textContent=short;
+  document.getElementById('posActiveTag').classList.toggle('show',!!l);
+  document.getElementById('opActiveTag').classList.toggle('show',!!l);
+}
+function centreOnTemplate(l){l.offsetX=TX+TW/2;l.offsetY=TY+TH/2;}
+function fitLayerToBleed(l){if(!l.img||!currentSku)return;const bw=TW+BLEEDPX*2,bh=TH+BLEEDPX*2;l.scale=Math.max(bw/l.img.width,bh/l.img.height);centreOnTemplate(l);}
+function fitToBleed(){const l=getActiveLayer();if(l){captureState('Fit to bleed');fitLayerToBleed(l);syncControlsToActive();draw();}}
+function fitToTrim(){const l=getActiveLayer();if(!l||!l.img)return;captureState('Fit to trim');l.scale=Math.max(TW/l.img.width,TH/l.img.height);centreOnTemplate(l);syncControlsToActive();draw();}
+function centreActive(){const l=getActiveLayer();if(l){captureState('Centre');centreOnTemplate(l);draw();}}
+function resetActive(){const l=getActiveLayer();if(!l)return;captureState('Reset');l.scale=1;l.rotation=0;centreOnTemplate(l);syncControlsToActive();draw();}
+function onScaleSlider(v){const l=getActiveLayer();if(!l)return;l.scale=parseInt(v)/100;document.getElementById('scaleVal').textContent=Math.round(l.scale*100)+'%';draw();}
+function setAbsoluteRot(deg){const l=getActiveLayer();if(!l)return;captureState(`Rotate ${deg}°`);l.rotation=deg*Math.PI/180;updateDial(deg);syncControlsToActive();draw();}
+function rotateTemplate(deg){templateRotDeg=(templateRotDeg+deg+360)%360;draw();}
+function onLayerOpacity(v){const l=getActiveLayer();if(!l)return;l.opacity=parseInt(v)/100;document.getElementById('layerOpVal').textContent=v+'%';draw();renderLayersList();}
+function updatePosReadout(){const l=getActiveLayer();if(!l||!TW){document.getElementById('posReadout').textContent='—';return;}document.getElementById('posReadout').textContent=`x ${Math.round(l.offsetX-TX-TW/2)}, y ${Math.round(l.offsetY-TY-TH/2)}`;}
+
+// ── Rotation dial ──────────────────────────────────────────
+const dialSvg=document.getElementById('rotDial');
+function updateDial(deg){
+  const rad=deg*Math.PI/180;const cx=50,cy=50,r=40;
+  const nx=cx+r*Math.sin(rad),ny=cy-r*Math.cos(rad);
+  document.getElementById('dialNeedle').setAttribute('x2',nx.toFixed(1));
+  document.getElementById('dialNeedle').setAttribute('y2',ny.toFixed(1));
+  document.getElementById('dialKnob').setAttribute('cx',nx.toFixed(1));
+  document.getElementById('dialKnob').setAttribute('cy',ny.toFixed(1));
+  document.getElementById('dialKnobTxt').setAttribute('x',nx.toFixed(1));
+  document.getElementById('dialKnobTxt').setAttribute('y',ny.toFixed(1));
+  const circ=2*Math.PI*42,frac=((deg%360)+360)%360/360;
+  document.getElementById('dialArc').setAttribute('stroke-dasharray',circ.toFixed(1));
+  document.getElementById('dialArc').setAttribute('stroke-dashoffset',(circ*(1-frac)).toFixed(1));
+  document.getElementById('rotDialReadout').textContent=Math.round(deg)+'°';
+  const snapped=[0,90,-90,180];
+  ['rp0d','rp90d','rpn90d','rp180d'].forEach((id,i)=>document.getElementById(id).classList.toggle('active-rot',Math.round(deg)===snapped[i]));
+}
+function getDialDeg(e){
+  const r=dialSvg.getBoundingClientRect();
+  const cx=r.left+r.width/2,cy=r.top+r.height/2;
+  const cx2=e.touches?e.touches[0].clientX:e.clientX;
+  const cy2=e.touches?e.touches[0].clientY:e.clientY;
+  return Math.atan2(cx2-cx,-(cy2-cy))*180/Math.PI;
+}
+dialSvg.addEventListener('mousedown',e=>{dialDragging=true;captureState('Rotate');e.preventDefault();});
+dialSvg.addEventListener('touchstart',e=>{dialDragging=true;captureState('Rotate');e.preventDefault();},{passive:false});
+window.addEventListener('mousemove',e=>{if(!dialDragging)return;const deg=getDialDeg(e);const l=getActiveLayer();if(!l)return;l.rotation=deg*Math.PI/180;updateDial(deg);draw();});
+window.addEventListener('touchmove',e=>{if(!dialDragging)return;e.preventDefault();const deg=getDialDeg(e);const l=getActiveLayer();if(!l)return;l.rotation=deg*Math.PI/180;updateDial(deg);draw();},{passive:false});
+window.addEventListener('mouseup',()=>{if(dialDragging){dialDragging=false;renderLayersList();}});
+window.addEventListener('touchend',()=>{if(dialDragging){dialDragging=false;renderLayersList();}});
+
+// ── File loading ───────────────────────────────────────────
+function handleFileInput(e){Array.from(e.target.files).forEach(loadLayerFile);e.target.value='';}
+function handleDropOnZone(e){e.preventDefault();document.getElementById('uploadDrop').classList.remove('drag-over');Array.from(e.dataTransfer.files).forEach(loadLayerFile);}
+function loadLayerFile(file){
+  if(file.type.startsWith('image/')){
+    const reader=new FileReader();
+    reader.onload=ev=>{const img=new Image();img.onload=()=>{captureState('Add layer');addLayer(file.name,img,ev.target.result,file.type);};img.src=ev.target.result;};
+    reader.readAsDataURL(file);
+  }else{
+    const oc=document.createElement('canvas');oc.width=Math.max(TW||300,200);oc.height=Math.max(TH||400,200);
+    const c=oc.getContext('2d');c.fillStyle='#ddeeff';c.fillRect(0,0,oc.width,oc.height);
+    c.fillStyle='#3366aa';c.font=`bold ${Math.round(oc.width/10)}px sans-serif`;c.textAlign='center';
+    c.fillText(file.name.split('.').pop().toUpperCase(),oc.width/2,oc.height/2-12);
+    c.font=`${Math.round(oc.width/18)}px sans-serif`;c.fillStyle='#5588bb';c.fillText('Preview unavailable',oc.width/2,oc.height/2+16);
+    const img=new Image();img.onload=()=>{captureState('Add layer');addLayer(file.name,img,null,file.type);};img.src=oc.toDataURL();
+  }
+}
+function addLayer(name,img,srcB64,srcMime){
+  const id='layer_'+Date.now()+'_'+Math.random().toString(36).slice(2,5);
+  const layer={id,name,img,srcB64,srcMime:srcMime||'image/png',scale:1,offsetX:TX+TW/2||230,offsetY:TY+TH/2||280,rotation:0,visible:true,opacity:0.92};
+  S().layers.unshift(layer);
+  setActiveLayerId(id);
+  computeLayout();fitLayerToBleed(layer);
+  syncControlsToActive();renderLayersList();draw();
+  if(openStep<4)toggleStep(4);
+}
+
+// ── Layers panel ───────────────────────────────────────────
+function renderLayersList(){
+  const list=document.getElementById('layersList');
+  const layers=getLayers();
+  if(!layers.length){list.innerHTML='<div style="padding:16px 12px;font-size:11px;color:#B4B2A9;text-align:center;line-height:1.5">No layers yet.<br>Upload artwork to begin.</div>';return;}
+  list.innerHTML=layers.map(l=>{
+    const sel=l.id===getActiveLayerId(),rotDeg=Math.round((l.rotation||0)*180/Math.PI);
+    return `<div class="layer-item${sel?' selected':''}${!l.visible?' hidden-layer':''}" draggable="true" data-id="${l.id}">
+      <span class="li-drag">⠿</span>
+      <canvas class="li-thumb" id="th_${l.id}" width="28" height="28"></canvas>
+      <div class="li-info">
+        <div class="li-name" title="${l.name}">${l.name}</div>
+        <div class="li-meta">${Math.round(l.scale*100)}%${rotDeg?` · ${rotDeg}°`:''}</div>
+      </div>
+      <div class="li-btns">
+        <button class="li-btn${l.visible?' vis-on':''}" data-action="vis" data-id="${l.id}" title="${l.visible?'Hide':'Show'}">${l.visible?'👁':'🚫'}</button>
+        <button class="li-btn del" data-action="del" data-id="${l.id}" title="Delete">✕</button>
+      </div>
+    </div>`;
+  }).join('');
+  layers.forEach(l=>{if(!l.img)return;const tc=document.getElementById('th_'+l.id);if(!tc)return;const c=tc.getContext('2d');c.clearRect(0,0,28,28);const ar=l.img.width/l.img.height;let tw=28,th=28;if(ar>1)th=Math.round(28/ar);else tw=Math.round(28*ar);c.drawImage(l.img,(28-tw)/2,(28-th)/2,tw,th);});
+}
+document.getElementById('layersList').addEventListener('click',e=>{
+  const btn=e.target.closest('button[data-action]');
+  if(btn){
+    if(btn.dataset.action==='vis'){toggleVis(btn.dataset.id);return;}
+    if(btn.dataset.action==='del'){captureState('Delete layer');delLayer(btn.dataset.id);return;}
+  }
+  const item=e.target.closest('.layer-item[data-id]');
+  if(item&&!e.target.closest('button'))setActive(item.dataset.id);
+});
+document.getElementById('layersList').addEventListener('dragstart',e=>{const item=e.target.closest('.layer-item[data-id]');if(item)dragSrcId=item.dataset.id;});
+document.getElementById('layersList').addEventListener('dragover',e=>e.preventDefault());
+document.getElementById('layersList').addEventListener('drop',e=>{
+  e.preventDefault();const item=e.target.closest('.layer-item[data-id]');
+  if(!item||dragSrcId===item.dataset.id)return;
+  captureState('Reorder');
+  const layers=S().layers;
+  const fi=layers.findIndex(x=>x.id===dragSrcId),ti=layers.findIndex(x=>x.id===item.dataset.id);
+  if(fi!==-1&&ti!==-1){const[m]=layers.splice(fi,1);layers.splice(ti,0,m);}
+  renderLayersList();draw();
+});
+document.getElementById('layersList').addEventListener('dragend',()=>{dragSrcId=null;});
+function toggleVis(id){const l=getLayers().find(x=>x.id===id);if(!l)return;captureState('Visibility');l.visible=!l.visible;renderLayersList();draw();}
+function delLayer(id){
+  S().layers=S().layers.filter(x=>x.id!==id);
+  if(getActiveLayerId()===id) setActiveLayerId(S().layers[0]?.id||null);
+  syncControlsToActive();renderLayersList();draw();
+}
+
+// ── Status UI ──────────────────────────────────────────────
+function updateStatusUI(){
+  // In dual-sided mode the status pill is hidden; update submit button state only
+  const layers=getLayers();
+  const enbl=v=>{
+    document.getElementById('btnSubmit').disabled=!v;
+    document.getElementById('btnAssessor').disabled=layers.length===0;
+  };
+
+  if(isDoubleSided){
+    // Submit blocked — double-sided output not yet implemented
+    document.getElementById('btnSubmit').disabled=true;
+    document.getElementById('btnAssessor').disabled=layers.length===0;
+    return;
+  }
+
+  const statusEl=document.getElementById('canvasStatus');
+  function set(cls,msg){statusEl.className='canvas-status '+cls;statusEl.textContent=msg;}
+  if(!currentSku){set('cs-idle','Select a SKU and upload artwork to begin');enbl(false);return;}
+  const vis=layers.filter(l=>l.visible&&l.img);
+  if(!vis.length){set('cs-idle','Upload artwork to continue');enbl(false);return;}
+  const spec=SKU_SPECS[currentSku];
+  const bx=TX-BLEEDPX,by=TY-BLEEDPX,bw=TW+BLEEDPX*2,bh=TH+BLEEDPX*2;
+  const top=vis[0],aw=top.img.width*top.scale,ah=top.img.height*top.scale;
+  const al=top.offsetX-aw/2,at=top.offsetY-ah/2;
+  const coversBleed=al<=bx&&at<=by&&(al+aw)>=(bx+bw)&&(at+ah)>=(by+bh);
+  const coversTrim=al<=TX&&at<=TY&&(al+aw)>=(TX+TW)&&(at+ah)>=(TY+TH);
+  if(spec.bleed===0?coversTrim:coversBleed){set('cs-ok','✓ Artwork covers the '+(spec.bleed>0?'bleed':'trim')+' area — ready to submit');enbl(true);}
+  else{set('cs-warn',coversTrim&&spec.bleed>0?'⚠ Covers trim but not the bleed boundary':'⚠ Artwork does not cover the trim area');enbl(true);}
+}
+
+// ── Preflight ──────────────────────────────────────────────
+function setPF(id,state,val,detail){
+  const item=document.getElementById(id);
+  item.className='pf-item '+state;
+  item.querySelector('.pf-dot').className='pf-dot '+state;
+  item.querySelector('.pf-val').className='pf-val '+state;
+  item.querySelector('.pf-val').textContent=val;
+  item.querySelector('.pf-detail').textContent=detail||'';
+}
+function updatePreflight(){
+  const spec=currentSku?SKU_SPECS[currentSku]:null;
+  const layers=getLayers();
+  const vis=layers.filter(l=>l.visible&&l.img);
+  if(!spec||!vis.length){['pfBleed','pfDpi','pfSafe','pfColour'].forEach(id=>setPF(id,'idle','—',''));return;}
+  const top=vis[0];
+  const bx=TX-BLEEDPX,by=TY-BLEEDPX,bw=TW+BLEEDPX*2,bh=TH+BLEEDPX*2;
+  const aw=top.img.width*top.scale,ah=top.img.height*top.scale;
+  const al=top.offsetX-aw/2,at=top.offsetY-ah/2;
+  const coversBleed=al<=bx&&at<=by&&(al+aw)>=(bx+bw)&&(at+ah)>=(by+bh);
+  const coversTrim=al<=TX&&at<=TY&&(al+aw)>=(TX+TW)&&(at+ah)>=(TY+TH);
+  if(spec.bleed===0){setPF('pfBleed',coversTrim?'pass':'warn',coversTrim?'OK':'Check',coversTrim?'Trim covered':'Artwork may not reach trim edges');}
+  else{
+    if(coversBleed)setPF('pfBleed','pass','OK',`Artwork extends ${spec.bleed}mm beyond trim`);
+    else if(coversTrim)setPF('pfBleed','warn','Trim only',`Artwork doesn't reach the ${spec.bleed}mm bleed boundary`);
+    else setPF('pfBleed','fail','Missing','Artwork does not cover the trim area');
+  }
+  if(spec.w){
+    const artWidthMM=aw*(spec.w/TW);
+    const dpiEst=Math.round(top.img.width/(artWidthMM/25.4));
+    if(dpiEst>=spec.dpi)setPF('pfDpi','pass',dpiEst+'dpi',`Meets ${spec.dpi}dpi minimum`);
+    else if(dpiEst>=spec.dpi*0.75)setPF('pfDpi','warn',dpiEst+'dpi',`Below ${spec.dpi}dpi minimum — may show pixelation`);
+    else setPF('pfDpi','fail',dpiEst+'dpi',`Significantly below ${spec.dpi}dpi — will pixelate in print`);
+  }else{setPF('pfDpi','idle','—','Custom size — check DPI manually');}
+  const szL=TX+SAFEPX,szT=TY+SAFEPX,szR=TX+TW-SAFEPX,szB=TY+TH-SAFEPX;
+  const inSafe=al>=szL&&at>=szT&&(al+aw)<=szR&&(at+ah)<=szB;
+  const sz=spec.safe_zone||5;
+  if(inSafe)setPF('pfSafe','pass','Clear',`Content within the ${sz}mm safe zone`);
+  else setPF('pfSafe','warn','Check edges',`Content may be within ${sz}mm of trim — risk of cut-off`);
+  const mime=top.srcMime||'';
+  const isRaster=mime.includes('png')||mime.includes('jpeg')||mime.includes('jpg');
+  if(spec.colour==='CMYK'&&isRaster)setPF('pfColour','warn','RGB file',`${spec.colour} expected — convert before final submission`);
+  else setPF('pfColour','pass',spec.colour,'Colour mode appears correct');
+}
+
+// ── View mode ──────────────────────────────────────────────
+function setViewMode(m){
+  const spec=currentSku?SKU_SPECS[currentSku]:null;if(!spec||!spec.w){viewMode=m;return;}
+  const oTW=TW,oTH=TH,oTX=TX,oTY=TY;viewMode=m;
+  document.getElementById('stWorking').classList.toggle('active',m==='working');
+  document.getElementById('stFull').classList.toggle('active',m==='full');
+  computeLayout();remapLayersToNewLayout(oTW,oTH,oTX,oTY,TW,TH,TX,TY);
+  updateViewInfo();draw();
+}
+function updateViewInfo(){
+  const spec=currentSku?SKU_SPECS[currentSku]:null;const info=document.getElementById('ctInfo');
+  if(viewMode==='full'&&spec&&spec.w){const mmPx=25.4/spec.dpi;info.textContent=`Full size: ${Math.round(spec.w/mmPx)}×${Math.round(spec.h/mmPx)}px at ${spec.dpi}dpi`;}
+  else info.textContent='Scaled to fit screen';
+}
+
+// ── Submit ─────────────────────────────────────────────────
+async function submitToArtworkList(){
+  if(isDoubleSided){showToast('Double-sided submit not yet implemented');return;}
+  const layers=getLayers();
+  if(!layers.length){showToast('No artwork to submit');return;}
+  showToast('Saving…');
+  const topLayer=layers[0];
+  const ref=(topLayer.name||'designer-upload').replace(/\.[^.]+$/,'').substring(0,40);
+  let job=null;
+  try{
+    const r=await fetch('/api/jobs',{method:'POST',headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({reference:ref,file_name:topLayer.name||'artwork',file_type:(topLayer.srcMime||'').split('/').pop().toUpperCase()||'IMG',source:'Designer',sku:currentSku||null,customer_name:null,order_number:null})});
+    const d=await r.json();job=Array.isArray(d)?d[0]:d;
+  }catch(e){showToast('Failed: '+e.message);return;}
+  if(!job?.id){showToast('Job creation failed');return;}
+  jobId=job.id;
+  if(topLayer.srcB64){
+    try{
+      const ext=(topLayer.srcMime||'image/png').split('/').pop().replace('jpeg','jpg');
+      const path=`${job.id}.${ext}`;
+      await fetch('/api/upload',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({path,mediaType:topLayer.srcMime,data:topLayer.srcB64.split(',')[1]})});
+      await fetch(`/api/job?id=${job.id}`,{method:'PATCH',headers:{'Content-Type':'application/json'},body:JSON.stringify({storage_path:path})});
+    }catch(e){console.error('storage upload failed',e);}
+  }
+  showToast('Saved — redirecting…');setTimeout(()=>window.location.href='/dashboard',1200);
+}
+function goToAssessor(){const p=new URLSearchParams();if(jobId)p.set('job',jobId);if(currentSku)p.set('sku',currentSku);window.location.href='/artwork-assessor'+(p.toString()?'?'+p.toString():'');}
+function showToast(msg){const t=document.getElementById('toast');t.textContent=msg;t.classList.add('show');setTimeout(()=>t.classList.remove('show'),2200);}
+
+// ── Init ───────────────────────────────────────────────────
+initBgSwatches();
+// Set up single-sided canvas on load
+activeCanvas=document.getElementById('mainCanvas');
+activeSnapCanvas=document.getElementById('snapCanvas');
+activeCtx=activeCanvas.getContext('2d');
+activeSnapCtx=activeSnapCanvas.getContext('2d');
+bindCanvasEvents(activeCanvas);
+
+const _p=new URLSearchParams(window.location.search);
+jobId=_p.get('job')||null;const urlSku=_p.get('sku')||'';
+if(jobId){
+  fetch('/api/job?id='+jobId).then(r=>r.json()).then(job=>{
+    if(!job)return;
+    document.getElementById('jobBar').classList.add('show');
+    document.getElementById('jbRef').textContent=job.reference||'—';
+    document.getElementById('jbCustomer').textContent=job.customer_name||'—';
+    document.getElementById('jbOrder').textContent=job.order_number||'—';
+    const sku=job.sku||urlSku;
+    if(sku&&SKU_SPECS[sku]){document.getElementById('skuSelect').value=sku;onSkuChange();}
+    if(job.storage_path){
+      fetch('/api/file?path='+encodeURIComponent(job.storage_path)).then(r=>r.ok?r.json():null).then(d=>{
+        if(!d?.b64)return;const img=new Image();const dataUrl='data:'+d.mediaType+';base64,'+d.b64;
+        img.onload=()=>addLayer(job.file_name||'Stored file',img,dataUrl,d.mediaType);img.src=dataUrl;
+      });
+    }
+  }).catch(e=>console.error('job load',e));
+}else if(urlSku&&SKU_SPECS[urlSku]){document.getElementById('skuSelect').value=urlSku;onSkuChange();}
+computeLayout();draw();updateDial(0);
+</script>
+</body>
+</html>
