@@ -128,9 +128,9 @@ input[type=range]{width:100%;cursor:pointer;accent-color:#F47920}
 .zoom-btn{width:26px;height:26px;border-radius:5px;border:1px solid #E8E6DE;background:#FAFAF8;color:#2C2C2A;cursor:pointer;font-size:15px;display:flex;align-items:center;justify-content:center;font-weight:700;transition:all 0.12s}
 .zoom-btn:hover{background:#EEF5FF;border-color:#B5D4F4;color:#185FA5}
 .zoom-val{font-size:12px;font-weight:600;color:#2C2C2A;min-width:38px;text-align:center}
-.ct-info{font-size:11px;color:#5F5E5A;margin-left:auto;font-style:italic}
-.snap-toggle{display:flex;align-items:center;gap:5px;font-size:11px;color:#5F5E5A;cursor:pointer;user-select:none;margin-left:12px}
-.snap-toggle input[type=checkbox]{accent-color:#F47920;width:13px;height:13px;cursor:pointer}
+.ct-info{font-size:11px;color:#5F5E5A;margin-left:auto;font-style:italic;white-space:nowrap}
+.snap-toggle{display:flex;align-items:center;gap:6px;font-size:11px;color:#5F5E5A;cursor:pointer;user-select:none;margin-bottom:6px}
+.snap-toggle input[type=checkbox]{accent-color:#F47920;width:13px;height:13px;cursor:pointer;flex-shrink:0}
 .snap-toggle:hover{color:#2C2C2A}
 
 /* ── DUAL CANVAS LAYOUT ── */
@@ -505,6 +505,10 @@ canvas{display:block}
         <button class="flip-btn" id="flipHBtn" onclick="flipLayer('h')" title="Flip horizontal">↔ Flip H</button>
         <button class="flip-btn" id="flipVBtn" onclick="flipLayer('v')" title="Flip vertical">↕ Flip V</button>
       </div>
+      <label class="snap-toggle">
+        <input type="checkbox" id="snapToggle" onchange="snapEnabled=this.checked" checked/>
+        Snap to edges
+      </label>
       <div class="pos-info">Offset: <span id="posReadout">—</span></div>
       <div class="tmpl-rotate-row" id="tmplRotRow" style="display:none">
         <span class="tmpl-rotate-label">Template rotation</span>
@@ -553,10 +557,6 @@ canvas{display:block}
       <button class="zoom-btn" onclick="zoomReset()" style="font-size:11px;width:32px" title="Fit">Fit</button>
     </div>
     <div class="ct-sep"></div>
-    <label class="snap-toggle">
-      <input type="checkbox" id="snapToggle" onchange="snapEnabled=this.checked" checked/>
-      Snap to edges
-    </label>
     <span class="ct-info" id="ctInfo">Scaled to fit screen</span>
   </div>
 
