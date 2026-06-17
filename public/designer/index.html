@@ -196,19 +196,20 @@ canvas{display:block}
 .cs-ok{background:rgba(59,109,17,0.92);color:#fff}
 .cs-warn{background:rgba(239,159,39,0.92);color:#fff}
 
-/* Floating guides legend on canvas */
+/* Floating guides legend — horizontal strip, bottom of canvas area */
 .guides-float{
-  position:absolute;bottom:24px;left:24px;
+  position:absolute;bottom:16px;left:16px;
   background:rgba(255,255,255,0.93);
   border:1px solid rgba(0,0,0,0.1);
-  border-radius:10px;padding:10px 12px;
+  border-radius:8px;padding:5px 12px;
   font-size:11px;pointer-events:none;z-index:8;
-  box-shadow:0 2px 8px rgba(0,0,0,0.08)
+  box-shadow:0 2px 8px rgba(0,0,0,0.08);
+  display:none;flex-direction:row;align-items:center;gap:14px;
 }
-.gf-title{font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:0.08em;color:#888780;margin-bottom:7px}
-.gf-row{display:flex;align-items:center;gap:8px;padding:3px 0}
-.gf-dot{width:10px;height:10px;border-radius:50%;flex-shrink:0}
-.gf-label{color:#2C2C2A;font-weight:500;min-width:70px}
+.guides-float.show-guides{display:flex}
+.gf-item{display:flex;align-items:center;gap:5px;white-space:nowrap}
+.gf-dot{width:9px;height:9px;border-radius:50%;flex-shrink:0}
+.gf-label{color:#2C2C2A;font-weight:500}
 .gf-sub{color:#888780;font-size:10px}
 
 /* Bleed callout at bottom */
@@ -293,20 +294,24 @@ canvas{display:block}
 .rp-btn-green:hover{opacity:0.88;background:#3B6D11}
 .rp-btn-green:disabled{background:#D3D1C7;border-color:#D3D1C7;cursor:not-allowed;opacity:1}
 
-/* Copy design button — floats top-left of active canvas in dual mode */
+/* Dual action bar — thin strip between toolbar and canvas scroll, dual-sided only */
+.dual-action-bar{
+  display:none;flex-shrink:0;
+  height:34px;
+  background:#F7F6F2;
+  border-bottom:1px solid #E8E6DE;
+  position:relative;
+}
+.dual-action-bar.show{display:block}
 .copy-design-btn{
-  display:none;
-  position:absolute;top:14px;left:14px;
-  z-index:10;
+  position:absolute;top:5px;
   background:#185FA5;color:#fff;
-  border:none;border-radius:7px;
-  padding:7px 13px;font-size:12px;font-weight:600;
+  border:none;border-radius:6px;
+  padding:4px 12px;font-size:12px;font-weight:600;
   cursor:pointer;white-space:nowrap;
-  box-shadow:0 2px 8px rgba(0,0,0,0.18);
-  transition:background 0.12s;
+  transition:background 0.12s;line-height:1.6;
 }
 .copy-design-btn:hover{background:#0C447C}
-.copy-design-btn.show{display:block}
 
 /* Flip buttons row in step 4 */
 .flip-row{display:flex;gap:5px;margin-bottom:6px}
@@ -548,8 +553,10 @@ canvas{display:block}
   <!-- Single-sided status pill -->
   <div class="canvas-status cs-idle" id="canvasStatus">Select a SKU and upload artwork to begin</div>
 
-  <!-- Copy design button — dual-sided only, floats top-left of active canvas -->
-  <button class="copy-design-btn" id="copyDesignBtn" onclick="copyDesignToOtherSide()">Copy design →</button>
+  <!-- Dual action bar — sits between toolbar and canvas, dual-sided only -->
+  <div class="dual-action-bar" id="dualActionBar">
+    <button class="copy-design-btn" id="copyDesignBtn" onclick="copyDesignToOtherSide()">Copy design →</button>
+  </div>
 
   <!-- Canvas scroll — populated dynamically for single vs dual -->
   <div class="canvas-scroll single-sided" id="canvasScroll">
@@ -562,12 +569,11 @@ canvas{display:block}
     </div>
   </div>
 
-  <!-- Floating guides legend -->
-  <div class="guides-float" id="guidesFloat" style="display:none">
-    <div class="gf-title">Guides</div>
-    <div class="gf-row"><div class="gf-dot" style="background:#F47920;border:1.5px dashed #C75E0A"></div><span class="gf-label">Bleed</span><span class="gf-sub" id="gfBleed">—</span></div>
-    <div class="gf-row"><div class="gf-dot" style="background:rgba(30,100,220,0.7)"></div><span class="gf-label">Trim line</span><span class="gf-sub" id="gfTrim">—</span></div>
-    <div class="gf-row"><div class="gf-dot" style="background:#22AA66"></div><span class="gf-label">Safe zone</span><span class="gf-sub" id="gfSafe">—</span></div>
+  <!-- Floating guides legend — horizontal -->
+  <div class="guides-float" id="guidesFloat">
+    <div class="gf-item"><div class="gf-dot" style="background:#F47920;border:1.5px dashed #C75E0A"></div><span class="gf-label">Bleed</span><span class="gf-sub" id="gfBleed">—</span></div>
+    <div class="gf-item"><div class="gf-dot" style="background:rgba(30,100,220,0.7)"></div><span class="gf-label">Trim</span><span class="gf-sub" id="gfTrim">—</span></div>
+    <div class="gf-item"><div class="gf-dot" style="background:#22AA66"></div><span class="gf-label">Safe zone</span><span class="gf-sub" id="gfSafe">—</span></div>
   </div>
 
   <div class="bleed-callout" id="bleedCallout">⚠ <span id="bleedCalloutText">Bleed required</span></div>
@@ -812,20 +818,32 @@ function switchToSide(sideIdx){
 
 function updateSideTags(){
   const banner=document.getElementById('rpSideBanner');
+  const bar=document.getElementById('dualActionBar');
   const copyBtn=document.getElementById('copyDesignBtn');
   if(!isDoubleSided){
     banner.classList.remove('show');
+    bar.classList.remove('show');
     document.getElementById('panelSideTag').style.display='none';
-    copyBtn.classList.remove('show');
     return;
   }
   banner.classList.add('show');
   banner.textContent='Side '+(activeSide+1)+' of 2';
+  bar.classList.add('show');
   document.getElementById('panelSideTag').style.display='inline-block';
   document.getElementById('panelSideTag').textContent='Side '+(activeSide+1)+' of 2';
-  copyBtn.classList.add('show');
-  // Update arrow direction based on which side is active
-  copyBtn.textContent=activeSide===0?'Copy design →':'← Copy design';
+  // Position button: right-flush to the dividing line on the active side
+  // Active side is always 50% wide; divider is 1px; button sits just left/right of centre
+  if(activeSide===0){
+    // Side 1 active — button right-justified, just left of the centre divider
+    copyBtn.style.right='8px';
+    copyBtn.style.left='auto';
+    copyBtn.textContent='Copy design →';
+  }else{
+    // Side 2 active — button left-justified, just right of the centre divider
+    copyBtn.style.left='8px';
+    copyBtn.style.right='auto';
+    copyBtn.textContent='← Copy design';
+  }
 }
 
 // Draw the inactive side canvas (keeps it visually up to date without switching)
@@ -922,7 +940,7 @@ function onSkuChange(){
   const wasDoubleSided=isDoubleSided;
   isDoubleSided=spec ? (spec.sides===2) : false;
 
-  document.getElementById('guidesFloat').style.display=spec?'block':'none';
+  document.getElementById('guidesFloat').classList.toggle('show-guides',!!spec);
   if(!spec){
     document.getElementById('skuSummary').classList.remove('show');
     // Revert to single if needed
