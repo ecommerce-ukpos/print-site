@@ -7,15 +7,15 @@
 <style>
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
 body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",system-ui,sans-serif;background:#FAFAF8;color:#2C2C2A;height:100vh;display:flex;flex-direction:column;overflow:hidden;font-size:14px}
-nav{border-bottom:1px solid #E8E6DE;padding:0 28px;background:#fff;display:flex;align-items:center;height:48px;flex-shrink:0;z-index:20}
-.nav-logo{font-size:14px;font-weight:500;color:#2C2C2A;text-decoration:none;margin-right:20px}
+nav{border-bottom:2px solid #F47920;padding:0 28px;background:#1A1A18;display:flex;align-items:center;height:48px;flex-shrink:0;z-index:20}
+.nav-logo{font-size:15px;font-weight:700;color:#fff;text-decoration:none;margin-right:20px;letter-spacing:-0.01em}
 .nav-links{display:flex;align-items:stretch;height:100%}
-.nav-link{display:flex;align-items:center;padding:0 13px;font-size:13px;color:#5F5E5A;text-decoration:none;border-bottom:2px solid transparent;white-space:nowrap}
-.nav-link:hover{color:#2C2C2A}
-.nav-link.active{color:#185FA5;border-bottom-color:#185FA5;font-weight:500}
-.nav-link.assessor-link.active{color:#534AB7;border-bottom-color:#534AB7;font-weight:500}
+.nav-link{display:flex;align-items:center;padding:0 13px;font-size:13px;color:#B4B2A9;text-decoration:none;border-bottom:2px solid transparent;white-space:nowrap}
+.nav-link:hover{color:#fff}
+.nav-link.active{color:#F47920;border-bottom-color:#F47920;font-weight:600}
+.nav-link.assessor-link.active{color:#F47920;border-bottom-color:#F47920;font-weight:600}
 .nav-spacer{flex:1}
-.nav-badge{font-size:11px;padding:3px 9px;border-radius:12px;background:#E6F1FB;color:#185FA5;font-weight:500;border:1px solid #B5D4F4}
+.nav-badge{font-size:11px;padding:3px 9px;border-radius:12px;background:rgba(244,121,32,0.15);color:#F47920;font-weight:600;border:1px solid rgba(244,121,32,0.4)}
 .job-bar{display:none;align-items:center;gap:16px;padding:7px 28px;background:#EEEDFE;border-bottom:1px solid #AFA9EC;font-size:13px;flex-shrink:0}
 .job-bar.show{display:flex}
 .jb-label{font-size:11px;color:#7F77DD;font-weight:500;text-transform:uppercase;letter-spacing:0.05em;margin-right:4px}
@@ -34,27 +34,27 @@ nav{border-bottom:1px solid #E8E6DE;padding:0 28px;background:#fff;display:flex;
 .step-num{width:22px;height:22px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;flex-shrink:0;border:2px solid #D3D1C7;color:#B4B2A9;background:#fff;transition:all 0.15s}
 .step-title{font-size:13px;font-weight:500;color:#888780;flex:1}
 .step-chevron{font-size:11px;color:#D3D1C7;transition:transform 0.15s}
-.step-block.active .step-num{background:#185FA5;border-color:#185FA5;color:#fff}
-.step-block.active .step-title{color:#185FA5}
-.step-block.active .step-chevron{transform:rotate(180deg);color:#185FA5}
+.step-block.active .step-num{background:#F47920;border-color:#F47920;color:#fff}
+.step-block.active .step-title{color:#F47920}
+.step-block.active .step-chevron{transform:rotate(180deg);color:#F47920}
 .step-block.done .step-num{background:#639922;border-color:#639922;color:#fff}
 .step-block.done .step-title{color:#3B6D11}
 .step-body{display:none;padding:0 16px 14px}
 .step-block.active .step-body{display:block}
 
-.sku-summary{display:none;margin:0 16px;padding:7px 10px;background:#EEF5FF;border:1px solid #B5D4F4;border-radius:7px;font-size:11px;cursor:pointer}
+.sku-summary{display:none;margin:0 16px;padding:7px 10px;background:#FFF3EB;border:1px solid #FAC795;border-radius:7px;font-size:11px;cursor:pointer}
 .sku-summary.show{display:block}
 .sku-summary-top{display:flex;align-items:center;gap:6px;margin-bottom:3px}
-.sku-summary-code{font-weight:700;font-size:11px;background:#185FA5;color:#fff;padding:1px 6px;border-radius:3px}
-.sku-summary-name{color:#0C447C;font-weight:500;flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
-.sku-summary-dims{color:#185FA5;font-size:10px}
-.sku-summary-hint{font-size:10px;color:#93C5E8;margin-top:2px}
+.sku-summary-code{font-weight:700;font-size:11px;background:#F47920;color:#fff;padding:1px 6px;border-radius:3px}
+.sku-summary-name{color:#7A3A00;font-weight:500;flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.sku-summary-dims{color:#F47920;font-size:10px}
+.sku-summary-hint{font-size:10px;color:#C87030;margin-top:2px}
 .sku-select{width:100%;font-size:13px;padding:7px 9px;border:1.5px solid #E8E6DE;border-radius:8px;background:#FAFAF8;color:#2C2C2A;cursor:pointer;margin-bottom:8px}
-.sku-select:focus{outline:none;border-color:#185FA5}
+.sku-select:focus{outline:none;border-color:#F47920}
 .sku-spec-grid{display:grid;grid-template-columns:1fr 1fr;gap:4px;margin-bottom:6px}
-.sku-spec-cell{background:#F7FAFF;border:1px solid #ddeeff;border-radius:5px;padding:5px 7px}
-.sku-spec-key{font-size:10px;color:#185FA5;font-weight:600;text-transform:uppercase;letter-spacing:0.04em}
-.sku-spec-val{font-size:12px;color:#0C447C;font-weight:700;margin-top:1px}
+.sku-spec-cell{background:#FFF6F0;border:1px solid #FDDCBF;border-radius:5px;padding:5px 7px}
+.sku-spec-key{font-size:10px;color:#C75E0A;font-weight:600;text-transform:uppercase;letter-spacing:0.04em}
+.sku-spec-val{font-size:12px;color:#7A3A00;font-weight:700;margin-top:1px}
 .flag-pills{display:flex;flex-wrap:wrap;gap:4px;margin-top:6px}
 .flag-pill{font-size:10px;font-weight:500;padding:2px 7px;border-radius:3px;background:#FAEEDA;color:#854F0B;border:1px solid #FAC775}
 
@@ -79,11 +79,11 @@ nav{border-bottom:1px solid #E8E6DE;padding:0 28px;background:#fff;display:flex;
 .ctrl-row{display:flex;flex-direction:column;gap:5px;margin-bottom:10px}
 .ctrl-lbl{display:flex;justify-content:space-between;font-size:11px;color:#5F5E5A}
 .ctrl-val{font-weight:700;color:#2C2C2A;font-size:11px}
-input[type=range]{width:100%;cursor:pointer;accent-color:#185FA5}
+input[type=range]{width:100%;cursor:pointer;accent-color:#F47920}
 .btn-row{display:flex;gap:5px;margin-bottom:6px}
 .mini-btn{flex:1;padding:6px 4px;font-size:11px;border-radius:6px;border:1px solid #E8E6DE;background:#FAFAF8;color:#2C2C2A;cursor:pointer;text-align:center;white-space:nowrap;transition:all 0.12s}
-.mini-btn:hover{background:#EEF5FF;border-color:#B5D4F4;color:#185FA5}
-.mini-btn.active-preset{background:#185FA5;color:#fff;border-color:#185FA5}
+.mini-btn:hover{background:#FFF3EB;border-color:#FAC795;color:#C75E0A}
+.mini-btn.active-preset{background:#F47920;color:#fff;border-color:#F47920}
 .pos-info{font-size:10px;color:#B4B2A9;margin-top:3px}
 .pos-info span{color:#5F5E5A;font-weight:500}
 .active-layer-tag{display:none;align-items:center;gap:5px;padding:5px 8px;background:#FFF8E6;border:1px solid #FAC775;border-radius:5px;font-size:11px;color:#854F0B;margin-bottom:8px;font-weight:500}
@@ -94,11 +94,11 @@ input[type=range]{width:100%;cursor:pointer;accent-color:#185FA5}
 .dial-wrap{display:flex;align-items:center;gap:12px;margin-bottom:10px}
 .dial-svg-wrap{flex-shrink:0;cursor:crosshair;touch-action:none}
 .dial-right{flex:1;display:flex;flex-direction:column;gap:6px}
-.dial-readout{font-size:18px;font-weight:700;color:#185FA5;text-align:center;letter-spacing:-0.02em}
+.dial-readout{font-size:18px;font-weight:700;color:#F47920;text-align:center;letter-spacing:-0.02em}
 .dial-presets{display:grid;grid-template-columns:1fr 1fr;gap:4px}
 .dial-preset{padding:5px 4px;font-size:11px;font-weight:600;border-radius:5px;border:1px solid #E8E6DE;background:#FAFAF8;color:#5F5E5A;cursor:pointer;text-align:center;transition:all 0.12s}
-.dial-preset:hover{background:#EEF5FF;border-color:#B5D4F4;color:#185FA5}
-.dial-preset.active-rot{background:#185FA5;color:#fff;border-color:#185FA5}
+.dial-preset:hover{background:#FFF3EB;border-color:#FAC795;color:#C75E0A}
+.dial-preset.active-rot{background:#F47920;color:#fff;border-color:#F47920}
 
 .op-row{display:flex;align-items:center;gap:6px;margin-bottom:6px}
 .op-lbl{font-size:11px;color:#5F5E5A;min-width:52px}
@@ -228,7 +228,7 @@ canvas{display:block}
 /* Right panel side banner — spans full width above layers+preflight */
 .rp-side-banner{
   display:none;
-  background:#1A3A5C;color:#fff;
+  background:#F47920;color:#fff;
   padding:8px 14px;
   font-size:11px;font-weight:700;
   text-transform:uppercase;letter-spacing:0.1em;
@@ -238,12 +238,12 @@ canvas{display:block}
 
 /* Layers section */
 .rp-section-title{padding:10px 14px 7px;font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:0.1em;color:#B4B2A9;border-bottom:1px solid #E8E6DE;display:flex;align-items:center;justify-content:space-between;flex-shrink:0}
-.rp-add{font-size:12px;color:#185FA5;cursor:pointer;font-weight:600;background:none;border:none;padding:2px 6px;border-radius:5px}
-.rp-add:hover{background:#EEF5FF}
+.rp-add{font-size:12px;color:#F47920;cursor:pointer;font-weight:600;background:none;border:none;padding:2px 6px;border-radius:5px}
+.rp-add:hover{background:#FFF3EB}
 .layers-list{flex:0 0 auto;max-height:200px;overflow-y:auto;border-bottom:1px solid #E8E6DE}
 .layer-item{display:flex;align-items:center;gap:6px;padding:7px 10px;border-bottom:1px solid #F1EFE8;cursor:pointer;user-select:none;border-left:3px solid transparent}
 .layer-item:hover{background:#FAFAF8}
-.layer-item.selected{background:#EEF5FF;border-left-color:#185FA5}
+.layer-item.selected{background:#FFF3EB;border-left-color:#F47920}
 .layer-item.hidden-layer{opacity:0.4}
 .li-drag{color:#D3D1C7;font-size:15px;cursor:grab;flex-shrink:0}
 .li-thumb{width:28px;height:28px;border-radius:4px;flex-shrink:0;border:1px solid #E8E6DE;background:#F1EFE8;display:block}
@@ -254,11 +254,11 @@ canvas{display:block}
 .li-btn{font-size:14px;cursor:pointer;color:#B4B2A9;background:none;border:none;padding:3px;border-radius:4px;line-height:1}
 .li-btn:hover{background:#F1EFE8;color:#2C2C2A}
 .li-btn.del:hover{background:#FCEBEB;color:#E24B4A}
-.li-btn.vis-on{color:#185FA5}
+.li-btn.vis-on{color:#F47920}
 
 /* Add layer button */
-.lp-add-bottom{display:flex;align-items:center;justify-content:center;gap:7px;padding:9px;cursor:pointer;font-size:12px;font-weight:600;color:#185FA5;background:#EEF5FF;border:none;border-bottom:2px dashed #B5D4F4;width:100%;transition:background 0.12s;flex-shrink:0}
-.lp-add-bottom:hover{background:#B5D4F4;color:#0C447C}
+.lp-add-bottom{display:flex;align-items:center;justify-content:center;gap:7px;padding:9px;cursor:pointer;font-size:12px;font-weight:600;color:#F47920;background:#FFF3EB;border:none;border-bottom:2px dashed #FAC795;width:100%;transition:background 0.12s;flex-shrink:0}
+.lp-add-bottom:hover{background:#FAC795;color:#7A3A00}
 
 /* Fixed layers */
 .lp-fixed{padding:7px 10px;border-bottom:1px solid #E8E6DE;background:#FAFAF8;flex-shrink:0}
@@ -294,30 +294,32 @@ canvas{display:block}
 .rp-btn-green:hover{opacity:0.88;background:#3B6D11}
 .rp-btn-green:disabled{background:#D3D1C7;border-color:#D3D1C7;cursor:not-allowed;opacity:1}
 
-/* Dual action bar — thin strip between toolbar and canvas scroll, dual-sided only */
-.dual-action-bar{
-  display:none;flex-shrink:0;
-  height:34px;
-  background:#F7F6F2;
-  border-bottom:1px solid #E8E6DE;
-  position:relative;
-}
-.dual-action-bar.show{display:block}
+/* Copy design button — absolute inside canvas-area, clears toolbar, hugs centre divider */
 .copy-design-btn{
-  position:absolute;top:5px;
-  background:#185FA5;color:#fff;
-  border:none;border-radius:6px;
-  padding:4px 12px;font-size:12px;font-weight:600;
+  display:none;
+  position:absolute;
+  top:58px; /* toolbar ~46px + 12px gap = into the grey area */
+  z-index:10;
+  background:#F47920;color:#fff;
+  border:none;border-radius:7px;
+  padding:6px 14px;font-size:12px;font-weight:700;
   cursor:pointer;white-space:nowrap;
-  transition:background 0.12s;line-height:1.6;
+  box-shadow:0 2px 10px rgba(0,0,0,0.2);
+  letter-spacing:0.01em;
+  transition:background 0.12s;
 }
-.copy-design-btn:hover{background:#0C447C}
+.copy-design-btn:hover{background:#C75E0A}
+.copy-design-btn.show{display:block}
+/* Side 1 active: right edge hugs the divider */
+.copy-design-btn.side1{right:calc(50% + 8px);left:auto;}
+/* Side 2 active: left edge hugs the divider */
+.copy-design-btn.side2{left:calc(50% + 8px);right:auto;}
 
 /* Flip buttons row in step 4 */
 .flip-row{display:flex;gap:5px;margin-bottom:6px}
 .flip-btn{flex:1;padding:6px 4px;font-size:12px;font-weight:600;border-radius:6px;border:1px solid #E8E6DE;background:#FAFAF8;color:#2C2C2A;cursor:pointer;text-align:center;transition:all 0.12s}
-.flip-btn:hover{background:#EEF5FF;border-color:#B5D4F4;color:#185FA5}
-.flip-btn.flipped{background:#185FA5;color:#fff;border-color:#185FA5}
+.flip-btn:hover{background:#FFF3EB;border-color:#FAC795;color:#C75E0A}
+.flip-btn.flipped{background:#F47920;color:#fff;border-color:#F47920}
 
 .toast{position:fixed;bottom:20px;left:50%;transform:translateX(-50%);background:#2C2C2A;color:#fff;padding:9px 18px;border-radius:8px;font-size:13px;opacity:0;transition:opacity 0.2s;pointer-events:none;z-index:999;white-space:nowrap}
 .toast.show{opacity:1}
@@ -456,7 +458,7 @@ canvas{display:block}
         <div class="dial-svg-wrap" id="dialSvgWrap">
           <svg id="rotDial" width="100" height="100" viewBox="0 0 100 100" style="display:block;touch-action:none">
             <circle cx="50" cy="50" r="42" fill="#F7F6F2" stroke="#E8E6DE" stroke-width="3"/>
-            <circle cx="50" cy="50" r="42" fill="none" stroke="#185FA5" stroke-width="3"
+            <circle cx="50" cy="50" r="42" fill="none" stroke="#F47920" stroke-width="3"
               stroke-dasharray="264" stroke-dashoffset="264" id="dialArc"
               stroke-linecap="round" transform="rotate(-90 50 50)"/>
             <line x1="50" y1="8"  x2="50" y2="18" stroke="#B4B2A9" stroke-width="2"/>
@@ -467,9 +469,9 @@ canvas{display:block}
             <line x1="79.6" y1="79.6" x2="73.5" y2="73.5" stroke="#D3D1C7" stroke-width="1"/>
             <line x1="20.4" y1="79.6" x2="26.5" y2="73.5" stroke="#D3D1C7" stroke-width="1"/>
             <line x1="20.4" y1="20.4" x2="26.5" y2="26.5" stroke="#D3D1C7" stroke-width="1"/>
-            <line id="dialNeedle" x1="50" y1="50" x2="50" y2="10" stroke="#185FA5" stroke-width="2.5" stroke-linecap="round"/>
-            <circle cx="50" cy="50" r="5" fill="#185FA5"/>
-            <circle id="dialKnob" cx="50" cy="10" r="10" fill="#185FA5" stroke="#fff" stroke-width="2.5"/>
+            <line id="dialNeedle" x1="50" y1="50" x2="50" y2="10" stroke="#F47920" stroke-width="2.5" stroke-linecap="round"/>
+            <circle cx="50" cy="50" r="5" fill="#F47920"/>
+            <circle id="dialKnob" cx="50" cy="10" r="10" fill="#F47920" stroke="#fff" stroke-width="2.5"/>
             <text id="dialKnobTxt" x="50" y="14" text-anchor="middle" dominant-baseline="middle" fill="#fff" font-size="11" font-weight="700">↻</text>
           </svg>
         </div>
@@ -553,10 +555,8 @@ canvas{display:block}
   <!-- Single-sided status pill -->
   <div class="canvas-status cs-idle" id="canvasStatus">Select a SKU and upload artwork to begin</div>
 
-  <!-- Dual action bar — sits between toolbar and canvas, dual-sided only -->
-  <div class="dual-action-bar" id="dualActionBar">
-    <button class="copy-design-btn" id="copyDesignBtn" onclick="copyDesignToOtherSide()">Copy design →</button>
-  </div>
+  <!-- Copy design button — dual-sided only, sits in grey area hugging the centre divider -->
+  <button class="copy-design-btn side1" id="copyDesignBtn" onclick="copyDesignToOtherSide()">Copy design →</button>
 
   <!-- Canvas scroll — populated dynamically for single vs dual -->
   <div class="canvas-scroll single-sided" id="canvasScroll">
@@ -818,30 +818,23 @@ function switchToSide(sideIdx){
 
 function updateSideTags(){
   const banner=document.getElementById('rpSideBanner');
-  const bar=document.getElementById('dualActionBar');
   const copyBtn=document.getElementById('copyDesignBtn');
   if(!isDoubleSided){
     banner.classList.remove('show');
-    bar.classList.remove('show');
+    copyBtn.classList.remove('show');
     document.getElementById('panelSideTag').style.display='none';
     return;
   }
   banner.classList.add('show');
   banner.textContent='Side '+(activeSide+1)+' of 2';
-  bar.classList.add('show');
+  copyBtn.classList.add('show');
   document.getElementById('panelSideTag').style.display='inline-block';
   document.getElementById('panelSideTag').textContent='Side '+(activeSide+1)+' of 2';
-  // Position button: right-flush to the dividing line on the active side
-  // Active side is always 50% wide; divider is 1px; button sits just left/right of centre
   if(activeSide===0){
-    // Side 1 active — button right-justified, just left of the centre divider
-    copyBtn.style.right='8px';
-    copyBtn.style.left='auto';
+    copyBtn.classList.add('side1');copyBtn.classList.remove('side2');
     copyBtn.textContent='Copy design →';
   }else{
-    // Side 2 active — button left-justified, just right of the centre divider
-    copyBtn.style.left='8px';
-    copyBtn.style.right='auto';
+    copyBtn.classList.add('side2');copyBtn.classList.remove('side1');
     copyBtn.textContent='← Copy design';
   }
 }
