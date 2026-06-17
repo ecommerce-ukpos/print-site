@@ -129,6 +129,9 @@ input[type=range]{width:100%;cursor:pointer;accent-color:#F47920}
 .zoom-btn:hover{background:#EEF5FF;border-color:#B5D4F4;color:#185FA5}
 .zoom-val{font-size:12px;font-weight:600;color:#2C2C2A;min-width:38px;text-align:center}
 .ct-info{font-size:11px;color:#5F5E5A;margin-left:auto;font-style:italic}
+.snap-toggle{display:flex;align-items:center;gap:5px;font-size:11px;color:#5F5E5A;cursor:pointer;user-select:none;margin-left:12px}
+.snap-toggle input[type=checkbox]{accent-color:#F47920;width:13px;height:13px;cursor:pointer}
+.snap-toggle:hover{color:#2C2C2A}
 
 /* ── DUAL CANVAS LAYOUT ── */
 .canvas-scroll{flex:1;overflow:auto;display:flex;align-items:flex-start;justify-content:center;padding:44px 20px 32px;gap:0}
@@ -550,6 +553,11 @@ canvas{display:block}
       <button class="zoom-btn" onclick="zoomReset()" style="font-size:11px;width:32px" title="Fit">Fit</button>
     </div>
     <span class="ct-info" id="ctInfo">Scaled to fit screen</span>
+    <div class="ct-sep"></div>
+    <label class="snap-toggle">
+      <input type="checkbox" id="snapToggle" onchange="snapEnabled=this.checked" checked/>
+      Snap to edges
+    </label>
   </div>
 
   <!-- Single-sided status pill -->
@@ -679,6 +687,7 @@ const BG_PRESETS=['transparent','#FFFFFF','#000000','#F47920','#1A2233','#D4E8FF
 // ── Core state ─────────────────────────────────────────────
 let currentSku='', viewMode='working', jobId=null, openStep=1;
 let templateRotDeg=0, zoomLevel=1;
+let snapEnabled=true;
 let dragSrcId=null;
 let dialDragging=false;
 let interactMode=null, activeHandle=null, mouseStart={}, layerSnap={};
@@ -1107,16 +1116,42 @@ function drawToContext(ctx, layers, bgColor, drawHandlesFlag, tmplA){
   ctx.strokeRect(-TW/2+0.75,-TH/2+0.75,TW-1.5,TH-1.5);
   ctx.restore();ctx.globalAlpha=1;
 
-  // Safe zone
+  // Safe zone — sample luminance along perimeter to pick line colour
   if(SAFEPX>0){
+    const spec2=SKU_SPECS[currentSku];
+    const sz=spec2.safe_zone||5;
+    // Sample ~24 points along the safe zone rectangle perimeter
+    const szL=TX+SAFEPX, szT=TY+SAFEPX, szR=TX+TW-SAFEPX, szB=TY+TH-SAFEPX;
+    const samplePts=[];
+    const steps=6;
+    for(let i=0;i<=steps;i++){
+      const t=i/steps;
+      samplePts.push([szL+t*(szR-szL), szT]);   // top
+      samplePts.push([szL+t*(szR-szL), szB]);   // bottom
+      samplePts.push([szL, szT+t*(szB-szT)]);   // left
+      samplePts.push([szR, szT+t*(szB-szT)]);   // right
+    }
+    let totalLum=0, count=0;
+    for(const[px,py] of samplePts){
+      const x=Math.round(px), y=Math.round(py);
+      if(x<0||y<0||x>=CW||y>=CH)continue;
+      const d=ctx.getImageData(x,y,1,1).data;
+      // Relative luminance
+      totalLum+=(0.299*d[0]+0.587*d[1]+0.114*d[2]);
+      count++;
+    }
+    const avgLum=count>0?totalLum/count:128;
+    // Dark background → white line; light background → green line
+    const szColor=avgLum<100?'rgba(255,255,255,0.85)':'rgba(34,170,102,0.85)';
+    const szLabelColor=avgLum<100?'rgba(255,255,255,0.8)':'#1A8855';
+
     ctx.save();ctx.translate(TX+TW/2,TY+TH/2);ctx.rotate(templateRotDeg*Math.PI/180);
-    ctx.strokeStyle='rgba(34,170,102,0.85)';ctx.lineWidth=1;ctx.setLineDash([4,3]);
+    ctx.strokeStyle=szColor;ctx.lineWidth=1;ctx.setLineDash([4,3]);
     ctx.strokeRect(-TW/2+SAFEPX,-TH/2+SAFEPX,TW-SAFEPX*2,TH-SAFEPX*2);
     ctx.setLineDash([]);ctx.restore();
-    const spec2=SKU_SPECS[currentSku];
-    ctx.globalAlpha=0.75;ctx.fillStyle='#1A8855';
+    ctx.globalAlpha=0.85;ctx.fillStyle=szLabelColor;
     ctx.font='bold 8px -apple-system,sans-serif';ctx.textAlign='left';
-    ctx.fillText(`Safe ${spec2.safe_zone||5}mm`,TX+SAFEPX+3,TY+TH-SAFEPX-4);
+    ctx.fillText(`Safe ${sz}mm`,TX+SAFEPX+3,TY+TH-SAFEPX-4);
     ctx.globalAlpha=1;
   }
 
@@ -1144,11 +1179,39 @@ function drawToContext(ctx, layers, bgColor, drawHandlesFlag, tmplA){
 // ── Snap guides ────────────────────────────────────────────
 function clearSnaps(){if(activeSnapCtx)activeSnapCtx.clearRect(0,0,CW,CH);}
 function checkSnaps(l){
-  if(!l)return;clearSnaps();
-  const xTargets=[TX+TW/2,TX,TX+TW];const yTargets=[TY+TH/2,TY,TY+TH];
+  if(!l||!snapEnabled){clearSnaps();return;}
+  if(!l.img)return;
+  clearSnaps();
+  const aw=l.img.width*l.scale, ah=l.img.height*l.scale;
   const thresh=SNAP_THRESH/zoomLevel;
-  xTargets.forEach(xt=>{if(Math.abs(l.offsetX-xt)<thresh){l.offsetX=xt;drawSnapLine('v',xt);}});
-  yTargets.forEach(yt=>{if(Math.abs(l.offsetY-yt)<thresh){l.offsetY=yt;drawSnapLine('h',yt);}});
+
+  // Template snap targets
+  const xTargets=[TX, TX+TW/2, TX+TW];
+  const yTargets=[TY, TY+TH/2, TY+TH];
+
+  // Layer x points: left edge, centre, right edge
+  const lxPoints=[
+    {val:l.offsetX-aw/2, adjust: dx=>l.offsetX=dx+aw/2},  // left edge → snap target
+    {val:l.offsetX,       adjust: dx=>l.offsetX=dx},        // centre → snap target
+    {val:l.offsetX+aw/2, adjust: dx=>l.offsetX=dx-aw/2},  // right edge → snap target
+  ];
+  // Layer y points: top edge, centre, bottom edge
+  const lyPoints=[
+    {val:l.offsetY-ah/2, adjust: dy=>l.offsetY=dy+ah/2},
+    {val:l.offsetY,       adjust: dy=>l.offsetY=dy},
+    {val:l.offsetY+ah/2, adjust: dy=>l.offsetY=dy-ah/2},
+  ];
+
+  for(const xt of xTargets){
+    for(const lp of lxPoints){
+      if(Math.abs(lp.val-xt)<thresh){lp.adjust(xt);drawSnapLine('v',xt);break;}
+    }
+  }
+  for(const yt of yTargets){
+    for(const lp of lyPoints){
+      if(Math.abs(lp.val-yt)<thresh){lp.adjust(yt);drawSnapLine('h',yt);break;}
+    }
+  }
 }
 function drawSnapLine(dir,val){
   if(!activeSnapCtx)return;
