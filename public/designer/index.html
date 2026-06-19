@@ -1095,8 +1095,7 @@ function drawToContext(ctx, layers, bgColor, drawHandlesFlag, tmplA){
   const spec=SKU_SPECS[currentSku];
   const bx=TX-BLEEDPX,by=TY-BLEEDPX,bw=TW+BLEEDPX*2,bh=TH+BLEEDPX*2;
 
-  // Bleed zone tint
-  ctx.globalAlpha=0.15;ctx.fillStyle='#fff';ctx.fillRect(bx,by,bw,bh);ctx.globalAlpha=1;
+// Bleed zone tint drawn later with SVG/rect path
 
   // Background fill
   if(bgColor){
@@ -1115,84 +1114,68 @@ function drawToContext(ctx, layers, bgColor, drawHandlesFlag, tmplA){
     ctx.restore();ctx.globalAlpha=1;
   }
 
-  // Template overlay
+// ── Guide drawing — SVG paths if available, rectangles as fallback ──
+  const svgTrim  = spec.svg_trim  || null;
+  const svgBleed = spec.svg_bleed || null;
+  const svgSafe  = spec.svg_safe  || null;
+  const svgVB    = spec.svg_viewbox || '0 0 1000 1000';
+  const vbH      = parseFloat(svgVB.split(' ')[3]) || 1000;
+
+  // Scale SVG path coords (normalised to 1000 wide) to canvas TW/TH
+  const svgScaleX = TW / 1000;
+  const svgScaleY = TH / vbH;
+
+  function svgPathToCanvas(d) {
+    if (!d) return null;
+    return new Path2D(d.replace(/(-?\d+\.?\d*)\s+(-?\d+\.?\d*)/g, (m, x, y) =>
+      `${(parseFloat(x) * svgScaleX + TX).toFixed(2)} ${(parseFloat(y) * svgScaleY + TY).toFixed(2)}`
+    ));
+  }
+
+  function rectPath(x, y, w, h) {
+    const p = new Path2D();
+    p.rect(x, y, w, h);
+    return p;
+  }
+
+  const trimPath  = svgTrim  ? svgPathToCanvas(svgTrim)  : rectPath(TX, TY, TW, TH);
+  const bleedPath = svgBleed ? svgPathToCanvas(svgBleed) : rectPath(bx, by, bw, bh);
+  const safePath  = svgSafe  ? svgPathToCanvas(svgSafe)  : (SAFEPX>0 ? rectPath(TX+SAFEPX, TY+SAFEPX, TW-SAFEPX*2, TH-SAFEPX*2) : null);
+
+  // Bleed zone tint (replace the earlier one — remove the old ctx.fillRect bleed tint above)
+  ctx.save();ctx.globalAlpha=0.12;ctx.fillStyle='#fff';
+  ctx.fill(bleedPath);ctx.restore();ctx.globalAlpha=1;
+
+  // Template overlay — trim shape filled lightly
   ctx.save();ctx.globalAlpha=tmplA;
-  ctx.translate(TX+TW/2,TY+TH/2);ctx.rotate(templateRotDeg*Math.PI/180);
-  ctx.fillStyle='rgba(30,100,220,0.10)';ctx.fillRect(-TW/2,-TH/2,TW,TH);
-  ctx.strokeStyle='rgba(30,100,220,0.75)';ctx.lineWidth=1.5;
-  ctx.strokeRect(-TW/2+0.75,-TH/2+0.75,TW-1.5,TH-1.5);
+  ctx.fillStyle='rgba(30,100,220,0.10)';ctx.fill(trimPath);
+  ctx.strokeStyle='rgba(30,100,220,0.75)';ctx.lineWidth=1.5;ctx.stroke(trimPath);
   ctx.restore();ctx.globalAlpha=1;
 
-  // Safe zone — sample luminance just inside the safe zone line to pick colour
-  if(SAFEPX>0){
-    const spec2=SKU_SPECS[currentSku];
-    const sz=spec2.safe_zone||5;
-    const szL=TX+SAFEPX, szT=TY+SAFEPX, szR=TX+TW-SAFEPX, szB=TY+TH-SAFEPX;
-    // Sample 4px inside the safe zone line so we read actual artwork, not the grey surround
-    const inset=4;
-    const iL=szL+inset, iT=szT+inset, iR=szR-inset, iB=szB-inset;
-
-    let avgLum=200; // default light → green
-    try{
-      const samplePts=[];
-      const steps=8;
-      for(let i=0;i<=steps;i++){
-        const t=i/steps;
-        samplePts.push([iL+t*(iR-iL), iT]);   // top
-        samplePts.push([iL+t*(iR-iL), iB]);   // bottom
-        samplePts.push([iL, iT+t*(iB-iT)]);   // left
-        samplePts.push([iR, iT+t*(iB-iT)]);   // right
-      }
-      let totalLum=0, count=0;
-      for(const[px,py] of samplePts){
-        const x=Math.round(px), y=Math.round(py);
-        if(x<0||y<0||x>=CW||y>=CH)continue;
-        const d=ctx.getImageData(x,y,1,1).data;
-        if(d[3]<10)continue; // skip fully transparent pixels
-        totalLum+=(0.299*d[0]+0.587*d[1]+0.114*d[2]);
-        count++;
-      }
-      if(count>0) avgLum=totalLum/count;
-    }catch(e){
-      // Canvas tainted — fall back to bgColor
-      if(bgColor&&bgColor!=='transparent'){
-        const r=parseInt(bgColor.slice(1,3),16)||0;
-        const g=parseInt(bgColor.slice(3,5),16)||0;
-        const b=parseInt(bgColor.slice(5,7),16)||0;
-        avgLum=0.299*r+0.587*g+0.114*b;
-      }
-    }
-
-    // Threshold 140: dark artwork → white line; light artwork → green line
-    const szColor=avgLum<140?'rgba(255,255,255,0.9)':'rgba(34,170,102,0.85)';
-    const szLabelColor=avgLum<140?'rgba(255,255,255,0.85)':'#1A8855';
-
-    ctx.save();ctx.translate(TX+TW/2,TY+TH/2);ctx.rotate(templateRotDeg*Math.PI/180);
-    ctx.strokeStyle=szColor;ctx.lineWidth=1.5;ctx.setLineDash([4,3]);
-    ctx.strokeRect(-TW/2+SAFEPX,-TH/2+SAFEPX,TW-SAFEPX*2,TH-SAFEPX*2);
-    ctx.setLineDash([]);ctx.restore();
-    ctx.globalAlpha=0.85;ctx.fillStyle=szLabelColor;
+  // Safe zone
+  if(safePath){
+    ctx.save();ctx.strokeStyle='rgba(34,170,102,0.85)';ctx.lineWidth=1.5;
+    ctx.setLineDash([4,3]);ctx.stroke(safePath);ctx.setLineDash([]);ctx.restore();
+    ctx.globalAlpha=0.85;ctx.fillStyle='#1A8855';
     ctx.font='bold 8px -apple-system,sans-serif';ctx.textAlign='left';
-    ctx.fillText(`Safe ${sz}mm`,TX+SAFEPX+3,TY+TH-SAFEPX-4);
+    ctx.fillText(`Safe ${spec.safe_zone||5}mm`, TX+SAFEPX+3, TY+TH-SAFEPX-4);
     ctx.globalAlpha=1;
   }
 
   // Bleed line
   if(spec.bleed>0){
-    ctx.save();ctx.translate(TX+TW/2,TY+TH/2);ctx.rotate(templateRotDeg*Math.PI/180);
-    ctx.strokeStyle='#F47920';ctx.lineWidth=2.5;ctx.setLineDash([7,4]);
-    ctx.strokeRect(-TW/2-BLEEDPX+1.25,-TH/2-BLEEDPX+1.25,TW+BLEEDPX*2-2.5,TH+BLEEDPX*2-2.5);
-    ctx.setLineDash([]);ctx.restore();
+    ctx.save();ctx.strokeStyle='#F47920';ctx.lineWidth=2.5;
+    ctx.setLineDash([7,4]);ctx.stroke(bleedPath);ctx.setLineDash([]);ctx.restore();
     ctx.globalAlpha=0.8;ctx.fillStyle='#C75E0A';
     ctx.font='bold 8px -apple-system,sans-serif';ctx.textAlign='left';
-    ctx.fillText(`Bleed ${spec.bleed}mm`,bx+3,by+10);
+    ctx.fillText(`Bleed ${spec.bleed}mm`, bx+3, by+10);
     ctx.globalAlpha=1;
   }
 
   // Trim label
   ctx.globalAlpha=0.75;ctx.fillStyle='rgba(30,100,220,0.9)';
   ctx.font='bold 8px -apple-system,sans-serif';ctx.textAlign='right';
-  ctx.fillText(`${spec.w||'?'}×${spec.h||'?'}mm`,TX+TW-3,TY+10);
+  ctx.fillText(`${spec.w||'?'}×${spec.h||'?'}mm`, TX+TW-3, TY+10);
   ctx.globalAlpha=1;ctx.textAlign='start';
 
   if(drawHandlesFlag) drawHandles(ctx);
