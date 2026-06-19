@@ -1746,7 +1746,7 @@ async function loadSkuDb() {
 async function onSkuSearch(q) {
   const dd = document.getElementById('skuSearchDd');
   clearTimeout(skuSearchTimeout);
-  if (!q || q.length < 1) { dd.classList.remove('show'); return; }
+  if (q === null || q === undefined) { dd.classList.remove('show'); return; }
   dd.innerHTML = '<div class="sku-loading">Loading…</div>';
   dd.classList.add('show');
   skuSearchTimeout = setTimeout(async () => {
@@ -1984,7 +1984,7 @@ async function loadSkuDb() {
 async function onSkuSearch(q) {
   const dd = document.getElementById('skuSearchDd');
   clearTimeout(skuSearchTimeout);
-  if (!q || q.length < 1) { dd.classList.remove('show'); return; }
+  if (q === null || q === undefined) { dd.classList.remove('show'); return; }
   dd.innerHTML = '<div class="sku-loading">Loading…</div>';
   dd.classList.add('show');
   skuSearchTimeout = setTimeout(async () => {
