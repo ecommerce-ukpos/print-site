@@ -345,6 +345,25 @@ canvas{display:block}
 .tmpl-iframe-wrap{position:absolute;top:0;left:0;pointer-events:none;overflow:hidden;z-index:1}
 .tmpl-iframe-wrap iframe{width:100%;height:100%;border:none;display:block}
 
+
+/* SKU typeahead search */
+.sku-search-wrap{position:relative;margin-bottom:8px}
+.sku-search-input{width:100%;font-size:13px;padding:7px 9px;border:1.5px solid #E8E6DE;border-radius:8px;background:#FAFAF8;color:#2C2C2A;font-family:inherit;transition:border-color 0.15s}
+.sku-search-input:focus{outline:none;border-color:#F47920}
+.sku-search-dd{display:none;position:absolute;top:calc(100% + 3px);left:0;right:0;background:#fff;border:1px solid #E8E6DE;border-radius:8px;box-shadow:0 4px 16px rgba(0,0,0,0.1);max-height:240px;overflow-y:auto;z-index:120}
+.sku-search-dd.show{display:block}
+.sku-dd-opt{padding:7px 11px;font-size:12px;cursor:pointer;border-bottom:1px solid #F1EFE8;display:flex;flex-direction:column;gap:1px}
+.sku-dd-opt:last-child{border-bottom:none}
+.sku-dd-opt:hover,.sku-dd-opt.hi{background:#FFF3EB}
+.sku-dd-family{font-weight:700;color:#2C2C2A;font-size:11px}
+.sku-dd-name{color:#5F5E5A;font-size:11px}
+.sku-dd-dims{color:#B4B2A9;font-size:10px}
+.sku-dd-empty{padding:12px;font-size:12px;color:#888780;text-align:center}
+.sku-loading{padding:12px;font-size:12px;color:#B4B2A9;text-align:center}
+/* Template PDF iframe overlay */
+.tmpl-iframe-wrap{position:absolute;top:0;left:0;pointer-events:none;overflow:hidden;z-index:1}
+.tmpl-iframe-wrap iframe{width:100%;height:100%;border:none;display:block}
+
 </style>
 </head>
 <body>
@@ -727,7 +746,10 @@ function initSingleSidedCanvas(){
   const scroll=document.getElementById('canvasScroll');
   scroll.className='canvas-scroll single-sided';
   scroll.innerHTML=`
-    <div class="canvas-outer" id="canvasOuter">
+    <div class="canvas-outer" id="canvasOuter" style="position:relative">
+      <div class="tmpl-iframe-wrap" id="tmplIframe0" style="display:none">
+        <iframe id="tmplFrame0" src="" title="Print template"></iframe>
+      </div>
       <div class="canvas-transform" id="canvasTransform">
         <canvas id="mainCanvas" class="main-canvas" width="${CW}" height="${CH}"></canvas>
         <canvas id="snapCanvas" class="snap-canvas" width="${CW}" height="${CH}"></canvas>
@@ -1697,6 +1719,244 @@ if(jobId){
   }).catch(e=>console.error('job load',e));
 }else if(urlSku&&SKU_SPECS[urlSku]){document.getElementById('skuSelect').value=urlSku;onSkuChange();}
 computeLayout();draw();updateDial(0);
+
+// ═══════════════════════════════════════════════════════════
+// TEMPLATE INTEGRATION — Supabase sku_specs + PDF overlay
+// ═══════════════════════════════════════════════════════════
+const SUPABASE_STORAGE = 'https://fqaxuhbcwoikeldnxuvv.supabase.co/storage/v1/object/public/templates/';
+
+// ── SKU database cache ─────────────────────────────────────
+let skuDbCache = null;
+let skuSearchTimeout = null;
+let currentSkuRow = null;
+
+async function loadSkuDb() {
+  if (skuDbCache) return skuDbCache;
+  try {
+    const r = await fetch('/api/sku?limit=600');
+    if (!r.ok) throw new Error('SKU load failed');
+    skuDbCache = await r.json();
+    return skuDbCache;
+  } catch(e) {
+    console.error('SKU DB load failed:', e);
+    return [];
+  }
+}
+
+async function onSkuSearch(q) {
+  const dd = document.getElementById('skuSearchDd');
+  clearTimeout(skuSearchTimeout);
+  if (!q || q.length < 1) { dd.classList.remove('show'); return; }
+  dd.innerHTML = '<div class="sku-loading">Loading…</div>';
+  dd.classList.add('show');
+  skuSearchTimeout = setTimeout(async () => {
+    const db = await loadSkuDb();
+    const ql = q.toLowerCase();
+    const matches = db.filter(r =>
+      (r.sku_family||'').toLowerCase().includes(ql) ||
+      (r.product_name||'').toLowerCase().includes(ql) ||
+      (r.template_code||'').toLowerCase().includes(ql) ||
+      (r.sku_file||'').toLowerCase().includes(ql)
+    ).slice(0, 40);
+    if (!matches.length) {
+      dd.innerHTML = '<div class="sku-dd-empty">No results for "' + q + '"</div>';
+      return;
+    }
+    dd._matches = matches;
+    dd.innerHTML = matches.map((r, i) => {
+      const w = r.finished_w_mm, h = r.finished_h_mm;
+      const dims = w ? `${Math.round(w)}×${Math.round(h)}mm` : '';
+      const dpi = r.required_dpi ? `${r.required_dpi}dpi` : '';
+      return `<div class="sku-dd-opt" data-idx="${i}" onclick="selectSkuFromDd(${i})">
+        <span class="sku-dd-family">${r.sku_family||'—'}<span style="font-weight:400;color:#B4B2A9;margin-left:5px">${r.template_code||''}</span></span>
+        <span class="sku-dd-name">${r.product_name||r.sku_file||'—'}</span>
+        ${(dims||dpi) ? `<span class="sku-dd-dims">${[dims,dpi,r.colour_profile].filter(Boolean).join(' · ')}</span>` : ''}
+      </div>`;
+    }).join('');
+  }, 180);
+}
+
+function onSkuSearchKey(e) {
+  const dd = document.getElementById('skuSearchDd');
+  const opts = [...dd.querySelectorAll('.sku-dd-opt')];
+  const hi = dd.querySelector('.hi');
+  if (e.key === 'ArrowDown') {
+    e.preventDefault();
+    const nx = hi ? (opts[opts.indexOf(hi)+1]||opts[0]) : opts[0];
+    hi?.classList.remove('hi'); nx?.classList.add('hi'); nx?.scrollIntoView({block:'nearest'});
+  } else if (e.key === 'ArrowUp') {
+    e.preventDefault();
+    const pv = hi ? (opts[opts.indexOf(hi)-1]||opts[opts.length-1]) : opts[opts.length-1];
+    hi?.classList.remove('hi'); pv?.classList.add('hi'); pv?.scrollIntoView({block:'nearest'});
+  } else if (e.key === 'Enter') {
+    e.preventDefault();
+    const hiOpt = dd.querySelector('.hi');
+    if (hiOpt && dd._matches) { applySkuRow(dd._matches[parseInt(hiOpt.dataset.idx)]); dd.classList.remove('show'); }
+  } else if (e.key === 'Escape') {
+    dd.classList.remove('show');
+  }
+}
+
+function selectSkuFromDd(idx) {
+  const dd = document.getElementById('skuSearchDd');
+  if (dd._matches && dd._matches[idx]) { applySkuRow(dd._matches[idx]); dd.classList.remove('show'); }
+}
+
+function applySkuRow(row) {
+  currentSkuRow = row;
+
+  // Derive per-side bleed from bleed doc size vs finished size
+  let bleedPerSide = 0;
+  if (row.bleed_w_mm && row.finished_w_mm) {
+    bleedPerSide = Math.round((parseFloat(row.bleed_w_mm) - parseFloat(row.finished_w_mm)) / 2);
+  }
+  // Safe margin = (finished - safe) / 2
+  let safeMargin = 5;
+  if (row.safe_w_mm && row.finished_w_mm) {
+    safeMargin = Math.max(1, Math.round((parseFloat(row.finished_w_mm) - parseFloat(row.safe_w_mm)) / 2));
+  }
+
+  const isDS = (row.single_or_double_sided||'').toLowerCase().includes('double');
+
+  const spec = {
+    label: row.product_name || row.sku_file,
+    w: row.finished_w_mm ? Math.round(parseFloat(row.finished_w_mm)) : null,
+    h: row.finished_h_mm ? Math.round(parseFloat(row.finished_h_mm)) : null,
+    dpi: parseInt(row.required_dpi) || 300,
+    colour: row.colour_profile || 'CMYK',
+    sides: isDS ? 2 : 1,
+    bleed: bleedPerSide,
+    safe_zone: safeMargin,
+    rotatable: false,
+    future_flags: isDS ? ['double_sided'] : [],
+    template_pdf_path: row.template_pdf_path || null,
+    template_pdf_path_side2: row.template_pdf_path_side2 || null,
+  };
+
+  // Use sku_family as the key (falling back to sku_file)
+  currentSku = row.sku_family || row.sku_file;
+
+  // Inject into SKU_SPECS so existing canvas/preflight code works unchanged
+  SKU_SPECS[currentSku] = spec;
+
+  // Update search display
+  document.getElementById('skuSearchInput').value = `${row.sku_family||''} — ${spec.label}`;
+
+  // Update spec summary panel
+  document.getElementById('ssSize').textContent = spec.w ? `${spec.w}×${spec.h}mm` : 'Custom';
+  document.getElementById('ssDpi').textContent  = spec.dpi + '';
+  document.getElementById('ssColour').textContent = spec.colour;
+  document.getElementById('ssBleed').textContent  = spec.bleed ? `${spec.bleed}mm` : 'None';
+  document.getElementById('ssFlags').innerHTML = spec.future_flags.map(f=>`<span class="flag-pill">${FLAG_LABELS[f]||f}</span>`).join('');
+  document.getElementById('skuSpecExpanded').style.display = 'block';
+  document.getElementById('sSum_code').textContent = currentSku;
+  document.getElementById('sSum_name').textContent = spec.label;
+  document.getElementById('sSum_dims').textContent = spec.w
+    ? `${spec.w}×${spec.h}mm · ${spec.dpi}dpi · ${spec.bleed}mm bleed`
+    : 'Custom size';
+  document.getElementById('skuSummary').classList.add('show');
+
+  // Determine sidedness change
+  const wasDoubleSided = isDoubleSided;
+  isDoubleSided = spec.sides === 2;
+
+  document.getElementById('guidesFloat').classList.add('show-guides');
+  document.getElementById('tmplRotRow').style.display = spec.rotatable ? 'flex' : 'none';
+  document.getElementById('bleedCalloutText').textContent = spec.bleed > 0
+    ? `${spec.bleed}mm bleed required — artwork must reach the orange line`
+    : 'No bleed required — cover the trim line';
+  document.getElementById('bleedCallout').classList.toggle('show', !!spec.w);
+  document.getElementById('gfBleed').textContent = spec.bleed > 0 ? `${spec.bleed}mm` : 'None required';
+  document.getElementById('gfTrim').textContent = spec.w ? `${spec.w}×${spec.h}mm` : '—';
+  document.getElementById('gfSafe').textContent = `${spec.safe_zone||5}mm inset`;
+
+  templateRotDeg = 0;
+
+  if (isDoubleSided !== wasDoubleSided || true) {
+    sides = [blankSideState(), blankSideState()];
+    activeSide = 0;
+    computeLayout();
+    if (isDoubleSided) initDualSidedCanvas();
+    else initSingleSidedCanvas();
+  }
+
+  updateSideTags();
+  updateViewInfo();
+  computeLayout();
+  S().layers.forEach(l => centreOnTemplate(l));
+  loadTemplateOverlay();
+  draw();
+  if (S().layers.length === 0) toggleStep(2); else toggleStep(4);
+}
+
+// ── Template PDF overlay ───────────────────────────────────
+function loadTemplateOverlay() {
+  const spec = currentSku ? SKU_SPECS[currentSku] : null;
+  clearTemplateOverlay();
+  if (!spec || !spec.template_pdf_path) return;
+
+  const filename = spec.template_pdf_path.replace(/^templates\//, '');
+  const pdfUrl = SUPABASE_STORAGE + encodeURIComponent(filename) + '#toolbar=0&navpanes=0&scrollbar=0&view=FitH';
+
+  setTemplateIframe('tmplIframe0', 'tmplFrame0', pdfUrl);
+
+  if (isDoubleSided && spec.template_pdf_path_side2) {
+    const fn2 = spec.template_pdf_path_side2.replace(/^templates\//, '');
+    const pdf2Url = SUPABASE_STORAGE + encodeURIComponent(fn2) + '#toolbar=0&navpanes=0&scrollbar=0&view=FitH';
+    setTemplateIframe('tmplIframe1', 'tmplFrame1', pdf2Url);
+  }
+  onTmplOpacity();
+}
+
+function setTemplateIframe(wrapId, frameId, pdfUrl) {
+  const wrap = document.getElementById(wrapId);
+  const frame = document.getElementById(frameId);
+  if (!wrap || !frame) return;
+  wrap.style.display = 'block';
+  wrap.style.width = CW + 'px';
+  wrap.style.height = CH + 'px';
+  frame.src = pdfUrl;
+}
+
+function clearTemplateOverlay() {
+  ['tmplIframe0','tmplIframe1'].forEach(id => {
+    const el = document.getElementById(id);
+    if (el) el.style.display = 'none';
+  });
+  ['tmplFrame0','tmplFrame1'].forEach(id => {
+    const el = document.getElementById(id);
+    if (el) el.src = '';
+  });
+}
+
+function onTmplOpacity() {
+  const v = parseInt(document.getElementById('tmplOpacity').value) / 100;
+  document.getElementById('tmplOpVal').textContent = Math.round(v * 100) + '%';
+  ['tmplIframe0','tmplIframe1'].forEach(id => {
+    const el = document.getElementById(id);
+    if (el && el.style.display !== 'none') el.style.opacity = v;
+  });
+  draw(); // redraws programmatic guides (bleed/safe/trim lines) on top
+}
+
+// Resize iframes whenever canvas dimensions change
+function resizeTemplateIframes() {
+  ['tmplIframe0','tmplIframe1'].forEach(id => {
+    const el = document.getElementById(id);
+    if (el) { el.style.width = CW+'px'; el.style.height = CH+'px'; }
+  });
+}
+
+// ── Init additions ─────────────────────────────────────────
+// Pre-load SKU database in background on page load
+loadSkuDb();
+
+// Close SKU dropdown on outside click
+document.addEventListener('click', e => {
+  if (!e.target.closest('.sku-search-wrap'))
+    document.getElementById('skuSearchDd')?.classList.remove('show');
+});
+
 
 // ═══════════════════════════════════════════════════════════
 // TEMPLATE INTEGRATION — Supabase sku_specs + PDF overlay
