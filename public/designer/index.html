@@ -1792,6 +1792,10 @@ function applySkuRow(row) {
     future_flags: isDS ? ['double_sided'] : [],
     template_pdf_path: row.template_pdf_path || null,
     template_pdf_path_side2: row.template_pdf_path_side2 || null,
+    svg_trim: row.svg_trim || null,
+    svg_bleed: row.svg_bleed || null,
+    svg_safe: row.svg_safe || null,
+    svg_viewbox: row.svg_viewbox || null,
   };
 
   // Use sku_family as the key (falling back to sku_file)
