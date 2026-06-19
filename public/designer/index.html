@@ -405,7 +405,7 @@ canvas{display:block}
         <input type="text" class="sku-search-input" id="skuSearchInput"
           placeholder="Search SKU or product name…"
           autocomplete="off" spellcheck="false"
-          oninput="onSkuSearch(this.value)"
+          oninput="onSkuSearch(this.value)" onfocus="onSkuSearch(this.value)"
           onkeydown="onSkuSearchKey(event)" />
         <div class="sku-search-dd" id="skuSearchDd"></div>
       </div>
