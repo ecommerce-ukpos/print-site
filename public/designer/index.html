@@ -1709,7 +1709,7 @@ if(jobId){
     document.getElementById('jbCustomer').textContent=job.customer_name||'—';
     document.getElementById('jbOrder').textContent=job.order_number||'—';
     const sku=job.sku||urlSku;
-    if(sku&&SKU_SPECS[sku]){document.getElementById('skuSelect').value=sku;onSkuChange();}
+    if(sku&&SKU_SPECS[sku]){loadSkuDb().then(()=>applySkuRow({sku_family:sku,...SKU_SPECS[sku],sku_file:sku,product_name:SKU_SPECS[sku]?.label||sku}));}
     if(job.storage_path){
       fetch('/api/file?path='+encodeURIComponent(job.storage_path)).then(r=>r.ok?r.json():null).then(d=>{
         if(!d?.b64)return;const img=new Image();const dataUrl='data:'+d.mediaType+';base64,'+d.b64;
@@ -1717,7 +1717,7 @@ if(jobId){
       });
     }
   }).catch(e=>console.error('job load',e));
-}else if(urlSku&&SKU_SPECS[urlSku]){document.getElementById('skuSelect').value=urlSku;onSkuChange();}
+}else if(urlSku&&SKU_SPECS[urlSku]){loadSkuDb().then(()=>applySkuRow({sku_family:urlSku,...SKU_SPECS[urlSku],sku_file:urlSku,product_name:SKU_SPECS[urlSku]?.label||urlSku}));}
 computeLayout();draw();updateDial(0);
 
 // ═══════════════════════════════════════════════════════════
