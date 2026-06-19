@@ -345,25 +345,6 @@ canvas{display:block}
 .tmpl-iframe-wrap{position:absolute;top:0;left:0;pointer-events:none;overflow:hidden;z-index:1}
 .tmpl-iframe-wrap iframe{width:100%;height:100%;border:none;display:block}
 
-
-/* SKU typeahead search */
-.sku-search-wrap{position:relative;margin-bottom:8px}
-.sku-search-input{width:100%;font-size:13px;padding:7px 9px;border:1.5px solid #E8E6DE;border-radius:8px;background:#FAFAF8;color:#2C2C2A;font-family:inherit;transition:border-color 0.15s}
-.sku-search-input:focus{outline:none;border-color:#F47920}
-.sku-search-dd{display:none;position:absolute;top:calc(100% + 3px);left:0;right:0;background:#fff;border:1px solid #E8E6DE;border-radius:8px;box-shadow:0 4px 16px rgba(0,0,0,0.1);max-height:240px;overflow-y:auto;z-index:120}
-.sku-search-dd.show{display:block}
-.sku-dd-opt{padding:7px 11px;font-size:12px;cursor:pointer;border-bottom:1px solid #F1EFE8;display:flex;flex-direction:column;gap:1px}
-.sku-dd-opt:last-child{border-bottom:none}
-.sku-dd-opt:hover,.sku-dd-opt.hi{background:#FFF3EB}
-.sku-dd-family{font-weight:700;color:#2C2C2A;font-size:11px}
-.sku-dd-name{color:#5F5E5A;font-size:11px}
-.sku-dd-dims{color:#B4B2A9;font-size:10px}
-.sku-dd-empty{padding:12px;font-size:12px;color:#888780;text-align:center}
-.sku-loading{padding:12px;font-size:12px;color:#B4B2A9;text-align:center}
-/* Template PDF iframe overlay */
-.tmpl-iframe-wrap{position:absolute;top:0;left:0;pointer-events:none;overflow:hidden;z-index:1}
-.tmpl-iframe-wrap iframe{width:100%;height:100%;border:none;display:block}
-
 </style>
 </head>
 <body>
@@ -405,7 +386,7 @@ canvas{display:block}
         <input type="text" class="sku-search-input" id="skuSearchInput"
           placeholder="Search SKU or product name…"
           autocomplete="off" spellcheck="false"
-          oninput="onSkuSearch(this.value)" onfocus="onSkuSearch(this.value)"
+          oninput="onSkuSearch(this.value)"
           onkeydown="onSkuSearchKey(event)" />
         <div class="sku-search-dd" id="skuSearchDd"></div>
       </div>
@@ -746,10 +727,7 @@ function initSingleSidedCanvas(){
   const scroll=document.getElementById('canvasScroll');
   scroll.className='canvas-scroll single-sided';
   scroll.innerHTML=`
-    <div class="canvas-outer" id="canvasOuter" style="position:relative">
-      <div class="tmpl-iframe-wrap" id="tmplIframe0" style="display:none">
-        <iframe id="tmplFrame0" src="" title="Print template"></iframe>
-      </div>
+    <div class="canvas-outer" id="canvasOuter">
       <div class="canvas-transform" id="canvasTransform">
         <canvas id="mainCanvas" class="main-canvas" width="${CW}" height="${CH}"></canvas>
         <canvas id="snapCanvas" class="snap-canvas" width="${CW}" height="${CH}"></canvas>
@@ -1709,7 +1687,7 @@ if(jobId){
     document.getElementById('jbCustomer').textContent=job.customer_name||'—';
     document.getElementById('jbOrder').textContent=job.order_number||'—';
     const sku=job.sku||urlSku;
-    if(sku&&SKU_SPECS[sku]){loadSkuDb().then(()=>applySkuRow({sku_family:sku,...SKU_SPECS[sku],sku_file:sku,product_name:SKU_SPECS[sku]?.label||sku}));}
+    if(sku&&SKU_SPECS[sku]){document.getElementById('skuSelect').value=sku;onSkuChange();}
     if(job.storage_path){
       fetch('/api/file?path='+encodeURIComponent(job.storage_path)).then(r=>r.ok?r.json():null).then(d=>{
         if(!d?.b64)return;const img=new Image();const dataUrl='data:'+d.mediaType+';base64,'+d.b64;
@@ -1717,7 +1695,7 @@ if(jobId){
       });
     }
   }).catch(e=>console.error('job load',e));
-}else if(urlSku&&SKU_SPECS[urlSku]){loadSkuDb().then(()=>applySkuRow({sku_family:urlSku,...SKU_SPECS[urlSku],sku_file:urlSku,product_name:SKU_SPECS[urlSku]?.label||urlSku}));}
+}else if(urlSku&&SKU_SPECS[urlSku]){document.getElementById('skuSelect').value=urlSku;onSkuChange();}
 computeLayout();draw();updateDial(0);
 
 // ═══════════════════════════════════════════════════════════
@@ -1728,8 +1706,6 @@ const SUPABASE_STORAGE = 'https://fqaxuhbcwoikeldnxuvv.supabase.co/storage/v1/ob
 // ── SKU database cache ─────────────────────────────────────
 let skuDbCache = null;
 let skuSearchTimeout = null;
-let currentSkuRow = null;
-
 let currentSkuRow = null;
 
 async function loadSkuDb() {
@@ -1748,7 +1724,7 @@ async function loadSkuDb() {
 async function onSkuSearch(q) {
   const dd = document.getElementById('skuSearchDd');
   clearTimeout(skuSearchTimeout);
-  if (q === null || q === undefined) { dd.classList.remove('show'); return; }
+  if (!q || q.length < 1) { dd.classList.remove('show'); return; }
   dd.innerHTML = '<div class="sku-loading">Loading…</div>';
   dd.classList.add('show');
   skuSearchTimeout = setTimeout(async () => {
