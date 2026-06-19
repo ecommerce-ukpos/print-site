@@ -185,7 +185,7 @@ input[type=range]{width:100%;cursor:pointer;accent-color:#F47920}
 .canvas-outer{position:relative;flex-shrink:0}
 .canvas-transform{transform-origin:top left;position:relative;z-index:2}
 canvas{display:block}
-.main-canvas{box-shadow:0 3px 18px rgba(0,0,0,0.22)}
+.main-canvas{box-shadow:0 3px 18px rgba(0,0,0,0.22);position:relative;z-index:2}
 .snap-canvas{position:absolute;top:0;left:0;pointer-events:none}
 
 /* Status pill — single-sided only, floats in canvas-area */
@@ -342,7 +342,7 @@ canvas{display:block}
 .sku-dd-empty{padding:12px;font-size:12px;color:#888780;text-align:center}
 .sku-loading{padding:12px;font-size:12px;color:#B4B2A9;text-align:center}
 /* Template PDF iframe overlay */
-.tmpl-iframe-wrap{position:absolute;top:0;left:0;pointer-events:none;overflow:hidden;z-index:1}
+.tmpl-iframe-wrap{position:absolute;top:0;left:0;pointer-events:none;overflow:hidden;z-index:0}
 .tmpl-iframe-wrap iframe{width:100%;height:100%;border:none;display:block}
 
 </style>
