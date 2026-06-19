@@ -727,7 +727,10 @@ function initSingleSidedCanvas(){
   const scroll=document.getElementById('canvasScroll');
   scroll.className='canvas-scroll single-sided';
   scroll.innerHTML=`
-    <div class="canvas-outer" id="canvasOuter">
+    <div class="canvas-outer" id="canvasOuter" style="position:relative">
+      <div class="tmpl-iframe-wrap" id="tmplIframe0" style="display:none">
+        <iframe id="tmplFrame0" src="" title="Print template"></iframe>
+      </div>
       <div class="canvas-transform" id="canvasTransform">
         <canvas id="mainCanvas" class="main-canvas" width="${CW}" height="${CH}"></canvas>
         <canvas id="snapCanvas" class="snap-canvas" width="${CW}" height="${CH}"></canvas>
