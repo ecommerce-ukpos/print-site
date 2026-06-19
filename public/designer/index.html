@@ -568,10 +568,7 @@ canvas{display:block}
   <div class="canvas-scroll single-sided" id="canvasScroll">
     <!-- Single-sided default: one canvas-outer -->
     <div class="canvas-outer" id="canvasOuter" style="position:relative">
-      <div class="tmpl-iframe-wrap" id="tmplIframe0" style="display:none">
-        <iframe id="tmplFrame0" src="" title="Print template"></iframe>
-      </div>
-      <div class="canvas-transform" id="canvasTransform">
+      <div class="canvas-transform" id="canvasTransform" style="position:relative;z-index:1">
         <canvas id="mainCanvas" class="main-canvas" width="460" height="560"></canvas>
         <canvas id="snapCanvas" class="snap-canvas" width="460" height="560"></canvas>
       </div>
@@ -728,12 +725,12 @@ function initSingleSidedCanvas(){
   scroll.className='canvas-scroll single-sided';
   scroll.innerHTML=`
     <div class="canvas-outer" id="canvasOuter" style="position:relative">
-      <div class="tmpl-iframe-wrap" id="tmplIframe0" style="display:none">
-        <iframe id="tmplFrame0" src="" title="Print template"></iframe>
-      </div>
-      <div class="canvas-transform" id="canvasTransform">
+      <div class="canvas-transform" id="canvasTransform" style="position:relative;z-index:1">
         <canvas id="mainCanvas" class="main-canvas" width="${CW}" height="${CH}"></canvas>
         <canvas id="snapCanvas" class="snap-canvas" width="${CW}" height="${CH}"></canvas>
+      </div>
+      <div class="tmpl-iframe-wrap" id="tmplIframe0" style="display:none;z-index:0">
+        <iframe id="tmplFrame0" src="" title="Print template"></iframe>
       </div>
     </div>`;
   activeCanvas=document.getElementById('mainCanvas');
