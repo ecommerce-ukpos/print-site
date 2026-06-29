@@ -289,6 +289,10 @@ canvas{display:block}
 .pf-val{font-size:11px;font-weight:700}
 .pf-val.pass{color:#3B6D11}.pf-val.warn{color:#854F0B}.pf-val.fail{color:#A32D2D}.pf-val.idle{color:#888780}
 .pf-detail{font-size:11px;color:#5F5E5A;margin-top:3px;line-height:1.4}
+.pf-override{display:none;align-items:center;gap:6px;margin-top:7px;padding-top:7px;border-top:1px solid #FAC775}
+.pf-item.warn .pf-override{display:flex}
+.pf-override input[type=checkbox]{accent-color:#EF9F27;width:13px;height:13px;cursor:pointer;flex-shrink:0}
+.pf-override label{font-size:11px;color:#854F0B;cursor:pointer;line-height:1.35;user-select:none}
 
 /* Action buttons in right panel */
 .rp-actions{padding:10px 12px;border-top:1px solid #E8E6DE;display:flex;flex-direction:column;gap:7px;flex-shrink:0}
@@ -621,18 +625,22 @@ canvas{display:block}
     <div class="pf-item idle" id="pfBleed">
       <div class="pf-item-top"><div class="pf-dot idle"></div><span class="pf-label">Bleed coverage</span><span class="pf-val idle" id="pfBleedVal">—</span></div>
       <div class="pf-detail" id="pfBleedDetail"></div>
+      <div class="pf-override"><input type="checkbox" id="ovBleed" onchange="onOverrideChange()"><label for="ovBleed">I understand the risk and wish to proceed anyway</label></div>
     </div>
     <div class="pf-item idle" id="pfDpi">
       <div class="pf-item-top"><div class="pf-dot idle"></div><span class="pf-label">Resolution (DPI)</span><span class="pf-val idle" id="pfDpiVal">—</span></div>
       <div class="pf-detail" id="pfDpiDetail"></div>
+      <div class="pf-override"><input type="checkbox" id="ovDpi" onchange="onOverrideChange()"><label for="ovDpi">I understand the risk and wish to proceed anyway</label></div>
     </div>
     <div class="pf-item idle" id="pfSafe">
       <div class="pf-item-top"><div class="pf-dot idle"></div><span class="pf-label">Safe zone</span><span class="pf-val idle" id="pfSafeVal">—</span></div>
       <div class="pf-detail" id="pfSafeDetail"></div>
+      <div class="pf-override"><input type="checkbox" id="ovSafe" onchange="onOverrideChange()"><label for="ovSafe">I understand the risk and wish to proceed anyway</label></div>
     </div>
     <div class="pf-item idle" id="pfColour">
       <div class="pf-item-top"><div class="pf-dot idle"></div><span class="pf-label">Colour mode</span><span class="pf-val idle" id="pfColourVal">—</span></div>
       <div class="pf-detail" id="pfColourDetail"></div>
+      <div class="pf-override"><input type="checkbox" id="ovColour" onchange="onOverrideChange()"><label for="ovColour">I understand the risk and wish to proceed anyway</label></div>
     </div>
   </div>
 
@@ -1514,6 +1522,25 @@ function delLayer(id){
 }
 
 // ── Status UI ──────────────────────────────────────────────
+// Returns true if all warn-state pf-items have their override checkbox ticked
+function allWarnsAcknowledged(){
+  const pairs=[['pfBleed','ovBleed'],['pfDpi','ovDpi'],['pfSafe','ovSafe'],['pfColour','ovColour']];
+  return pairs.every(([pfId,cbId])=>{
+    const item=document.getElementById(pfId);
+    if(!item||item.dataset.pfState!=='warn')return true; // not a warn — no ack needed
+    const cb=document.getElementById(cbId);
+    return cb&&cb.checked;
+  });
+}
+// Returns true if any pf-item is in fail state
+function hasFailItems(){
+  return['pfBleed','pfDpi','pfSafe','pfColour'].some(id=>{
+    const item=document.getElementById(id);
+    return item&&item.dataset.pfState==='fail';
+  });
+}
+function onOverrideChange(){updateStatusUI();}
+
 function updateStatusUI(){
   // In dual-sided mode the status pill is hidden; update submit button state only
   const layers=getLayers();
@@ -1540,18 +1567,43 @@ function updateStatusUI(){
   const al=top.offsetX-aw/2,at=top.offsetY-ah/2;
   const coversBleed=al<=bx&&at<=by&&(al+aw)>=(bx+bw)&&(at+ah)>=(by+bh);
   const coversTrim=al<=TX&&at<=TY&&(al+aw)>=(TX+TW)&&(at+ah)>=(TY+TH);
-  if(spec.bleed===0?coversTrim:coversBleed){set('cs-ok','✓ Artwork covers the '+(spec.bleed>0?'bleed':'trim')+' area — ready to submit');enbl(true);}
-  else{set('cs-warn',coversTrim&&spec.bleed>0?'⚠ Covers trim but not the bleed boundary':'⚠ Artwork does not cover the trim area');enbl(true);}
+  const coverageOk=spec.bleed===0?coversTrim:coversBleed;
+
+  if(!coverageOk&&!coversTrim){
+    // Hard fail — artwork doesn't even cover trim
+    set('cs-warn','⚠ Artwork does not cover the trim area');enbl(false);return;
+  }
+  if(hasFailItems()){
+    // Hard fail on DPI or other fail-state check
+    set('cs-warn','⚠ Critical issues must be resolved before submitting');enbl(false);return;
+  }
+  // Coverage is at least trim; check for unacknowledged warnings
+  const warnsOk=allWarnsAcknowledged();
+  if(!warnsOk){
+    const warnMsg=coverageOk
+      ?'⚠ Acknowledge all warnings below before submitting'
+      :'⚠ Covers trim but not bleed — acknowledge warnings to proceed';
+    set('cs-warn',warnMsg);enbl(false);return;
+  }
+  // All clear (or all warns overridden)
+  set('cs-ok','✓ Artwork covers the '+(spec.bleed>0?'bleed':'trim')+' area — ready to submit');enbl(true);
 }
 
 // ── Preflight ──────────────────────────────────────────────
 function setPF(id,state,val,detail){
   const item=document.getElementById(id);
+  const prevState=item.dataset.pfState||'idle';
   item.className='pf-item '+state;
+  item.dataset.pfState=state;
   item.querySelector('.pf-dot').className='pf-dot '+state;
   item.querySelector('.pf-val').className='pf-val '+state;
   item.querySelector('.pf-val').textContent=val;
   item.querySelector('.pf-detail').textContent=detail||'';
+  // Reset override checkbox whenever the state changes (artwork moved, rescaled, etc.)
+  if(state!==prevState){
+    const cb=item.querySelector('input[type=checkbox]');
+    if(cb)cb.checked=false;
+  }
 }
 function updatePreflight(){
   const spec=currentSku?SKU_SPECS[currentSku]:null;
