@@ -129,6 +129,10 @@ input[type=range]{width:100%;cursor:pointer;accent-color:#F47920}
 .zoom-btn:hover{background:#EEF5FF;border-color:#B5D4F4;color:#185FA5}
 .zoom-val{font-size:12px;font-weight:600;color:#2C2C2A;min-width:38px;text-align:center}
 .ct-info{font-size:11px;color:#5F5E5A;margin-left:auto;font-style:italic;white-space:nowrap}
+.canvas-spinner{display:none;position:absolute;inset:0;background:rgba(196,196,192,0.55);z-index:20;align-items:center;justify-content:center;pointer-events:none}
+.canvas-spinner.active{display:flex}
+.canvas-spinner svg{width:36px;height:36px;animation:spin 0.7s linear infinite}
+@keyframes spin{to{transform:rotate(360deg)}}
 .snap-toggle{display:flex;align-items:center;gap:6px;font-size:11px;color:#5F5E5A;cursor:pointer;user-select:none;margin-bottom:6px}
 .snap-toggle input[type=checkbox]{accent-color:#F47920;width:13px;height:13px;cursor:pointer;flex-shrink:0}
 .snap-toggle:hover{color:#2C2C2A}
@@ -541,6 +545,12 @@ canvas{display:block}
 
 <!-- ── CANVAS AREA ── -->
 <div class="canvas-area">
+  <div class="canvas-spinner" id="canvasSpinner">
+    <svg viewBox="0 0 36 36" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <circle cx="18" cy="18" r="14" stroke="#E8E6DE" stroke-width="4"/>
+      <path d="M18 4a14 14 0 0 1 14 14" stroke="#F47920" stroke-width="4" stroke-linecap="round"/>
+    </svg>
+  </div>
   <div class="canvas-toolbar">
     <span style="font-size:11px;color:#888780">View</span>
     <div class="size-toggle">
@@ -1581,11 +1591,21 @@ function updatePreflight(){
 // ── View mode ──────────────────────────────────────────────
 function setViewMode(m){
   const spec=currentSku?SKU_SPECS[currentSku]:null;if(!spec||!spec.w){viewMode=m;return;}
-  const oTW=TW,oTH=TH,oTX=TX,oTY=TY;viewMode=m;
+  // Immediately update button states so the user gets visual feedback
   document.getElementById('stWorking').classList.toggle('active',m==='working');
   document.getElementById('stFull').classList.toggle('active',m==='full');
-  computeLayout();remapLayersToNewLayout(oTW,oTH,oTX,oTY,TW,TH,TX,TY);
-  updateViewInfo();draw();
+  // Show spinner overlay
+  const spinner=document.getElementById('canvasSpinner');
+  if(spinner)spinner.classList.add('active');
+  // Yield to the browser so the button + spinner paint before the heavy resize
+  requestAnimationFrame(()=>{
+    setTimeout(()=>{
+      const oTW=TW,oTH=TH,oTX=TX,oTY=TY;viewMode=m;
+      computeLayout();remapLayersToNewLayout(oTW,oTH,oTX,oTY,TW,TH,TX,TY);
+      updateViewInfo();draw();
+      if(spinner)spinner.classList.remove('active');
+    },0);
+  });
 }
 function updateViewInfo(){
   const spec=currentSku?SKU_SPECS[currentSku]:null;const info=document.getElementById('ctInfo');
