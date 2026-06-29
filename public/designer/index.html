@@ -299,6 +299,10 @@ canvas{display:block}
 .pf-help-btn{width:100%;padding:5px 10px;font-size:11px;font-weight:600;border-radius:5px;cursor:pointer;border:1px solid #F09595;background:#fff;color:#A32D2D;text-align:left}
 .pf-item.warn .pf-help-btn{border-color:#FAC775;color:#854F0B}
 .pf-help-btn:hover{opacity:0.75}
+.pf-help-btn-ai{background:#F47920;color:#fff;border-color:#F47920}
+.pf-item.warn .pf-help-btn-ai{background:#F47920;color:#fff;border-color:#F47920}
+.pf-help-btn-ai:hover{opacity:0.85}
+.pf-help-btn-ai:disabled{background:#D3D1C7;border-color:#D3D1C7;cursor:not-allowed;opacity:1}
 /* ── Upscale modal ── */
 .upscale-modal-bg{display:none;position:fixed;inset:0;background:rgba(0,0,0,0.6);z-index:500;align-items:center;justify-content:center;padding:20px}
 .upscale-modal-bg.open{display:flex}
@@ -670,7 +674,8 @@ canvas{display:block}
       <div class="pf-detail" id="pfDpiDetail"></div>
       <div class="pf-override"><input type="checkbox" id="ovDpi" onchange="onOverrideChange()"><label for="ovDpi">I understand the risk and wish to proceed anyway</label></div>
       <div class="pf-help">
-        <button class="pf-help-btn" onclick="showUpscaleModal()">↑ How to fix this — upscaling tools</button>
+        <button class="pf-help-btn pf-help-btn-ai" id="btnAiUpscale" onclick="upscaleWithAI()">↑ Upscale with AI — fix this automatically</button>
+        <button class="pf-help-btn" onclick="showUpscaleModal()" style="margin-top:5px">↑ Upscaling tools — do it yourself</button>
       </div>
     </div>
     <div class="pf-item idle" id="pfSafe">
@@ -2047,6 +2052,73 @@ function handleUpscaleModalBgClick(e){
 document.addEventListener('keydown',e=>{
   if(e.key==='Escape')closeUpscaleModal();
 });
+
+// ── AI Upscaler ────────────────────────────────────────────
+const UPSCALE_API = 'https://ecommerce-ukpos-ukpos-upscaler.hf.space/upscale';
+
+async function upscaleWithAI(){
+  const l = getActiveLayer();
+  if(!l || !l.srcB64){
+    showToast('No artwork selected to upscale');
+    return;
+  }
+  const btn = document.getElementById('btnAiUpscale');
+  const origText = btn.textContent;
+  btn.disabled = true;
+  btn.textContent = '⏳ Upscaling… please wait (up to 30s)';
+
+  try{
+    // Convert base64 data URL to a Blob for multipart upload
+    const res = await fetch(l.srcB64);
+    const blob = await res.blob();
+    const form = new FormData();
+    form.append('file', blob, l.name || 'artwork.png');
+
+    const response = await fetch(UPSCALE_API, {
+      method: 'POST',
+      body: form
+    });
+
+    if(!response.ok){
+      const err = await response.text();
+      throw new Error(err || response.statusText);
+    }
+
+    // Get upscaled PNG back as blob → data URL
+    const upscaledBlob = await response.blob();
+    const dataUrl = await new Promise((resolve, reject) => {
+      const reader = new FileReader();
+      reader.onload = () => resolve(reader.result);
+      reader.onerror = reject;
+      reader.readAsDataURL(upscaledBlob);
+    });
+
+    // Load into an Image element
+    const img = new Image();
+    img.onload = () => {
+      captureState('AI Upscale');
+      // Replace image data in-place — preserve position, scale, rotation
+      l.img    = img;
+      l.srcB64 = dataUrl;
+      l.srcMime = 'image/png';
+      l.name   = (l.name || 'artwork').replace(/\.[^.]+$/, '') + '_upscaled.png';
+      syncControlsToActive();
+      renderLayersList();
+      draw();
+      showToast('✓ Upscaled successfully — re-check DPI');
+      btn.disabled = false;
+      btn.textContent = origText;
+    };
+    img.onerror = () => { throw new Error('Failed to load upscaled image'); };
+    img.src = dataUrl;
+
+  } catch(e){
+    console.error('Upscale error:', e);
+    showToast('Upscale failed — try again or use a manual tool');
+    btn.disabled = false;
+    btn.textContent = origText;
+  }
+}
 
 </script>
 
