@@ -1366,6 +1366,8 @@ function bindCanvasEvents(canvas){
         canvas.style.cursor='grabbing';return;
       }
     }
+    // Clicked empty canvas — deselect active layer
+    setActiveLayerId(null);syncControlsToActive();renderLayersList();draw();
   };
   canvas.addEventListener('mousedown',_boundMousedown);
 
@@ -1405,12 +1407,6 @@ function bindCanvasEvents(canvas){
     if(hk)canvas.style.cursor=hk==='rot'?'crosshair':'nwse-resize';
     else canvas.style.cursor=getLayers().some(l=>l.visible&&pointInLayer(x,y,l))?'grab':'default';
   });
-
-  canvas.addEventListener('wheel',function(e){
-    const l=getActiveLayer();if(!l)return;e.preventDefault();
-    l.scale=Math.max(0.02,Math.min(5,l.scale*(e.deltaY>0?0.95:1.05)));
-    syncControlsToActive();draw();
-  },{passive:false});
 
   let tS={x:0,y:0},tL={};
   canvas.addEventListener('touchstart',function(e){const l=getActiveLayer();if(!l)return;e.preventDefault();const t=e.touches[0],r=canvas.getBoundingClientRect();tS={x:(t.clientX-r.left)/zoomLevel,y:(t.clientY-r.top)/zoomLevel};tL={offsetX:l.offsetX,offsetY:l.offsetY};},{passive:false});
