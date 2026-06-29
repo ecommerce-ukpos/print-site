@@ -293,14 +293,38 @@ canvas{display:block}
 .pf-item.warn .pf-override{display:flex}
 .pf-override input[type=checkbox]{accent-color:#EF9F27;width:13px;height:13px;cursor:pointer;flex-shrink:0}
 .pf-override label{font-size:11px;color:#854F0B;cursor:pointer;line-height:1.35;user-select:none}
-.pf-help{display:none;flex-direction:column;gap:4px;margin-top:7px;padding-top:7px;border-top:1px solid #F09595}
-.pf-item.warn .pf-help,.pf-item.fail .pf-help{display:flex}
-.pf-help-title{font-size:11px;font-weight:600;color:#A32D2D}
-.pf-help-links{display:flex;flex-wrap:wrap;gap:4px}
-.pf-help-link{font-size:11px;padding:3px 7px;border-radius:4px;background:#fff;border:1px solid #F09595;color:#A32D2D;text-decoration:none;white-space:nowrap}
-.pf-item.warn .pf-help-title{color:#854F0B}
-.pf-item.warn .pf-help-link{border-color:#FAC775;color:#854F0B}
-.pf-help-link:hover{opacity:0.75}
+.pf-help{display:none;margin-top:7px;padding-top:7px;border-top:1px solid #F09595}
+.pf-item.warn .pf-help,.pf-item.fail .pf-help{display:block}
+.pf-item.warn .pf-help{border-top-color:#FAC775}
+.pf-help-btn{width:100%;padding:5px 10px;font-size:11px;font-weight:600;border-radius:5px;cursor:pointer;border:1px solid #F09595;background:#fff;color:#A32D2D;text-align:left}
+.pf-item.warn .pf-help-btn{border-color:#FAC775;color:#854F0B}
+.pf-help-btn:hover{opacity:0.75}
+/* ── Upscale modal ── */
+.upscale-modal-bg{display:none;position:fixed;inset:0;background:rgba(0,0,0,0.55);z-index:500;align-items:center;justify-content:center}
+.upscale-modal-bg.open{display:flex}
+.upscale-modal{background:#fff;border-radius:12px;width:520px;max-width:calc(100vw - 32px);max-height:90vh;overflow-y:auto;box-shadow:0 8px 40px rgba(0,0,0,0.28);display:flex;flex-direction:column}
+.upscale-modal-header{display:flex;align-items:center;justify-content:space-between;padding:18px 20px 14px;border-bottom:1px solid #E8E6DE;flex-shrink:0}
+.upscale-modal-header h2{font-size:15px;font-weight:700;color:#2C2C2A;margin:0}
+.upscale-modal-close{background:none;border:none;font-size:20px;cursor:pointer;color:#888780;line-height:1;padding:0 4px}
+.upscale-modal-close:hover{color:#2C2C2A}
+.upscale-modal-body{padding:16px 20px;display:flex;flex-direction:column;gap:12px}
+.upscale-modal-intro{font-size:12px;color:#5F5E5A;line-height:1.5;margin:0}
+.upscale-card{border:1px solid #E8E6DE;border-radius:8px;overflow:hidden}
+.upscale-card-head{display:flex;align-items:center;justify-content:space-between;padding:10px 14px;background:#F7F6F2}
+.upscale-card-name{font-size:13px;font-weight:700;color:#2C2C2A}
+.upscale-card-badge{font-size:10px;font-weight:700;padding:2px 7px;border-radius:20px;white-space:nowrap}
+.badge-free{background:#EAF3DE;color:#3B6D11;border:1px solid #C0DD97}
+.badge-freemium{background:#EEF5FF;color:#185FA5;border:1px solid #B5D4F4}
+.badge-techy{background:#F3EEFF;color:#6B3FA0;border:1px solid #D0B8F8}
+.badge-quick{background:#FFF3E8;color:#923D00;border:1px solid #FAC775}
+.upscale-card-body{padding:10px 14px 12px;display:flex;flex-direction:column;gap:6px}
+.upscale-card-desc{font-size:12px;color:#2C2C2A;line-height:1.5;margin:0}
+.upscale-card-pros-cons{display:grid;grid-template-columns:1fr 1fr;gap:6px}
+.upscale-pros,.upscale-cons{font-size:11px;line-height:1.5;color:#5F5E5A}
+.upscale-pros strong{color:#3B6D11}
+.upscale-cons strong{color:#A32D2D}
+.upscale-card-link{display:inline-block;margin-top:4px;padding:5px 12px;font-size:12px;font-weight:600;border-radius:5px;background:#F47920;color:#fff;text-decoration:none;border:none;cursor:pointer;align-self:flex-start}
+.upscale-card-link:hover{opacity:0.85}
 
 /* Action buttons in right panel */
 .rp-actions{padding:10px 12px;border-top:1px solid #E8E6DE;display:flex;flex-direction:column;gap:7px;flex-shrink:0}
@@ -640,13 +664,7 @@ canvas{display:block}
       <div class="pf-detail" id="pfDpiDetail"></div>
       <div class="pf-override"><input type="checkbox" id="ovDpi" onchange="onOverrideChange()"><label for="ovDpi">I understand the risk and wish to proceed anyway</label></div>
       <div class="pf-help">
-        <span class="pf-help-title">↑ Upscale your image before uploading:</span>
-        <div class="pf-help-links">
-          <a class="pf-help-link" href="https://www.adobe.com/uk/express/feature/image/upscale" target="_blank" rel="noopener">Adobe Express</a>
-          <a class="pf-help-link" href="https://www.upscayl.org" target="_blank" rel="noopener">Upscayl (free)</a>
-          <a class="pf-help-link" href="https://replicate.com/nightmareai/real-esrgan" target="_blank" rel="noopener">Real-ESRGAN</a>
-          <a class="pf-help-link" href="https://imgupscaler.com" target="_blank" rel="noopener">imgupscaler.com</a>
-        </div>
+        <button class="pf-help-btn" onclick="showUpscaleModal()">↑ How to fix this — upscaling tools</button>
       </div>
     </div>
     <div class="pf-item idle" id="pfSafe">
@@ -2014,4 +2032,96 @@ document.addEventListener('click', e => {
     document.getElementById('skuSearchDd')?.classList.remove('show');
 });
 
+// ── Upscale modal ───────────────────────────────────────────
+function showUpscaleModal(){
+  document.getElementById('upscaleModalBg').classList.add('open');
+}
+function closeUpscaleModal(){
+  document.getElementById('upscaleModalBg').classList.remove('open');
+}
+function handleUpscaleModalBgClick(e){
+  if(e.target===document.getElementById('upscaleModalBg'))closeUpscaleModal();
+}
+document.addEventListener('keydown',e=>{
+  if(e.key==='Escape')closeUpscaleModal();
+});
+
 </script>
+
+<!-- ── Upscale modal ── -->
+<div class="upscale-modal-bg" id="upscaleModalBg" onclick="handleUpscaleModalBgClick(event)">
+  <div class="upscale-modal" role="dialog" aria-modal="true" aria-labelledby="upscaleModalTitle">
+    <div class="upscale-modal-header">
+      <h2 id="upscaleModalTitle">↑ Improve your image resolution</h2>
+      <button class="upscale-modal-close" onclick="closeUpscaleModal()" aria-label="Close">×</button>
+    </div>
+    <div class="upscale-modal-body">
+      <p class="upscale-modal-intro">Your artwork is below the minimum DPI for print. Upscaling uses AI to add detail and increase resolution before you re-upload. Choose the option that suits you best.</p>
+
+      <!-- Adobe Express -->
+      <div class="upscale-card">
+        <div class="upscale-card-head">
+          <span class="upscale-card-name">Adobe Express</span>
+          <span class="upscale-card-badge badge-freemium">Free account required</span>
+        </div>
+        <div class="upscale-card-body">
+          <p class="upscale-card-desc">Web-based upscaler from Adobe. Upload your image, click upscale, download. No software to install — works in your browser.</p>
+          <div class="upscale-card-pros-cons">
+            <div class="upscale-pros"><strong>✓ Pros</strong><br>Familiar brand, very easy to use, no install needed</div>
+            <div class="upscale-cons"><strong>✗ Cons</strong><br>Requires a free Adobe account, limited free exports per month</div>
+          </div>
+          <a class="upscale-card-link" href="https://www.adobe.com/express/" target="_blank" rel="noopener">Open Adobe Express →</a>
+        </div>
+      </div>
+
+      <!-- Upscayl -->
+      <div class="upscale-card">
+        <div class="upscale-card-head">
+          <span class="upscale-card-name">Upscayl</span>
+          <span class="upscale-card-badge badge-free">100% Free</span>
+        </div>
+        <div class="upscale-card-body">
+          <p class="upscale-card-desc">Free, open-source desktop app for Windows, Mac and Linux. Runs AI upscaling locally on your computer — nothing is uploaded to any server, making it ideal for confidential client artwork.</p>
+          <div class="upscale-card-pros-cons">
+            <div class="upscale-pros"><strong>✓ Pros</strong><br>Completely free, no account needed, artwork stays on your machine, batch processing</div>
+            <div class="upscale-cons"><strong>✗ Cons</strong><br>Requires a one-time download and install, needs a decent GPU for best speed</div>
+          </div>
+          <a class="upscale-card-link" href="https://upscayl.org/" target="_blank" rel="noopener">Download Upscayl →</a>
+        </div>
+      </div>
+
+      <!-- Real-ESRGAN -->
+      <div class="upscale-card">
+        <div class="upscale-card-head">
+          <span class="upscale-card-name">Real-ESRGAN</span>
+          <span class="upscale-card-badge badge-techy">Technical option</span>
+        </div>
+        <div class="upscale-card-body">
+          <p class="upscale-card-desc">The AI model used by most professional upscalers under the hood. Access it directly via Replicate — best quality results, particularly for illustrations, logos, and graphics.</p>
+          <div class="upscale-card-pros-cons">
+            <div class="upscale-pros"><strong>✓ Pros</strong><br>Highest quality output, excellent for non-photographic artwork</div>
+            <div class="upscale-cons"><strong>✗ Cons</strong><br>Requires a Replicate account and small pay-per-use fee (typically a few pence per image)</div>
+          </div>
+          <a class="upscale-card-link" href="https://replicate.com/nightmareai/real-esrgan" target="_blank" rel="noopener">Open Real-ESRGAN →</a>
+        </div>
+      </div>
+
+      <!-- imgupscaler -->
+      <div class="upscale-card">
+        <div class="upscale-card-head">
+          <span class="upscale-card-name">imgupscaler.com</span>
+          <span class="upscale-card-badge badge-quick">Quickest start</span>
+        </div>
+        <div class="upscale-card-body">
+          <p class="upscale-card-desc">Simple web tool — no account, no install, no payment. Upload your image and download an upscaled version in seconds. Good for a one-off quick fix.</p>
+          <div class="upscale-card-pros-cons">
+            <div class="upscale-pros"><strong>✓ Pros</strong><br>Zero friction — no sign-up needed, works immediately</div>
+            <div class="upscale-cons"><strong>✗ Cons</strong><br>Lower quality than the other options, file size limits on free tier, ad-supported</div>
+          </div>
+          <a class="upscale-card-link" href="https://imgupscaler.com/" target="_blank" rel="noopener">Open imgupscaler →</a>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</div>
