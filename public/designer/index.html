@@ -1095,8 +1095,8 @@ function draw(){
   const tmplA=parseInt(document.getElementById('tmplOpacity').value)/100;
   document.getElementById('tmplOpVal').textContent=Math.round(tmplA*100)+'%';
   drawToContext(activeCtx, S().layers, S().bgColor, true, tmplA);
-  updateStatusUI();
   updatePreflight();
+  updateStatusUI();
   updatePosReadout();
   // Keep inactive side rendered
   drawInactiveSide();
