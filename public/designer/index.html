@@ -293,6 +293,14 @@ canvas{display:block}
 .pf-item.warn .pf-override{display:flex}
 .pf-override input[type=checkbox]{accent-color:#EF9F27;width:13px;height:13px;cursor:pointer;flex-shrink:0}
 .pf-override label{font-size:11px;color:#854F0B;cursor:pointer;line-height:1.35;user-select:none}
+.pf-help{display:none;flex-direction:column;gap:4px;margin-top:7px;padding-top:7px;border-top:1px solid #F09595}
+.pf-item.warn .pf-help,.pf-item.fail .pf-help{display:flex}
+.pf-help-title{font-size:11px;font-weight:600;color:#A32D2D}
+.pf-help-links{display:flex;flex-wrap:wrap;gap:4px}
+.pf-help-link{font-size:11px;padding:3px 7px;border-radius:4px;background:#fff;border:1px solid #F09595;color:#A32D2D;text-decoration:none;white-space:nowrap}
+.pf-item.warn .pf-help-title{color:#854F0B}
+.pf-item.warn .pf-help-link{border-color:#FAC775;color:#854F0B}
+.pf-help-link:hover{opacity:0.75}
 
 /* Action buttons in right panel */
 .rp-actions{padding:10px 12px;border-top:1px solid #E8E6DE;display:flex;flex-direction:column;gap:7px;flex-shrink:0}
@@ -631,6 +639,15 @@ canvas{display:block}
       <div class="pf-item-top"><div class="pf-dot idle"></div><span class="pf-label">Resolution (DPI)</span><span class="pf-val idle" id="pfDpiVal">—</span></div>
       <div class="pf-detail" id="pfDpiDetail"></div>
       <div class="pf-override"><input type="checkbox" id="ovDpi" onchange="onOverrideChange()"><label for="ovDpi">I understand the risk and wish to proceed anyway</label></div>
+      <div class="pf-help">
+        <span class="pf-help-title">↑ Upscale your image before uploading:</span>
+        <div class="pf-help-links">
+          <a class="pf-help-link" href="https://www.adobe.com/uk/express/feature/image/upscale" target="_blank" rel="noopener">Adobe Express</a>
+          <a class="pf-help-link" href="https://www.upscayl.org" target="_blank" rel="noopener">Upscayl (free)</a>
+          <a class="pf-help-link" href="https://replicate.com/nightmareai/real-esrgan" target="_blank" rel="noopener">Real-ESRGAN</a>
+          <a class="pf-help-link" href="https://imgupscaler.com" target="_blank" rel="noopener">imgupscaler.com</a>
+        </div>
+      </div>
     </div>
     <div class="pf-item idle" id="pfSafe">
       <div class="pf-item-top"><div class="pf-dot idle"></div><span class="pf-label">Safe zone</span><span class="pf-val idle" id="pfSafeVal">—</span></div>
@@ -1527,21 +1544,22 @@ function allWarnsAcknowledged(){
   const pairs=[['pfBleed','ovBleed'],['pfDpi','ovDpi'],['pfSafe','ovSafe'],['pfColour','ovColour']];
   return pairs.every(([pfId,cbId])=>{
     const item=document.getElementById(pfId);
-    if(!item||item.dataset.pfState!=='warn')return true; // not a warn — no ack needed
+    if(!item||item.dataset.pfState!=='warn')return true;
     const cb=document.getElementById(cbId);
-    return cb&&cb.checked;
+    return !!(cb&&cb.checked);
   });
 }
 // Returns true if any pf-item is in fail state
 function hasFailItems(){
   return['pfBleed','pfDpi','pfSafe','pfColour'].some(id=>{
     const item=document.getElementById(id);
-    return item&&item.dataset.pfState==='fail';
+    return !!(item&&item.dataset.pfState==='fail');
   });
 }
 function onOverrideChange(){updateStatusUI();}
 
 function updateStatusUI(){
+  try{
   // In dual-sided mode the status pill is hidden; update submit button state only
   const layers=getLayers();
   const enbl=v=>{
@@ -1550,18 +1568,19 @@ function updateStatusUI(){
   };
 
   if(isDoubleSided){
-    // Submit blocked — double-sided output not yet implemented
     document.getElementById('btnSubmit').disabled=true;
     document.getElementById('btnAssessor').disabled=layers.length===0;
     return;
   }
 
   const statusEl=document.getElementById('canvasStatus');
+  if(!statusEl){enbl(false);return;}
   function set(cls,msg){statusEl.className='canvas-status '+cls;statusEl.textContent=msg;}
   if(!currentSku){set('cs-idle','Select a SKU and upload artwork to begin');enbl(false);return;}
   const vis=layers.filter(l=>l.visible&&l.img);
   if(!vis.length){set('cs-idle','Upload artwork to continue');enbl(false);return;}
   const spec=SKU_SPECS[currentSku];
+  if(!spec){set('cs-idle','Select a SKU to continue');enbl(false);return;}
   const bx=TX-BLEEDPX,by=TY-BLEEDPX,bw=TW+BLEEDPX*2,bh=TH+BLEEDPX*2;
   const top=vis[0],aw=top.img.width*top.scale,ah=top.img.height*top.scale;
   const al=top.offsetX-aw/2,at=top.offsetY-ah/2;
@@ -1569,15 +1588,15 @@ function updateStatusUI(){
   const coversTrim=al<=TX&&at<=TY&&(al+aw)>=(TX+TW)&&(at+ah)>=(TY+TH);
   const coverageOk=spec.bleed===0?coversTrim:coversBleed;
 
-  if(!coverageOk&&!coversTrim){
-    // Hard fail — artwork doesn't even cover trim
+  // Hard block: artwork doesn't reach trim at all
+  if(!coversTrim&&!coverageOk){
     set('cs-warn','⚠ Artwork does not cover the trim area');enbl(false);return;
   }
+  // Hard block: any pf-item is fail (unrecoverable — e.g. severely low DPI)
   if(hasFailItems()){
-    // Hard fail on DPI or other fail-state check
     set('cs-warn','⚠ Critical issues must be resolved before submitting');enbl(false);return;
   }
-  // Coverage is at least trim; check for unacknowledged warnings
+  // Soft block: unacknowledged warnings remain
   const warnsOk=allWarnsAcknowledged();
   if(!warnsOk){
     const warnMsg=coverageOk
@@ -1585,8 +1604,9 @@ function updateStatusUI(){
       :'⚠ Covers trim but not bleed — acknowledge warnings to proceed';
     set('cs-warn',warnMsg);enbl(false);return;
   }
-  // All clear (or all warns overridden)
+  // All clear
   set('cs-ok','✓ Artwork covers the '+(spec.bleed>0?'bleed':'trim')+' area — ready to submit');enbl(true);
+  }catch(e){console.error('updateStatusUI error:',e);}
 }
 
 // ── Preflight ──────────────────────────────────────────────
