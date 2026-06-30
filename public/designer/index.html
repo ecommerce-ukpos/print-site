@@ -1639,7 +1639,7 @@ function updateStatusUI(){
   const spec=SKU_SPECS[currentSku];
   if(!spec){set('cs-idle','Select a SKU to continue');enbl(false);return;}
   const bx=TX-BLEEDPX,by=TY-BLEEDPX,bw=TW+BLEEDPX*2,bh=TH+BLEEDPX*2;
-  const top=vis[0],aw=top.img.width*top.scale,ah=top.img.height*top.scale;
+  const top=vis[0],fp=getRotatedFootprint(top),aw=fp.w*top.scale,ah=fp.h*top.scale;
   const al=top.offsetX-aw/2,at=top.offsetY-ah/2;
   const coversBleed=al<=bx&&at<=by&&(al+aw)>=(bx+bw)&&(at+ah)>=(by+bh);
   const coversTrim=al<=TX&&at<=TY&&(al+aw)>=(TX+TW)&&(at+ah)>=(TY+TH);
@@ -1689,7 +1689,7 @@ function updatePreflight(){
   if(!spec||!vis.length){['pfBleed','pfDpi','pfSafe','pfColour'].forEach(id=>setPF(id,'idle','—',''));return;}
   const top=vis[0];
   const bx=TX-BLEEDPX,by=TY-BLEEDPX,bw=TW+BLEEDPX*2,bh=TH+BLEEDPX*2;
-  const aw=top.img.width*top.scale,ah=top.img.height*top.scale;
+  const fp=getRotatedFootprint(top),aw=fp.w*top.scale,ah=fp.h*top.scale;
   const al=top.offsetX-aw/2,at=top.offsetY-ah/2;
   const coversBleed=al<=bx&&at<=by&&(al+aw)>=(bx+bw)&&(at+ah)>=(by+bh);
   const coversTrim=al<=TX&&at<=TY&&(al+aw)>=(TX+TW)&&(at+ah)>=(TY+TH);
