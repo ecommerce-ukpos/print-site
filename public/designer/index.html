@@ -2128,11 +2128,13 @@ async function upscaleWithAI(){
   // overshoot — wasting memory/time — or undershoot, landing just under target).
   let requiredOutscale = 2; // sensible fallback if SKU/DPI info isn't available
   const spec = currentSku ? SKU_SPECS[currentSku] : null;
+  let _debugCurrentDpi = null;
   if(spec && spec.w){
     const fp = getRotatedFootprint(l);
     const aw = fp.w * l.scale;
     const artWidthMM = aw * (spec.w / TW);
     const currentDpi = l.img.width / (artWidthMM / 25.4);
+    _debugCurrentDpi = currentDpi;
     if(currentDpi > 0 && currentDpi < spec.dpi){
       const SAFETY_MARGIN = 1.10; // +10% headroom so we clear the target, not just touch it
       requiredOutscale = (spec.dpi / currentDpi) * SAFETY_MARGIN;
@@ -2142,6 +2144,12 @@ async function upscaleWithAI(){
       requiredOutscale = Math.min(Math.max(requiredOutscale, 1.5), 4);
     }
   }
+  console.log('%c[UPSCALE OUTSCALE DEBUG]','background:#185FA5;color:#fff;padding:2px 6px',{
+    targetDpi: spec ? spec.dpi : null,
+    currentDpi: _debugCurrentDpi,
+    requiredOutscale,
+    imgW: l.img.width, imgH: l.img.height
+  });
 
   const btn = document.getElementById('btnAiUpscale');
   const origText = btn.textContent;
