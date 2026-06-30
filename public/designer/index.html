@@ -1641,8 +1641,9 @@ function updateStatusUI(){
   const bx=TX-BLEEDPX,by=TY-BLEEDPX,bw=TW+BLEEDPX*2,bh=TH+BLEEDPX*2;
   const top=vis[0],fp=getRotatedFootprint(top),aw=fp.w*top.scale,ah=fp.h*top.scale;
   const al=top.offsetX-aw/2,at=top.offsetY-ah/2;
-  const coversBleed=al<=bx&&at<=by&&(al+aw)>=(bx+bw)&&(at+ah)>=(by+bh);
-  const coversTrim=al<=TX&&at<=TY&&(al+aw)>=(TX+TW)&&(at+ah)>=(TY+TH);
+  const COVERAGE_EPS=0.5; // px tolerance to absorb floating-point rounding from rotation/scale trig
+  const coversBleed=al<=bx+COVERAGE_EPS&&at<=by+COVERAGE_EPS&&(al+aw)>=(bx+bw)-COVERAGE_EPS&&(at+ah)>=(by+bh)-COVERAGE_EPS;
+  const coversTrim=al<=TX+COVERAGE_EPS&&at<=TY+COVERAGE_EPS&&(al+aw)>=(TX+TW)-COVERAGE_EPS&&(at+ah)>=(TY+TH)-COVERAGE_EPS;
   const coverageOk=spec.bleed===0?coversTrim:coversBleed;
 
   // Hard block: artwork doesn't reach trim at all
@@ -1691,26 +1692,9 @@ function updatePreflight(){
   const bx=TX-BLEEDPX,by=TY-BLEEDPX,bw=TW+BLEEDPX*2,bh=TH+BLEEDPX*2;
   const fp=getRotatedFootprint(top),aw=fp.w*top.scale,ah=fp.h*top.scale;
   const al=top.offsetX-aw/2,at=top.offsetY-ah/2;
-  const coversBleed=al<=bx&&at<=by&&(al+aw)>=(bx+bw)&&(at+ah)>=(by+bh);
-  const coversTrim=al<=TX&&at<=TY&&(al+aw)>=(TX+TW)&&(at+ah)>=(TY+TH);
-  console.log('%c[PREFLIGHT BLEED DEBUG]','background:#F47920;color:#fff;padding:2px 6px',{
-    rotation:top.rotation,
-    rotDeg:(top.rotation||0)*180/Math.PI,
-    scale:top.scale,
-    offsetX:top.offsetX,offsetY:top.offsetY,
-    imgNaturalW:top.img.naturalWidth,imgNaturalH:top.img.naturalHeight,
-    imgW:top.img.width,imgH:top.img.height,
-    footprint:fp,
-    artworkBox:{aw,ah,al,at,right:al+aw,bottom:at+ah},
-    trimBox:{TX,TY,TW,TH,right:TX+TW,bottom:TY+TH},
-    bleedBox:{bx,by,bw,bh,right:bx+bw,bottom:by+bh},
-    checks:{
-      leftOk:al<=TX, topOk:at<=TY,
-      rightOk:(al+aw)>=(TX+TW), bottomOk:(at+ah)>=(TY+TH)
-    },
-    coversBleed,coversTrim,
-    specBleed:spec.bleed
-  });
+  const COVERAGE_EPS=0.5; // px tolerance to absorb floating-point rounding from rotation/scale trig
+  const coversBleed=al<=bx+COVERAGE_EPS&&at<=by+COVERAGE_EPS&&(al+aw)>=(bx+bw)-COVERAGE_EPS&&(at+ah)>=(by+bh)-COVERAGE_EPS;
+  const coversTrim=al<=TX+COVERAGE_EPS&&at<=TY+COVERAGE_EPS&&(al+aw)>=(TX+TW)-COVERAGE_EPS&&(at+ah)>=(TY+TH)-COVERAGE_EPS;
   if(spec.bleed===0){setPF('pfBleed',coversTrim?'pass':'warn',coversTrim?'OK':'Check',coversTrim?'Trim covered':'Artwork may not reach trim edges');}
   else{
     if(coversBleed)setPF('pfBleed','pass','OK',`Artwork extends ${spec.bleed}mm beyond trim`);
