@@ -2123,6 +2123,26 @@ async function upscaleWithAI(){
     return;
   }
 
+  // Calculate the EXACT scale factor needed to clear the SKU's required DPI,
+  // rather than blindly applying a fixed 2x/4x multiplier (which can both
+  // overshoot — wasting memory/time — or undershoot, landing just under target).
+  let requiredOutscale = 2; // sensible fallback if SKU/DPI info isn't available
+  const spec = currentSku ? SKU_SPECS[currentSku] : null;
+  if(spec && spec.w){
+    const fp = getRotatedFootprint(l);
+    const aw = fp.w * l.scale;
+    const artWidthMM = aw * (spec.w / TW);
+    const currentDpi = l.img.width / (artWidthMM / 25.4);
+    if(currentDpi > 0 && currentDpi < spec.dpi){
+      const SAFETY_MARGIN = 1.10; // +10% headroom so we clear the target, not just touch it
+      requiredOutscale = (spec.dpi / currentDpi) * SAFETY_MARGIN;
+      // Server only supports whole-number-ish scale steps cleanly — round up to nearest 0.5
+      requiredOutscale = Math.ceil(requiredOutscale * 2) / 2;
+      // Clamp to a sane range — never request less than a token improvement, never excessive
+      requiredOutscale = Math.min(Math.max(requiredOutscale, 1.5), 4);
+    }
+  }
+
   const btn = document.getElementById('btnAiUpscale');
   const origText = btn.textContent;
   btn.disabled = true;
@@ -2151,12 +2171,14 @@ async function upscaleWithAI(){
     const blob = await res.blob();
     const form = new FormData();
     form.append('file', blob, l.name || 'artwork.png');
+    form.append('outscale', String(requiredOutscale));
 
     const response = await fetch(UPSCALE_API, {
       method: 'POST',
       body: form,
       signal: controller.signal
     });
+
 
     clearTimeout(timeoutId);
 
