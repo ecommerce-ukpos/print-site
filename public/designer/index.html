@@ -1674,6 +1674,12 @@ function updatePreflight(){
     else if(dpiEst>=spec.dpi*0.75)setPF('pfDpi','warn',dpiEst+'dpi',`Below ${spec.dpi}dpi minimum — may show pixelation`);
     else setPF('pfDpi','fail',dpiEst+'dpi',`Significantly below ${spec.dpi}dpi — will pixelate in print`);
   }else{setPF('pfDpi','idle','—','Custom size — check DPI manually');}
+  // Hide the AI upscale button for very large source images — self-hosted upscaler runs out of memory above this size
+  const aiBtn=document.getElementById('btnAiUpscale');
+  if(aiBtn){
+    const tooLarge=top.img.width>UPSCALE_MAX_DIMENSION||top.img.height>UPSCALE_MAX_DIMENSION;
+    aiBtn.style.display=tooLarge?'none':'';
+  }
   const szL=TX+SAFEPX,szT=TY+SAFEPX,szR=TX+TW-SAFEPX,szB=TY+TH-SAFEPX;
   const inSafe=al>=szL&&at>=szT&&(al+aw)<=szR&&(at+ah)<=szB;
   const sz=spec.safe_zone||5;
@@ -2056,6 +2062,7 @@ document.addEventListener('keydown',e=>{
 // ── AI Upscaler ────────────────────────────────────────────
 const UPSCALE_API = 'https://ecommerce-ukpos-ukpos-upscaler.hf.space/upscale';
 const UPSCALE_TIMEOUT_MS = 120000; // 2 minute hard cutoff
+const UPSCALE_MAX_DIMENSION = 4000; // px — above this, self-hosted AI upscaler runs out of memory
 
 const UPSCALE_MESSAGES = [
   '⏳ Upscaling… please wait',
@@ -2071,6 +2078,17 @@ async function upscaleWithAI(){
     showToast('No artwork selected to upscale');
     return;
   }
+
+  // Large-format images (A0 etc.) exceed the self-hosted upscaler's memory limits.
+  // Route these straight to the manual tools / design team instead of attempting and failing.
+  const w = l.img?.naturalWidth || l.img?.width || 0;
+  const h = l.img?.naturalHeight || l.img?.height || 0;
+  if(w > UPSCALE_MAX_DIMENSION || h > UPSCALE_MAX_DIMENSION){
+    showToast(`Image is ${w}×${h}px — too large for automatic AI upscaling`);
+    showUpscaleModal();
+    return;
+  }
+
   const btn = document.getElementById('btnAiUpscale');
   const origText = btn.textContent;
   btn.disabled = true;
@@ -2306,6 +2324,21 @@ async function upscaleWithAI(){
             </div>
           </div>
           <a class="upscale-card-link" href="https://imgupscaler.com/" target="_blank" rel="noopener">Open imgupscaler →</a>
+        </div>
+      </div>
+
+      <!-- Contact UKPOS design team -->
+      <div class="upscale-card">
+        <div class="upscale-card-head">
+          <div class="upscale-card-logo-placeholder">✉</div>
+          <div class="upscale-card-head-text">
+            <span class="upscale-card-name">Contact our UKPOS design team</span>
+            <span class="upscale-card-badge badge-techy">For large or complex artwork</span>
+          </div>
+        </div>
+        <div class="upscale-card-body">
+          <p class="upscale-card-desc">For very large format prints (A0 and above) or artwork that needs more than a simple upscale, our in-house design team can help directly — get in touch and we'll sort it for you.</p>
+          <a class="upscale-card-link" href="https://www.ukpos.com/contact-us/" target="_blank" rel="noopener">Contact UKPOS →</a>
         </div>
       </div>
 
