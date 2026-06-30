@@ -1441,12 +1441,44 @@ function syncControlsToActive(){
   document.getElementById('flipHBtn').classList.toggle('flipped',!!(l&&l.flipX));
   document.getElementById('flipVBtn').classList.toggle('flipped',!!(l&&l.flipY));
 }
+// If no layer is currently selected and there's exactly one visible layer, auto-select it.
+// Prevents toolbar actions (Fit to bleed, Centre, etc.) from silently doing nothing
+// after a click on empty canvas deselects everything.
+function getActiveLayerOrOnlyVisible(){
+  let l=getActiveLayer();
+  if(!l){
+    const vis=getLayers().filter(x=>x.visible);
+    if(vis.length===1){setActive(vis[0].id);l=getActiveLayer();}
+  }
+  return l;
+}
+// Returns the layer's effective on-canvas width/height accounting for 90°/270° rotation,
+// where the image's visual footprint is swapped relative to its raw pixel dimensions.
+function getRotatedFootprint(l){
+  const rotDeg=Math.round(((l.rotation||0)*180/Math.PI)%360+360)%360;
+  const swapped=(rotDeg===90||rotDeg===270);
+  return swapped
+    ? {w:l.img.height,h:l.img.width}
+    : {w:l.img.width,h:l.img.height};
+}
 function centreOnTemplate(l){l.offsetX=TX+TW/2;l.offsetY=TY+TH/2;}
-function fitLayerToBleed(l){if(!l.img||!currentSku)return;const bw=TW+BLEEDPX*2,bh=TH+BLEEDPX*2;l.scale=Math.max(bw/l.img.width,bh/l.img.height);centreOnTemplate(l);}
-function fitToBleed(){const l=getActiveLayer();if(l){captureState('Fit to bleed');fitLayerToBleed(l);syncControlsToActive();draw();}}
-function fitToTrim(){const l=getActiveLayer();if(!l||!l.img)return;captureState('Fit to trim');l.scale=Math.max(TW/l.img.width,TH/l.img.height);centreOnTemplate(l);syncControlsToActive();draw();}
-function centreActive(){const l=getActiveLayer();if(l){captureState('Centre');centreOnTemplate(l);draw();}}
-function resetActive(){const l=getActiveLayer();if(!l)return;captureState('Reset');l.scale=1;l.rotation=0;centreOnTemplate(l);syncControlsToActive();draw();}
+function fitLayerToBleed(l){
+  if(!l.img||!currentSku)return;
+  const bw=TW+BLEEDPX*2,bh=TH+BLEEDPX*2;
+  const fp=getRotatedFootprint(l);
+  l.scale=Math.max(bw/fp.w,bh/fp.h);
+  centreOnTemplate(l);
+}
+function fitToBleed(){const l=getActiveLayerOrOnlyVisible();if(l){captureState('Fit to bleed');fitLayerToBleed(l);syncControlsToActive();draw();}}
+function fitToTrim(){
+  const l=getActiveLayerOrOnlyVisible();if(!l||!l.img)return;
+  captureState('Fit to trim');
+  const fp=getRotatedFootprint(l);
+  l.scale=Math.max(TW/fp.w,TH/fp.h);
+  centreOnTemplate(l);syncControlsToActive();draw();
+}
+function centreActive(){const l=getActiveLayerOrOnlyVisible();if(l){captureState('Centre');centreOnTemplate(l);draw();}}
+function resetActive(){const l=getActiveLayerOrOnlyVisible();if(!l)return;captureState('Reset');l.scale=1;l.rotation=0;centreOnTemplate(l);syncControlsToActive();draw();}
 function onScaleSlider(v){const l=getActiveLayer();if(!l)return;l.scale=parseInt(v)/100;document.getElementById('scaleVal').textContent=Math.round(l.scale*100)+'%';draw();}
 function setAbsoluteRot(deg){const l=getActiveLayer();if(!l)return;captureState(`Rotate ${deg}°`);l.rotation=deg*Math.PI/180;updateDial(deg);syncControlsToActive();draw();}
 function rotateTemplate(deg){templateRotDeg=(templateRotDeg+deg+360)%360;draw();}
@@ -2149,7 +2181,11 @@ async function upscaleWithAI(){
       const img = new Image();
       img.onload = () => {
         captureState('AI Upscale');
-        // Replace image data in-place — preserve position, scale, rotation
+        // The upscaled image has more pixels than the original — adjust scale
+        // proportionally so the artwork's VISUAL size on canvas stays identical.
+        const oldW = l.img ? l.img.width : img.width;
+        const ratio = oldW ? (oldW / img.width) : 1;
+        l.scale   = (l.scale || 1) * ratio;
         l.img     = img;
         l.srcB64  = dataUrl;
         l.srcMime = 'image/png';
