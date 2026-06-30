@@ -2126,30 +2126,40 @@ async function upscaleWithAI(){
   // Calculate the EXACT scale factor needed to clear the SKU's required DPI,
   // rather than blindly applying a fixed 2x/4x multiplier (which can both
   // overshoot — wasting memory/time — or undershoot, landing just under target).
+  const UPSCALE_MAX_OUTSCALE = 6; // hard ceiling — server memory/time constraints
   let requiredOutscale = 2; // sensible fallback if SKU/DPI info isn't available
   const spec = currentSku ? SKU_SPECS[currentSku] : null;
-  let _debugCurrentDpi = null;
   if(spec && spec.w){
     const fp = getRotatedFootprint(l);
     const aw = fp.w * l.scale;
     const artWidthMM = aw * (spec.w / TW);
     const currentDpi = l.img.width / (artWidthMM / 25.4);
-    _debugCurrentDpi = currentDpi;
     if(currentDpi > 0 && currentDpi < spec.dpi){
       const SAFETY_MARGIN = 1.10; // +10% headroom so we clear the target, not just touch it
-      requiredOutscale = (spec.dpi / currentDpi) * SAFETY_MARGIN;
+      const uncappedOutscale = (spec.dpi / currentDpi) * SAFETY_MARGIN;
+      // Honest check: if even the max ceiling can't reach target DPI, tell the user
+      // up front rather than silently running an upscale that will still undershoot.
+      if(uncappedOutscale > UPSCALE_MAX_OUTSCALE){
+        const bestPossibleDpi = Math.round(currentDpi * UPSCALE_MAX_OUTSCALE);
+        const proceed = confirm(
+          `This image is too low-resolution for AI upscaling to fully reach ${spec.dpi}dpi.\n\n`+
+          `Current: ${Math.round(currentDpi)}dpi\n`+
+          `Best achievable with AI: approximately ${bestPossibleDpi}dpi\n\n`+
+          `For best results, please use a higher-resolution source image, or try the `+
+          `manual tools / contact our design team instead.\n\n`+
+          `Click OK to proceed anyway with the best possible AI upscale, or Cancel to choose another option.`
+        );
+        if(!proceed){
+          showUpscaleModal();
+          return;
+        }
+      }
       // Server only supports whole-number-ish scale steps cleanly — round up to nearest 0.5
-      requiredOutscale = Math.ceil(requiredOutscale * 2) / 2;
+      requiredOutscale = Math.ceil(uncappedOutscale * 2) / 2;
       // Clamp to a sane range — never request less than a token improvement, never excessive
-      requiredOutscale = Math.min(Math.max(requiredOutscale, 1.5), 4);
+      requiredOutscale = Math.min(Math.max(requiredOutscale, 1.5), UPSCALE_MAX_OUTSCALE);
     }
   }
-  console.log('%c[UPSCALE OUTSCALE DEBUG]','background:#185FA5;color:#fff;padding:2px 6px',{
-    targetDpi: spec ? spec.dpi : null,
-    currentDpi: _debugCurrentDpi,
-    requiredOutscale,
-    imgW: l.img.width, imgH: l.img.height
-  });
 
   const btn = document.getElementById('btnAiUpscale');
   const origText = btn.textContent;
