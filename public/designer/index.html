@@ -2055,6 +2055,15 @@ document.addEventListener('keydown',e=>{
 
 // ── AI Upscaler ────────────────────────────────────────────
 const UPSCALE_API = 'https://ecommerce-ukpos-ukpos-upscaler.hf.space/upscale';
+const UPSCALE_TIMEOUT_MS = 120000; // 2 minute hard cutoff
+
+const UPSCALE_MESSAGES = [
+  '⏳ Upscaling… please wait',
+  '⏳ Still working — this can take a minute',
+  '⏳ Nearly there — keep waiting…',
+  '⏳ Almost done — large images take longer',
+  '⏳ First use today may be slower — still working'
+];
 
 async function upscaleWithAI(){
   const l = getActiveLayer();
@@ -2065,7 +2074,24 @@ async function upscaleWithAI(){
   const btn = document.getElementById('btnAiUpscale');
   const origText = btn.textContent;
   btn.disabled = true;
-  btn.textContent = '⏳ Upscaling… please wait (up to 30s)';
+
+  // Rotate status messages every 8s so the user knows it's still alive
+  let msgIdx = 0;
+  btn.textContent = UPSCALE_MESSAGES[0];
+  const msgTimer = setInterval(() => {
+    msgIdx = Math.min(msgIdx + 1, UPSCALE_MESSAGES.length - 1);
+    btn.textContent = UPSCALE_MESSAGES[msgIdx];
+  }, 8000);
+
+  const resetButton = () => {
+    clearInterval(msgTimer);
+    btn.disabled = false;
+    btn.textContent = origText;
+  };
+
+  // Hard timeout — abort if the server takes too long or hangs/dies silently
+  const controller = new AbortController();
+  const timeoutId = setTimeout(() => controller.abort(), UPSCALE_TIMEOUT_MS);
 
   try{
     // Convert base64 data URL to a Blob for multipart upload
@@ -2076,16 +2102,23 @@ async function upscaleWithAI(){
 
     const response = await fetch(UPSCALE_API, {
       method: 'POST',
-      body: form
+      body: form,
+      signal: controller.signal
     });
 
+    clearTimeout(timeoutId);
+
     if(!response.ok){
-      const err = await response.text();
-      throw new Error(err || response.statusText);
+      let errText = response.statusText;
+      try{ errText = await response.text() || errText; }catch(_e){}
+      throw new Error(`Server error (${response.status}): ${errText}`);
     }
 
     // Get upscaled PNG back as blob → data URL
     const upscaledBlob = await response.blob();
+    if(!upscaledBlob || upscaledBlob.size === 0){
+      throw new Error('Server returned an empty result');
+    }
     const dataUrl = await new Promise((resolve, reject) => {
       const reader = new FileReader();
       reader.onload = () => resolve(reader.result);
@@ -2094,31 +2127,39 @@ async function upscaleWithAI(){
     });
 
     // Load into an Image element
-    const img = new Image();
-    img.onload = () => {
-      captureState('AI Upscale');
-      // Replace image data in-place — preserve position, scale, rotation
-      l.img    = img;
-      l.srcB64 = dataUrl;
-      l.srcMime = 'image/png';
-      l.name   = (l.name || 'artwork').replace(/\.[^.]+$/, '') + '_upscaled.png';
-      syncControlsToActive();
-      renderLayersList();
-      draw();
-      showToast('✓ Upscaled successfully — re-check DPI');
-      btn.disabled = false;
-      btn.textContent = origText;
-    };
-    img.onerror = () => { throw new Error('Failed to load upscaled image'); };
-    img.src = dataUrl;
+    await new Promise((resolve, reject) => {
+      const img = new Image();
+      img.onload = () => {
+        captureState('AI Upscale');
+        // Replace image data in-place — preserve position, scale, rotation
+        l.img     = img;
+        l.srcB64  = dataUrl;
+        l.srcMime = 'image/png';
+        l.name    = (l.name || 'artwork').replace(/\.[^.]+$/, '') + '_upscaled.png';
+        syncControlsToActive();
+        renderLayersList();
+        draw();
+        resolve();
+      };
+      img.onerror = () => reject(new Error('Failed to load upscaled image'));
+      img.src = dataUrl;
+    });
+
+    resetButton();
+    showToast('✓ Upscale complete — DPI rechecked');
 
   } catch(e){
+    clearTimeout(timeoutId);
     console.error('Upscale error:', e);
-    showToast('Upscale failed — try again or use a manual tool');
-    btn.disabled = false;
-    btn.textContent = origText;
+    resetButton();
+    if(e.name === 'AbortError'){
+      showToast('⚠ Upscale timed out after 2 minutes — try the manual tools below');
+    }else{
+      showToast('⚠ Upscale failed: ' + (e.message || 'unknown error') + ' — try the manual tools below');
+    }
   }
 }
+
 
 </script>
 
