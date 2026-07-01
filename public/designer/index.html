@@ -54,7 +54,7 @@ body{font-family:'Inter',-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;
 .workspace{display:flex;flex:1;overflow:hidden}
 
 /* ══ LEFT PANEL ══ */
-.step-panel{width:236px;flex-shrink:0;background:#fff;border-right:0.5px solid #D3D1C7;display:flex;flex-direction:column;overflow-y:auto;overflow-x:hidden}
+.step-panel{width:18vw;min-width:200px;max-width:280px;flex-shrink:0;background:#fff;border-right:0.5px solid #D3D1C7;display:flex;flex-direction:column;overflow-y:auto;overflow-x:hidden}
 .step-panel::-webkit-scrollbar{width:3px}
 .step-panel::-webkit-scrollbar-thumb{background:#D3D1C7;border-radius:2px}
 
@@ -239,10 +239,10 @@ canvas{display:block}
 .panel-side-tag{display:inline-block;margin-left:6px;font-size:9px;font-weight:700;padding:1px 6px;border-radius:3px;background:#185FA5;color:#fff;letter-spacing:0.03em;vertical-align:middle}
 
 /* ══ RIGHT PANEL ══ */
-.right-panel{width:232px;flex-shrink:0;border-left:0.5px solid #D3D1C7;background:#fff;display:flex;flex-direction:column;overflow:hidden}
+.right-panel{width:18vw;min-width:200px;max-width:280px;flex-shrink:0;border-left:0.5px solid #D3D1C7;background:#fff;display:flex;flex-direction:column;overflow:hidden}
 .rp-side-banner{display:none;background:#F47920;color:#fff;padding:6px 12px;font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:0.1em;flex-shrink:0}
 .rp-side-banner.show{display:block}
-.rp-section-title{padding:8px 12px 5px;font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:0.07em;color:#888780;flex-shrink:0;display:flex;align-items:center;justify-content:space-between}
+.rp-section-title{padding:10px 12px 8px;font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:0.09em;color:#2C2C2A;background:#FAFAF8;border-bottom:1.5px solid #E8E6DE;flex-shrink:0;display:flex;align-items:center;justify-content:space-between}
 
 /* Layers */
 .layers-list{flex:0 0 auto;max-height:180px;overflow-y:auto;border-bottom:0.5px solid #D3D1C7}
@@ -400,6 +400,11 @@ canvas{display:block}
 
 <!-- ══ LEFT PANEL ══ -->
 <div class="step-panel">
+
+  <div style="padding:10px 12px 8px;font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:0.09em;color:#2C2C2A;background:#FAFAF8;border-bottom:1.5px solid #E8E6DE;flex-shrink:0;display:flex;align-items:center;gap:7px">
+    <span style="display:inline-flex;width:18px;height:18px;background:#F47920;border-radius:4px;align-items:center;justify-content:center;font-size:10px;color:#fff;font-style:normal;flex-shrink:0">✏</span>
+    Designer steps
+  </div>
 
   <div class="undo-bar">
     <button class="undo-btn" id="undoBtnPanel" onclick="undo()" disabled>↩ Undo</button>
@@ -644,7 +649,7 @@ canvas{display:block}
     <div class="lp-fixed-row"><div class="lp-fixed-dot" style="background:#F47920"></div>Guides &amp; template<span class="lp-fixed-meta">always on</span></div>
   </div>
 
-  <div class="rp-section-title" style="margin-top:0">Preflight</div>
+  <div class="rp-section-title" style="margin-top:0;border-top:0.5px solid #D3D1C7">Preflight</div>
   <div class="preflight-section" id="preflightSection">
     <div class="pf-item idle" id="pfBleed">
       <div class="pf-item-top"><div class="pf-dot idle"></div><span class="pf-label">Bleed coverage</span><span class="pf-val" id="pfBleedVal">—</span></div>
