@@ -1792,9 +1792,9 @@ async function submitToArtworkList(){
   let job=null;
   try{
     const r=await fetch('/api/jobs',{method:'POST',headers:{'Content-Type':'application/json'},
-      body:JSON.stringify({reference:ref,file_name:topLayer.name||'artwork',
+    body:JSON.stringify({reference:ref,file_name:topLayer.name||'artwork',
         file_type:(topLayer.srcMime||'').split('/').pop().toUpperCase()||'IMG',
-        source:'Designer',sku:currentSku||null,customer_name:null,order_number:null})});
+        source:'Designer',sku:currentSku||null,sku_name:currentSkuRow?currentSkuRow.sku_file||null:null,customer_name:null,order_number:null})});
     if(!r.ok) throw new Error('HTTP '+r.status+': '+await r.text());
     const d=await r.json();job=Array.isArray(d)?d[0]:d;
   }catch(e){showToast('Job creation failed: '+e.message);return;}
@@ -1881,8 +1881,8 @@ async function loadSkuAndArtwork(skuKey, job){
   // Otherwise look it up from Supabase via the SKU API
   try{
     const db=await loadSkuDb();
-    const row=db.find(r=>(r.sku_family||'').toLowerCase()===skuKey.toLowerCase()||
-                          (r.sku_file||'').toLowerCase()===skuKey.toLowerCase());
+   const row=db.find(r=>(r.sku_file||'').toLowerCase()===skuKey.toLowerCase())||
+              db.find(r=>(r.sku_family||'').toLowerCase()===skuKey.toLowerCase());
     if(row){
       applySkuRow(row);
       if(job)await loadArtworkFromStorage(job);
@@ -1897,7 +1897,7 @@ if(jobId){
     document.getElementById('jbRef').textContent=job.reference||'—';
     document.getElementById('jbCustomer').textContent=job.customer_name||'—';
     document.getElementById('jbOrder').textContent=job.order_number||'—';
-    const sku=job.sku||urlSku;
+const sku=job.sku_name||job.sku||urlSku;
     if(sku) await loadSkuAndArtwork(sku, job);
     else if(job.storage_path) await loadArtworkFromStorage(job);
   }).catch(e=>console.error('job load',e));
