@@ -242,7 +242,7 @@ canvas{display:block}
 .right-panel{width:18vw;min-width:200px;max-width:280px;flex-shrink:0;border-left:0.5px solid #D3D1C7;background:#fff;display:flex;flex-direction:column;overflow:hidden}
 .rp-side-banner{display:none;background:#F47920;color:#fff;padding:6px 12px;font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:0.1em;flex-shrink:0}
 .rp-side-banner.show{display:block}
-.rp-section-title{padding:10px 12px 8px;font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:0.09em;color:#fff;background:#F47920;border-bottom:none;flex-shrink:0;display:flex;align-items:center;justify-content:space-between}
+.rp-section-title{padding:10px 12px 8px;font-size:13px;font-weight:700;text-transform:uppercase;letter-spacing:0.05em;color:#fff;background:#F47920;border-bottom:none;flex-shrink:0;display:flex;align-items:center;justify-content:space-between}
 
 /* Layers */
 .layers-list{flex:0 0 auto;max-height:180px;overflow-y:auto;border-bottom:0.5px solid #D3D1C7}
@@ -351,6 +351,9 @@ canvas{display:block}
 .upscale-card-link{display:inline-block;margin-top:3px;padding:7px 14px;font-size:12px;font-weight:600;border-radius:6px;background:#F47920;color:#fff;text-decoration:none;border:none;cursor:pointer;align-self:flex-start;font-family:'Inter',sans-serif}
 .upscale-card-link:hover{opacity:0.88}
 
+/* Panel empty state */
+.panel-empty{padding:14px 10px;font-size:13px;color:#434343;text-align:center;line-height:1.5}
+
 /* Toast */
 .toast{position:fixed;bottom:20px;left:50%;transform:translateX(-50%);background:#2C2C2A;color:#fff;padding:8px 16px;border-radius:8px;font-size:12px;font-weight:500;opacity:0;transition:opacity 0.2s;pointer-events:none;z-index:999;white-space:nowrap}
 .toast.show{opacity:1}
@@ -370,22 +373,6 @@ canvas{display:block}
     <button class="tb-undo-btn" id="undoBtn" onclick="undo()" disabled title="Undo (Ctrl+Z)">↩</button>
     <button class="tb-undo-btn" id="redoBtn" onclick="redo()" disabled title="Redo (Ctrl+Y)">↪</button>
   </div>
-  <div class="tb-div"></div>
-  <!-- View toggle -->
-  <div class="tb-view">
-    <button class="tb-vbtn active" id="stWorking" onclick="setViewMode('working')">Working</button>
-    <button class="tb-vbtn" id="stFull" onclick="setViewMode('full')">Full size</button>
-  </div>
-  <div class="tb-div"></div>
-  <!-- Zoom -->
-  <div class="zoom-group">
-    <div class="zoom-btn" onclick="zoomBy(-0.25)" title="Zoom out">−</div>
-    <span class="zoom-val" id="zoomVal">100%</span>
-    <div class="zoom-btn" onclick="zoomBy(0.25)" title="Zoom in">+</div>
-    <div class="zoom-btn" onclick="zoomReset()" style="font-size:10px;width:30px" title="Fit">Fit</div>
-  </div>
-  <div class="tb-div"></div>
-  <span class="tb-info" id="ctInfo">Scaled to fit screen</span>
 </div>
 
 <!-- Job bar (shown when editing existing job) -->
@@ -401,7 +388,7 @@ canvas{display:block}
 <!-- ══ LEFT PANEL ══ -->
 <div class="step-panel">
 
-  <div style="padding:10px 12px 8px;font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:0.09em;color:#fff;background:#F47920;flex-shrink:0;display:flex;align-items:center;gap:7px">
+  <div class="rp-section-title">
     Designer steps
   </div>
 
@@ -595,6 +582,22 @@ canvas{display:block}
 
 <!-- ══ CANVAS AREA ══ -->
 <div class="canvas-area">
+
+  <!-- Canvas toolbar: view toggle + zoom, sits above the canvas -->
+  <div class="canvas-toolbar">
+    <div class="tb-view">
+      <button class="tb-vbtn active" id="stWorking" onclick="setViewMode('working')">Working</button>
+      <button class="tb-vbtn" id="stFull" onclick="setViewMode('full')">Full size</button>
+    </div>
+    <div class="ct-sep"></div>
+    <div class="zoom-group">
+      <div class="zoom-btn" onclick="zoomBy(-0.25)" title="Zoom out">−</div>
+      <span class="zoom-val" id="zoomVal">100%</span>
+      <div class="zoom-btn" onclick="zoomBy(0.25)" title="Zoom in">+</div>
+      <div class="zoom-btn" onclick="zoomReset()" style="font-size:10px;width:30px" title="Fit">Fit</div>
+    </div>
+    <span class="ct-info" id="ctInfo">Scaled to fit screen</span>
+  </div>
   <div class="canvas-spinner" id="canvasSpinner">
     <svg viewBox="0 0 36 36" fill="none" xmlns="http://www.w3.org/2000/svg">
       <circle cx="18" cy="18" r="14" stroke="#E8E6DE" stroke-width="4"/>
@@ -638,7 +641,7 @@ canvas{display:block}
   </div>
 
   <div class="layers-list" id="layersList">
-    <div style="padding:14px 10px;font-size:10px;color:#B4B2A9;text-align:center;line-height:1.5">No layers yet.<br>Upload artwork to begin.</div>
+    <div class="panel-empty">No layers yet.<br>Upload artwork to begin.</div>
   </div>
   <button class="lp-add-bottom" onclick="document.getElementById('fileIn').click()">
     <span style="font-size:14px;line-height:1">＋</span><span>Add layer</span>
@@ -960,12 +963,6 @@ function initDualSidedCanvas(){
       </div>
       <div class="canvas-side-label"><span>Side 2 — Inactive</span></div>
     </div>`;
-  document.getElementById('canvasStatus').style.display='none';
-  setDualActiveCanvas(activeSide);
-  const inactiveEl=document.getElementById('dualSide'+(activeSide===0?1:0));
-  if(inactiveEl) inactiveEl.onclick=()=>switchToSide(activeSide===0?1:0);
-  bindCanvasEvents(document.getElementById('mainCanvas'+activeSide));
-}
   document.getElementById('canvasStatus').style.display='none';
   setDualActiveCanvas(activeSide);
   const inactiveEl=document.getElementById('dualSide'+(activeSide===0?1:0));
@@ -1536,7 +1533,7 @@ function addLayer(name,img,srcB64,srcMime){
 function renderLayersList(){
   const list=document.getElementById('layersList');
   const layers=getLayers();
-  if(!layers.length){list.innerHTML='<div style="padding:14px 10px;font-size:10px;color:#B4B2A9;text-align:center;line-height:1.5">No layers yet.<br>Upload artwork to begin.</div>';return;}
+  if(!layers.length){list.innerHTML='<div class="panel-empty">No layers yet.<br>Upload artwork to begin.</div>';return;}
   list.innerHTML=layers.map(l=>{
     const sel=l.id===getActiveLayerId(),rotDeg=Math.round((l.rotation||0)*180/Math.PI);
     const flipStr=(l.flipX?'↔':'')+( l.flipY?'↕':'');
