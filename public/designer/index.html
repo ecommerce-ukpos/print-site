@@ -1825,10 +1825,33 @@ async function submitToArtworkList(){
         const errBody=await uploadResp.text();
         throw new Error('Storage upload failed ('+uploadResp.status+'): '+errBody);
       }
+       // Step 3: PATCH job with storage_path (lightweight JSON — safe through Vercel)
+     // Step 3: Calculate preflight score and PATCH job
       showToast('Linking file to job…');
+      const pfIds=['pfBleed','pfDpi','pfSafe','pfColour'];
+      const pfResults=pfIds.map(id=>{
+        const el=document.getElementById(id);
+        const state=el?el.dataset.pfState:'idle';
+        const label=el?el.querySelector('.pf-label')?.textContent||id:id;
+        const detail=el?el.querySelector('.pf-detail')?.textContent||'':'' ;
+        const val=el?el.querySelector('.pf-val')?.textContent||'':'' ;
+        return {id,label,status:state==='pass'?'pass':state==='fail'?'fail':state==='warn'?'warn':'info',headline:val,detail};
+      }).filter(r=>r.status!=='info');
+      const passed=pfResults.filter(r=>r.status==='pass').length;
+      const scorePct=pfResults.length?Math.round(passed/pfResults.length*100):null;
+      const overallStatus=pfResults.some(r=>r.status==='fail')?'fail':pfResults.some(r=>r.status==='warn')?'warn':'pass';
+      const now=new Date().toISOString();
       const patchResp=await fetch(`/api/job?id=${job.id}`,
         {method:'PATCH',headers:{'Content-Type':'application/json'},
-         body:JSON.stringify({storage_path:storagePath})});
+         body:JSON.stringify({
+           storage_path:storagePath,
+           score_pct:scorePct,
+           overall_status:overallStatus,
+           assessed_at:now,
+           results:pfResults,
+           sku:currentSku||null,
+           sku_name:currentSkuRow?currentSkuRow.sku_file||null:null
+         })});
       if(!patchResp.ok){
         const pe=await patchResp.text();
         throw new Error('Job link failed ('+patchResp.status+'): '+pe);
