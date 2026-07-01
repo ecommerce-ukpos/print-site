@@ -1,8 +1,8 @@
 <!DOCTYPE html>
 <!--
   ╔══════════════════════════════════════════════════════╗
-  ║  FILE 1 OF 3 — public/dashboard/index.html          ║
-  ║  UKPOS PrintSite — Artwork List                      ║
+  ║  FILE 2 OF 3 — public/designer/index.html           ║
+  ║  UKPOS PrintSite — Designer                          ║
   ║  Redesigned shell; all JS transplanted unchanged.    ║
   ╚══════════════════════════════════════════════════════╝
 -->
@@ -10,695 +10,2120 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Artwork List — UKPOS Print Site</title>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
+<title>Designer — UKPOS Print Site</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
 <style>
 /* ── Reset & base ── */
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
-body{font-family:'Inter',-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;background:#F2F1F6;color:#2C2C2A;min-height:100vh;font-size:13px;display:flex}
+body{font-family:'Inter',-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;background:#F2F1F6;color:#2C2C2A;height:100vh;display:flex;flex-direction:column;overflow:hidden;font-size:13px}
 
-/* ── Sidebar ── */
-.sidebar{width:52px;background:#fff;border-right:0.5px solid #D3D1C7;display:flex;flex-direction:column;align-items:flex-start;padding:12px 0;gap:2px;flex-shrink:0;overflow:hidden;transition:width 0.2s ease;position:fixed;top:0;left:0;bottom:0;z-index:50}
-.sidebar:hover{width:184px}
-.sb-logo{width:52px;height:40px;display:flex;align-items:center;justify-content:center;flex-shrink:0;margin-bottom:8px}
-.sb-logo-inner{width:28px;height:28px;background:#F47920;border-radius:7px;display:flex;align-items:center;justify-content:center;flex-shrink:0}
-.sb-logo-inner svg{width:16px;height:16px;fill:#fff}
-.sb-item{height:36px;display:flex;align-items:center;gap:10px;padding:0 14px;cursor:pointer;width:100%;white-space:nowrap;overflow:hidden;border-left:3px solid transparent;text-decoration:none}
-.sb-item:hover{background:#F2F1F6}
-.sb-item.active{background:#FFF0E6;border-left-color:#F47920}
-.sb-item svg,.sb-item i{font-size:17px;flex-shrink:0;width:20px;text-align:center;display:flex;align-items:center;justify-content:center}
-.sb-item.active .sb-icon{color:#F47920}
-.sb-item:not(.active) .sb-icon{color:#888780}
-.sb-icon{font-size:17px;flex-shrink:0;width:20px;text-align:center;font-style:normal}
-.sb-label{font-size:12px;font-weight:500;color:#2C2C2A;opacity:0;white-space:nowrap;pointer-events:none}
-.sb-item.active .sb-label{color:#C75E0A}
-.sidebar:hover .sb-label{opacity:1;transition:opacity 0.15s ease 0.05s}
-.sb-spacer{flex:1}
-.sb-divider{height:0.5px;background:#E8E6DE;margin:6px 10px;flex-shrink:0;width:calc(100% - 20px)}
+/* ══ TOP BAR ══ */
+.topbar{height:44px;background:#fff;border-bottom:0.5px solid #D3D1C7;display:flex;align-items:center;padding:0 14px;gap:8px;flex-shrink:0;z-index:20}
+.tb-back{width:26px;height:26px;border-radius:6px;border:0.5px solid #D3D1C7;background:#F2F1F6;display:flex;align-items:center;justify-content:center;color:#444441;cursor:pointer;flex-shrink:0;text-decoration:none;font-size:13px}
+.tb-back:hover{background:#E8E6DE}
+.tb-div{width:1px;height:18px;background:#D3D1C7;flex-shrink:0}
+.tb-ref{font-size:11px;font-weight:500;color:#5F5E5A;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:200px}
+.tb-sku{height:18px;padding:0 7px;background:#FFF0E6;border-radius:4px;font-size:10px;font-weight:600;color:#C75E0A;display:flex;align-items:center;flex-shrink:0}
+.tb-sp{flex:1}
+/* Undo buttons */
+.tb-undo-group{display:flex;gap:3px}
+.tb-undo-btn{width:26px;height:26px;border-radius:6px;border:1px solid #B4B2A9;background:#E8E6DE;display:flex;align-items:center;justify-content:center;color:#2C2C2A;cursor:pointer;font-size:12px}
+.tb-undo-btn:disabled{opacity:0.35;cursor:not-allowed}
+.tb-undo-btn:not(:disabled):hover{background:#D3D1C7}
+/* View toggle */
+.tb-view{display:flex;border:1px solid #888780;border-radius:6px;overflow:hidden;height:26px}
+.tb-vbtn{padding:0 10px;font-size:11px;font-weight:600;cursor:pointer;background:#D3D1C7;color:#2C2C2A;border:none;height:100%;font-family:'Inter',sans-serif}
+.tb-vbtn.active{background:#1A1A18;color:#fff}
+.tb-vbtn:not(.active):hover{background:#C4C2B8;color:#2C2C2A}
+/* Zoom */
+.zoom-group{display:flex;align-items:center;gap:3px}
+.z-btn{width:22px;height:22px;border-radius:5px;border:1px solid #B4B2A9;background:#D3D1C7;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:700;color:#2C2C2A;cursor:pointer}
+.z-btn:hover{background:#C4C2B8}
+.z-val{font-size:11px;font-weight:600;color:#2C2C2A;min-width:34px;text-align:center}
+.tb-info{font-size:10px;color:#888780;font-style:italic;white-space:nowrap}
 
-/* ── Main content ── */
-.main{flex:1;margin-left:52px;display:flex;flex-direction:column;min-height:100vh;min-width:0}
+/* ══ JOB BAR ══ */
+.job-bar{display:none;align-items:center;gap:16px;padding:6px 16px;background:#EEEDFE;border-bottom:0.5px solid #AFA9EC;font-size:12px;flex-shrink:0}
+.job-bar.show{display:flex}
+.jb-label{font-size:10px;color:#7F77DD;font-weight:600;text-transform:uppercase;letter-spacing:0.05em;margin-right:3px}
+.jb-val{color:#3C3489;font-weight:500}
+.jb-back{margin-left:auto;font-size:11px;color:#534AB7;text-decoration:none}
 
-/* ── Topbar ── */
-.topbar{height:52px;background:#fff;border-bottom:0.5px solid #D3D1C7;display:flex;align-items:center;padding:0 20px;gap:10px;position:sticky;top:0;z-index:40;flex-shrink:0}
-.topbar-title{font-size:15px;font-weight:600;color:#2C2C2A;letter-spacing:-0.01em;flex-shrink:0}
-.topbar-search{position:relative;flex:1;max-width:300px}
-.topbar-search input{width:100%;height:32px;border:0.5px solid #D3D1C7;border-radius:8px;background:#F2F1F6;padding:0 10px 0 32px;font-size:12px;font-family:'Inter',sans-serif;color:#2C2C2A;outline:none}
-.topbar-search input:focus{border-color:#F47920;background:#fff}
-.search-icon{position:absolute;left:10px;top:50%;transform:translateY(-50%);color:#888780;font-size:13px;pointer-events:none}
-.tb-spacer{flex:1}
-.btn-new{height:32px;padding:0 14px;border-radius:8px;border:none;background:#F47920;color:#fff;font-size:12px;font-weight:600;font-family:'Inter',sans-serif;cursor:pointer;display:flex;align-items:center;gap:6px;flex-shrink:0}
-.btn-new:hover{opacity:0.9}
-.btn-refresh{height:32px;padding:0 12px;border-radius:8px;border:0.5px solid #D3D1C7;background:#fff;color:#5F5E5A;font-size:12px;font-weight:500;font-family:'Inter',sans-serif;cursor:pointer;flex-shrink:0}
-.btn-refresh:hover{background:#F2F1F6}
-.btn-csv{height:32px;padding:0 12px;border-radius:8px;border:0.5px solid #D3D1C7;background:#fff;color:#5F5E5A;font-size:12px;font-weight:500;font-family:'Inter',sans-serif;cursor:pointer;flex-shrink:0}
-.btn-csv:hover{background:#F2F1F6}
+/* ══ WORKSPACE ══ */
+.workspace{display:flex;flex:1;overflow:hidden}
 
-/* ── Content padding ── */
-.content{padding:18px 20px;display:flex;flex-direction:column;gap:14px}
+/* ══ LEFT PANEL ══ */
+.step-panel{width:236px;flex-shrink:0;background:#fff;border-right:0.5px solid #D3D1C7;display:flex;flex-direction:column;overflow-y:auto;overflow-x:hidden}
+.step-panel::-webkit-scrollbar{width:3px}
+.step-panel::-webkit-scrollbar-thumb{background:#D3D1C7;border-radius:2px}
 
-/* ── Stats ── */
-.stats{display:grid;grid-template-columns:repeat(4,1fr);gap:10px}
-.stat{background:#fff;border-radius:12px;padding:14px 16px;border:0.5px solid #D3D1C7}
-.stat-label{font-size:10px;color:#888780;font-weight:600;text-transform:uppercase;letter-spacing:0.05em;margin-bottom:6px}
-.stat-value{font-size:22px;font-weight:600;letter-spacing:-0.02em;line-height:1;margin-bottom:4px}
-.stat-sub{font-size:10px;color:#888780;display:flex;align-items:center;gap:4px}
-.stat-dot{width:5px;height:5px;border-radius:50%;flex-shrink:0}
+/* Undo bar inside panel */
+.undo-bar{display:flex;align-items:center;gap:5px;padding:6px 12px;border-bottom:0.5px solid #E8E6DE;flex-shrink:0;background:#FAFAF8}
+.undo-btn{display:flex;align-items:center;gap:3px;padding:3px 8px;font-size:10px;border-radius:5px;border:1px solid #B4B2A9;background:#E8E6DE;color:#2C2C2A;cursor:pointer;font-family:'Inter',sans-serif;font-weight:600}
+.undo-btn:hover:not(:disabled){background:#D3D1C7}
+.undo-btn:disabled{opacity:0.35;cursor:not-allowed}
+.undo-label{font-size:9px;color:#888780;margin-left:auto;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;max-width:80px}
 
-/* ── Drop zone ── */
-.drop-banner{border:1.5px dashed #B4B2A9;border-radius:10px;padding:14px 18px;display:flex;align-items:center;gap:16px;cursor:pointer;background:#fff;transition:border-color 0.15s,background 0.15s;flex-shrink:0}
-.drop-banner:hover,.drop-banner.drag-over{border-color:#F47920;background:#FFF8F3}
-.drop-icon-wrap{width:40px;height:40px;border-radius:10px;background:#F2F1F6;display:flex;align-items:center;justify-content:center;flex-shrink:0;font-size:18px}
-.drop-banner.drag-over .drop-icon-wrap{background:#FFF0E6}
-.db-info{flex:1}
-.db-title{font-size:12px;font-weight:600;color:#2C2C2A;margin-bottom:3px}
-.db-sub{font-size:10px;color:#888780;margin-bottom:5px}
-.db-formats{display:flex;gap:4px;flex-wrap:wrap}
-.fmt-pill{font-size:9px;font-weight:600;padding:2px 6px;border-radius:4px;background:#F2F1F6;color:#5F5E5A;border:0.5px solid #D3D1C7}
-.db-or{font-size:11px;color:#B4B2A9;flex-shrink:0}
-.db-browse{height:30px;padding:0 14px;border-radius:7px;border:0.5px solid #D3D1C7;background:#fff;font-size:11px;font-weight:600;color:#5F5E5A;cursor:pointer;font-family:'Inter',sans-serif;flex-shrink:0;white-space:nowrap}
-.db-browse:hover{background:#F2F1F6}
+/* Step blocks */
+.step-block{border-bottom:0.5px solid #E8E6DE;flex-shrink:0}
+.step-header{display:flex;align-items:center;gap:8px;padding:8px 12px;cursor:pointer;user-select:none}
+.step-header:hover{background:#FAFAF8}
+/* Step pill states — all inline to prevent cascade override */
+.step-num{width:20px;height:20px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:9px;font-weight:700;flex-shrink:0;transition:all 0.15s}
+.step-title{font-size:11px;font-weight:500;flex:1}
+.step-chevron{font-size:10px;color:#888780;transition:transform 0.15s}
+.step-block.active .step-chevron{transform:rotate(180deg)}
+.step-body{display:none;padding:8px 12px 12px}
+.step-block.active .step-body{display:block}
+.step-spacer{flex:1;min-height:8px}
 
-/* ── Controls / filter bar ── */
-.controls-bar{display:flex;align-items:center;gap:8px;flex-wrap:wrap}
-.controls-label{font-size:10px;color:#888780;font-weight:700;text-transform:uppercase;letter-spacing:0.06em;margin-right:2px;flex-shrink:0}
-.col-pill{padding:3px 10px;font-size:11px;border-radius:20px;cursor:pointer;border:0.5px solid #D3D1C7;background:#fff;color:#5F5E5A;white-space:nowrap;font-family:'Inter',sans-serif;font-weight:500}
-.col-pill.on{background:#FFF0E6;color:#C75E0A;border-color:#FAC795}
-.col-pill:hover{background:#F2F1F6}
-.col-pill.on:hover{background:#FFE8D4}
+/* SKU chip */
+.sku-summary{display:none;margin:0 12px 2px;padding:6px 9px;background:#FFF3EB;border:0.5px solid #FAC795;border-radius:7px;font-size:10px;cursor:pointer}
+.sku-summary.show{display:block}
+.sku-summary-top{display:flex;align-items:center;gap:5px;margin-bottom:2px}
+.sku-summary-code{font-weight:700;font-size:9px;background:#F47920;color:#fff;padding:1px 5px;border-radius:3px}
+.sku-summary-name{color:#7A3A00;font-weight:500;flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-size:10px}
+.sku-summary-dims{color:#F47920;font-size:9px}
+.sku-summary-hint{font-size:9px;color:#C87030;margin-top:2px}
 
-/* ── Table ── */
-.table-card{background:#fff;border-radius:12px;border:0.5px solid #D3D1C7;overflow:hidden}
-.table-header{display:flex;align-items:center;justify-content:space-between;padding:12px 16px;border-bottom:0.5px solid #E8E6DE}
-.table-header-title{font-size:12px;font-weight:600;color:#2C2C2A}
-.table-wrap{overflow-x:auto}
-table{width:100%;border-collapse:collapse;min-width:900px}
-thead tr{border-bottom:0.5px solid #E8E6DE}
-th{padding:8px 10px;text-align:left;font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:0.06em;color:#888780;white-space:nowrap;background:#FAFAF8}
-td{padding:9px 10px;border-bottom:0.5px solid #F1EFE8;vertical-align:middle}
-tr:last-child td{border-bottom:none}
-tbody tr:hover td{background:#FAFAF8}
+/* SKU search */
+.sku-search-wrap{position:relative;margin-bottom:8px}
+.sku-search-input{width:100%;font-size:12px;padding:6px 9px;border:0.5px solid #D3D1C7;border-radius:7px;background:#FAFAF8;color:#2C2C2A;font-family:'Inter',sans-serif;transition:border-color 0.15s;outline:none}
+.sku-search-input:focus{border-color:#F47920}
+.sku-search-dd{display:none;position:absolute;top:calc(100% + 3px);left:0;right:0;background:#fff;border:0.5px solid #D3D1C7;border-radius:8px;box-shadow:0 4px 16px rgba(0,0,0,0.1);max-height:220px;overflow-y:auto;z-index:120}
+.sku-search-dd.show{display:block}
+.sku-dd-opt{padding:6px 10px;font-size:11px;cursor:pointer;border-bottom:0.5px solid #F1EFE8;display:flex;flex-direction:column;gap:1px}
+.sku-dd-opt:last-child{border-bottom:none}
+.sku-dd-opt:hover,.sku-dd-opt.hi{background:#FFF3EB}
+.sku-dd-family{font-weight:700;color:#2C2C2A;font-size:10px}
+.sku-dd-name{color:#5F5E5A;font-size:10px}
+.sku-dd-dims{color:#B4B2A9;font-size:9px}
+.sku-dd-empty,.sku-loading{padding:10px;font-size:11px;color:#888780;text-align:center}
 
-/* ── Badges ── */
-.badge{display:inline-block;font-size:9px;font-weight:700;padding:2px 6px;border-radius:4px;text-transform:uppercase;letter-spacing:0.03em}
-.badge-pdf{background:#FCEBEB;color:#791F1F}
-.badge-eps{background:#F0EEFF;color:#4B35B0}
-.badge-png{background:#E1F5EE;color:#0F6E56}
-.badge-jpg,.badge-jpeg{background:#FAEEDA;color:#633806}
-.badge-manual,.badge-csv,.badge-api{background:#F2F1F6;color:#5F5E5A}
-.badge-designer{background:#FFF0E6;color:#C75E0A}
-.sku-badge{display:inline-flex;align-items:center;height:18px;padding:0 7px;background:#FFF0E6;border-radius:4px;font-size:9px;font-weight:600;color:#C75E0A}
+/* Spec grid */
+.sku-spec-grid{display:grid;grid-template-columns:1fr 1fr;gap:4px;margin-bottom:6px}
+.sku-spec-cell{background:#FFF6F0;border:0.5px solid #FDDCBF;border-radius:6px;padding:5px 7px}
+.sku-spec-key{font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:0.05em;color:#C75E0A}
+.sku-spec-val{font-size:11px;font-weight:700;color:#2C2C2A;margin-top:2px}
+.flag-pills{display:flex;flex-wrap:wrap;gap:3px;margin-top:5px}
+.flag-pill{font-size:9px;font-weight:600;padding:1px 6px;border-radius:3px;background:#FAEEDA;color:#7A3A00;border:0.5px solid #FAC775}
 
-/* ── Score ring ── */
-.score-wrap{display:inline-flex;position:relative;width:34px;height:34px;flex-shrink:0}
-.score-wrap svg{transform:rotate(-90deg);width:34px;height:34px}
-.score-num{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;font-size:8px;font-weight:700;font-family:'Inter',sans-serif}
+/* Upload drop */
+.upload-drop{border:1.5px dashed #B4B2A9;border-radius:8px;padding:16px 10px;text-align:center;cursor:pointer;background:#FAFAF8;transition:border-color 0.15s,background 0.15s}
+.upload-drop:hover,.upload-drop.drag-over{border-color:#F47920;background:#FFF8F3}
+.upload-drop .ud-icon{font-size:20px;display:block;margin-bottom:5px}
+.upload-drop strong{font-size:11px;color:#2C2C2A;display:block;margin-bottom:2px}
+.ud-sub{font-size:10px;color:#888780;margin-top:2px}
+.ud-formats{font-size:9px;color:#B4B2A9;margin-top:3px}
 
-/* ── Check dots ── */
-.check-cell{text-align:center}
-.ck{width:8px;height:8px;border-radius:50%;display:inline-block}
-.ck-pass{background:#639922}
-.ck-warn{background:#EF9F27}
-.ck-fail{background:#E24B4A}
-.ck-none{background:#D3D1C7}
+/* Background swatches */
+.bg-swatches{display:flex;gap:4px;flex-wrap:wrap;margin-bottom:7px}
+.bg-sw{width:20px;height:20px;border-radius:4px;border:1.5px solid rgba(0,0,0,0.1);cursor:pointer;transition:transform 0.1s;flex-shrink:0}
+.bg-sw:hover{transform:scale(1.15)}
+.bg-sw.active{border-color:#F47920;box-shadow:0 0 0 2px #FAC795}
+.bg-transparent{background:repeating-conic-gradient(#ccc 0% 25%,#fff 0% 50%) 0 0/10px 10px}
+.bg-custom-row{display:flex;align-items:center;gap:6px;font-size:10px;color:#5F5E5A}
+.bg-custom-row input[type=color]{width:28px;height:22px;border:0.5px solid #D3D1C7;border-radius:4px;cursor:pointer;padding:1px}
+.bg-none-btn{font-size:10px;color:#A32D2D;background:#FCEBEB;border:0.5px solid #F09595;border-radius:5px;padding:2px 7px;cursor:pointer;font-family:'Inter',sans-serif;white-space:nowrap}
+.bg-none-btn:hover{background:#F7D0D0}
 
-/* ── Status dot (reference column) ── */
-.status-dot{display:inline-block;width:7px;height:7px;border-radius:50%;margin-right:5px;flex-shrink:0}
-.dot-pass{background:#639922}
-.dot-warn{background:#EF9F27}
-.dot-fail{background:#E24B4A}
-.dot-pending{background:#B4B2A9}
+/* Active layer tag */
+.active-layer-tag{display:none;align-items:center;gap:5px;padding:4px 7px;background:#FFF8E6;border:0.5px solid #FAC775;border-radius:5px;font-size:10px;color:#412402;margin-bottom:7px;font-weight:600}
+.active-layer-tag.show{display:flex}
+.alt-dot{width:6px;height:6px;border-radius:50%;background:#D4890A;flex-shrink:0}
 
-/* ── Ref / filename cells ── */
-.ref-cell{display:flex;align-items:center;max-width:150px}
-.ref-text{overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-weight:500;color:#2C2C2A;font-size:12px}
-.filename-cell{color:#5F5E5A;max-width:130px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-size:11px}
-.date-cell{color:#888780;white-space:nowrap;font-size:11px}
-.source-cell{font-size:10px;color:#888780}
+/* Rotation dial */
+.dial-wrap{display:flex;align-items:center;gap:10px;margin-bottom:8px}
+.dial-svg-wrap{flex-shrink:0;cursor:crosshair;touch-action:none}
+.dial-right{flex:1;display:flex;flex-direction:column;gap:5px}
+.dial-readout{font-size:16px;font-weight:700;color:#F47920;text-align:center;letter-spacing:-0.02em}
+.dial-presets{display:grid;grid-template-columns:1fr 1fr;gap:3px}
+/* Rotation preset buttons — inline in HTML to prevent cascade override */
 
-/* ── Score progress bar (legacy — kept for renderRow) ── */
-.score-cell{font-size:12px;font-weight:500}
-.score-high{color:#173404}.score-mid{color:#412402}.score-low{color:#501313}
-.progress-bar{height:3px;background:#E8E6DE;border-radius:2px;overflow:hidden;margin-top:3px;width:60px}
-.progress-fill{height:100%;border-radius:2px}
-.muted{color:#B4B2A9}
-.spinner-sm{display:inline-block;width:12px;height:12px;border:2px solid #D3D1C7;border-top-color:#F47920;border-radius:50%;animation:spin 0.6s linear infinite}
+/* Controls */
+.ctrl-row{display:flex;flex-direction:column;gap:3px;margin-bottom:8px}
+.ctrl-lbl{display:flex;justify-content:space-between;font-size:10px;color:#5F5E5A;font-weight:500}
+.ctrl-val{color:#2C2C2A;font-weight:700}
+input[type=range]{width:100%;cursor:pointer;accent-color:#F47920}
+.btn-row{display:flex;gap:4px;margin-bottom:5px}
+/* mini-btn all inline in HTML */
+.flip-row{display:flex;gap:4px;margin-bottom:6px}
+.snap-toggle{display:flex;align-items:center;gap:5px;font-size:10px;color:#5F5E5A;cursor:pointer;user-select:none;margin-bottom:4px}
+.snap-toggle input[type=checkbox]{accent-color:#F47920;width:11px;height:11px;cursor:pointer;flex-shrink:0}
+.pos-info{font-size:9px;color:#888780}
+
+/* Opacity rows */
+.op-row{display:flex;align-items:center;gap:6px;margin-bottom:5px}
+.op-lbl{font-size:10px;color:#5F5E5A;min-width:50px}
+.op-row input[type=range]{flex:1}
+.op-val{font-size:10px;font-weight:700;color:#2C2C2A;min-width:26px;text-align:right}
+
+/* Template rotate row */
+.tmpl-rotate-row{display:flex;align-items:center;gap:5px;padding:6px 0;border-top:0.5px solid #F1EFE8;margin-top:4px}
+.tmpl-rotate-label{font-size:10px;color:#5F5E5A;flex:1}
+
+/* ══ CANVAS AREA ══ */
+.canvas-area{flex:1;background:#EEEDEA;display:flex;flex-direction:column;overflow:hidden;min-width:0;position:relative}
+
+/* Canvas toolbar */
+.canvas-toolbar{display:flex;align-items:center;gap:7px;padding:5px 12px;background:#fff;border-bottom:0.5px solid #D3D1C7;flex-shrink:0;z-index:5}
+.size-toggle{display:flex;border:1px solid #888780;border-radius:6px;overflow:hidden}
+.st-btn{padding:3px 10px;font-size:11px;font-weight:600;cursor:pointer;background:#D3D1C7;color:#2C2C2A;border:none;font-family:'Inter',sans-serif}
+.st-btn.active{background:#1A1A18;color:#fff}
+.st-btn:not(.active):hover{background:#C4C2B8}
+.ct-sep{width:1px;height:18px;background:#D3D1C7}
+.zoom-group{display:flex;align-items:center;gap:3px}
+.zoom-btn{width:24px;height:24px;border-radius:5px;border:1px solid #B4B2A9;background:#D3D1C7;color:#2C2C2A;cursor:pointer;font-size:13px;display:flex;align-items:center;justify-content:center;font-weight:700}
+.zoom-btn:hover{background:#C4C2B8}
+.zoom-val{font-size:11px;font-weight:600;color:#2C2C2A;min-width:36px;text-align:center}
+.ct-info{font-size:10px;color:#888780;margin-left:auto;font-style:italic;white-space:nowrap}
+
+/* Canvas scroll */
+.canvas-scroll{flex:1;overflow:auto;display:flex;align-items:flex-start;justify-content:center;padding:44px 20px 32px;gap:0}
+.canvas-scroll.single-sided{padding:52px 32px 32px}
+
+/* Dual sided */
+.dual-side{flex:1;position:relative;display:flex;flex-direction:column;align-items:center;min-width:0}
+.dual-side.side-inactive{cursor:pointer}
+.dual-divider{width:1px;background:#D3D1C7;flex-shrink:0;align-self:stretch;margin:0}
+.dual-side.side-inactive::after{content:'';position:absolute;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,0.30);pointer-events:none;z-index:2}
+.canvas-side-label{position:absolute;bottom:14px;left:0;right:0;display:flex;justify-content:center;pointer-events:none;z-index:3}
+.canvas-side-label span{font-size:17px;font-weight:700;padding:6px 20px;border-radius:30px;color:#fff;letter-spacing:0.01em;box-shadow:0 2px 8px rgba(0,0,0,0.25);white-space:nowrap}
+.dual-side.side-active .canvas-side-label span{background:#3B6D11}
+.dual-side.side-inactive .canvas-side-label span{background:#A32D2D}
+
+/* Canvas elements */
+.canvas-outer{position:relative;flex-shrink:0}
+.canvas-transform{transform-origin:top left;position:relative;z-index:2}
+canvas{display:block}
+.main-canvas{box-shadow:0 3px 18px rgba(0,0,0,0.22);position:relative;z-index:2}
+.snap-canvas{position:absolute;top:0;left:0;pointer-events:none}
+
+/* Status pill */
+.canvas-status{position:absolute;top:52px;left:50%;transform:translateX(-50%);font-size:14px;font-weight:700;padding:8px 20px;border-radius:28px;white-space:nowrap;pointer-events:none;letter-spacing:-0.01em;box-shadow:0 2px 10px rgba(0,0,0,0.15);z-index:10}
+.cs-idle{background:rgba(44,44,42,0.65);color:#fff}
+.cs-ok{background:rgba(59,109,17,0.92);color:#fff}
+.cs-warn{background:rgba(239,159,39,0.92);color:#fff}
+
+/* Copy design button */
+.copy-design-btn{display:none;position:absolute;top:54px;z-index:10;background:#F47920;color:#fff;border:none;border-radius:7px;padding:5px 12px;font-size:11px;font-weight:700;cursor:pointer;white-space:nowrap;box-shadow:0 2px 10px rgba(0,0,0,0.2);letter-spacing:0.01em;transition:background 0.12s}
+.copy-design-btn:hover{background:#C75E0A}
+.copy-design-btn.show{display:block}
+.copy-design-btn.side1{right:calc(50% + 8px);left:auto}
+.copy-design-btn.side2{left:calc(50% + 8px);right:auto}
+
+/* Guides float */
+.guides-float{position:absolute;bottom:14px;left:14px;background:rgba(255,255,255,0.97);border:0.5px solid #D3D1C7;border-radius:8px;padding:4px 10px;font-size:10px;pointer-events:none;z-index:8;box-shadow:0 2px 8px rgba(0,0,0,0.08);display:none;flex-direction:row;align-items:center;gap:12px}
+.guides-float.show-guides{display:flex}
+.gf-item{display:flex;align-items:center;gap:4px;white-space:nowrap}
+.gf-dot{width:8px;height:8px;border-radius:50%;flex-shrink:0}
+.gf-label{color:#2C2C2A;font-weight:500;font-size:10px}
+.gf-sub{color:#888780;font-size:9px}
+
+/* Bleed callout */
+.bleed-callout{position:absolute;bottom:22px;left:50%;transform:translateX(-50%);background:rgba(244,121,32,0.93);color:#fff;font-size:11px;font-weight:600;padding:5px 14px;border-radius:20px;white-space:nowrap;pointer-events:none;display:none;align-items:center;gap:5px;z-index:9}
+.bleed-callout.show{display:flex}
+
+/* Canvas spinner */
+.canvas-spinner{display:none;position:absolute;inset:0;background:rgba(196,196,192,0.55);z-index:20;align-items:center;justify-content:center;pointer-events:none}
+.canvas-spinner.active{display:flex}
+.canvas-spinner svg{width:36px;height:36px;animation:spin 0.7s linear infinite}
 @keyframes spin{to{transform:rotate(360deg)}}
 
-/* ── Action buttons ── */
-.actions-cell{display:flex;align-items:center;gap:4px;white-space:nowrap}
-.act-btn{width:26px;height:26px;border-radius:7px;display:inline-flex;align-items:center;justify-content:center;cursor:pointer;border:none;font-size:12px;flex-shrink:0;font-family:'Inter',sans-serif}
-/* keep legacy text button classes for renderRow compatibility */
-.view-btn{padding:4px 10px;font-size:11px;border-radius:6px;cursor:pointer;border:0.5px solid #D3D1C7;background:#F2F1F6;color:#2C2C2A;font-weight:500;font-family:'Inter',sans-serif}
-.view-btn:hover{background:#E8E6DE}
-.design-btn{padding:4px 10px;font-size:11px;border-radius:6px;cursor:pointer;border:none;background:#F47920;color:#fff;font-weight:600;font-family:'Inter',sans-serif}
-.design-btn:hover{opacity:0.9}
-.del-btn{padding:4px 8px;font-size:11px;border-radius:6px;cursor:pointer;border:0.5px solid #F09595;background:#FCEBEB;color:#501313;font-weight:500;font-family:'Inter',sans-serif}
-.del-btn:hover{background:#F7D0D0}
+/* Template iframe */
+.tmpl-iframe-wrap{position:absolute;top:0;left:0;pointer-events:none;overflow:hidden;z-index:0;mix-blend-mode:multiply}
+.tmpl-iframe-wrap iframe{width:100%;height:100%;border:none;display:block}
 
-/* ── Pagination ── */
-.pagination{display:flex;align-items:center;gap:8px;flex-wrap:wrap;padding:14px 16px;border-top:0.5px solid #E8E6DE}
-.pg-info{font-size:11px;color:#888780;margin-right:auto}
-.pg-size{display:flex;align-items:center;gap:6px;font-size:11px;color:#5F5E5A}
-.pg-size select{font-size:11px;padding:3px 7px;border:0.5px solid #D3D1C7;border-radius:6px;background:#fff;cursor:pointer;font-family:'Inter',sans-serif}
-.pg-btn{padding:4px 10px;font-size:11px;border-radius:6px;cursor:pointer;border:0.5px solid #D3D1C7;background:#fff;color:#2C2C2A;font-family:'Inter',sans-serif}
-.pg-btn:hover{background:#F2F1F6}
-.pg-btn:disabled{opacity:0.4;cursor:not-allowed}
-#pgPages{font-size:11px;color:#5F5E5A}
+/* Panel side tag */
+.panel-side-tag{display:inline-block;margin-left:6px;font-size:9px;font-weight:700;padding:1px 6px;border-radius:3px;background:#185FA5;color:#fff;letter-spacing:0.03em;vertical-align:middle}
 
-/* ── Empty state ── */
-.empty-state{padding:48px 32px;text-align:center;color:#888780}
-.empty-state .es-icon{font-size:28px;margin-bottom:10px}
-.empty-state p{font-size:13px}
+/* ══ RIGHT PANEL ══ */
+.right-panel{width:232px;flex-shrink:0;border-left:0.5px solid #D3D1C7;background:#fff;display:flex;flex-direction:column;overflow:hidden}
+.rp-side-banner{display:none;background:#F47920;color:#fff;padding:6px 12px;font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:0.1em;flex-shrink:0}
+.rp-side-banner.show{display:block}
+.rp-section-title{padding:8px 12px 5px;font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:0.07em;color:#888780;flex-shrink:0;display:flex;align-items:center;justify-content:space-between}
 
-/* ── Delete modal ── */
-.modal-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,0.45);z-index:100;align-items:center;justify-content:center}
-.modal-overlay.show{display:flex}
-.modal{background:#fff;border-radius:14px;padding:28px;width:380px;max-width:90vw;box-shadow:0 20px 60px rgba(0,0,0,0.15)}
-.modal h2{font-size:16px;font-weight:600;margin-bottom:8px;color:#2C2C2A}
-.modal p{font-size:13px;color:#5F5E5A;margin-bottom:16px;line-height:1.5}
-.modal-ref{font-weight:600;color:#2C2C2A}
-.modal input{width:100%;font-size:13px;padding:8px 10px;border:0.5px solid #D3D1C7;border-radius:8px;margin-bottom:16px;font-family:'Inter',sans-serif;outline:none}
-.modal input:focus{border-color:#F47920}
-.modal input.error{border-color:#E24B4A}
-.modal-actions{display:flex;gap:8px;justify-content:flex-end}
-.mbtn{padding:7px 14px;border-radius:8px;font-size:12px;font-weight:600;cursor:pointer;border:0.5px solid #D3D1C7;background:#fff;color:#2C2C2A;font-family:'Inter',sans-serif}
-.mbtn:hover{background:#F2F1F6}
-.mbtn-danger{background:#FCEBEB;color:#501313;border-color:#F09595}
-.mbtn-danger:hover{background:#F7D0D0}
-.mbtn-danger:disabled{background:#F2F1F6;color:#B4B2A9;border-color:#D3D1C7;cursor:not-allowed}
+/* Layers */
+.layers-list{flex:0 0 auto;max-height:180px;overflow-y:auto;border-bottom:0.5px solid #D3D1C7}
+.layer-item{display:flex;align-items:center;gap:5px;padding:6px 10px;border-bottom:0.5px solid #F1EFE8;cursor:pointer;user-select:none;border-left:3px solid transparent}
+.layer-item:hover{background:#FAFAF8}
+.layer-item.selected{background:#FFF3EB;border-left-color:#F47920}
+.layer-item.hidden-layer{opacity:0.4}
+.li-drag{color:#D3D1C7;font-size:13px;cursor:grab;flex-shrink:0}
+.li-thumb{width:26px;height:26px;border-radius:4px;flex-shrink:0;border:0.5px solid #D3D1C7;background:#F1EFE8;display:block}
+.li-info{flex:1;min-width:0}
+.li-name{font-size:10px;font-weight:500;color:#2C2C2A;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.li-meta{font-size:9px;color:#888780;margin-top:1px}
+.li-btns{display:flex;gap:1px}
+.li-btn{font-size:13px;cursor:pointer;color:#B4B2A9;background:none;border:none;padding:2px;border-radius:4px;line-height:1}
+.li-btn:hover{background:#F1EFE8;color:#2C2C2A}
+.li-btn.del:hover{background:#FCEBEB;color:#E24B4A}
+.li-btn.vis-on{color:#F47920}
 
-/* ── Toast ── */
-.toast{position:fixed;bottom:24px;left:50%;transform:translateX(-50%);background:#2C2C2A;color:#fff;padding:9px 18px;border-radius:8px;font-size:12px;font-weight:500;opacity:0;transition:opacity 0.2s;pointer-events:none;z-index:999;white-space:nowrap}
+/* Add layer button */
+.lp-add-bottom{display:flex;align-items:center;justify-content:center;gap:6px;padding:8px;cursor:pointer;font-size:11px;font-weight:600;color:#C75E0A;background:#FFF3EB;border:none;border-bottom:1.5px dashed #FAC795;width:100%;transition:background 0.12s;flex-shrink:0}
+.lp-add-bottom:hover{background:#FAC795;color:#7A3A00}
+
+/* Fixed layers */
+.lp-fixed{padding:6px 10px;border-bottom:0.5px solid #D3D1C7;background:#FAFAF8;flex-shrink:0}
+.lp-fixed-title{font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:0.07em;color:#888780;margin-bottom:4px}
+.lp-fixed-row{display:flex;align-items:center;gap:5px;padding:2px 0;font-size:10px;color:#5F5E5A}
+.lp-fixed-dot{width:6px;height:6px;border-radius:50%;flex-shrink:0}
+.lp-fixed-meta{margin-left:auto;font-size:9px;color:#888780}
+
+/* Preflight */
+.preflight-section{flex:1;overflow-y:auto;padding:8px 10px}
+.preflight-section::-webkit-scrollbar{width:2px}
+.preflight-section::-webkit-scrollbar-thumb{background:#D3D1C7}
+.pf-title{font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:0.08em;color:#888780;margin-bottom:7px}
+.pf-item{border-radius:7px;padding:7px 9px;margin-bottom:5px;border:0.5px solid transparent}
+.pf-item.pass{background:#EAF3DE;border-color:#C0DD97}
+.pf-item.warn{background:#FAEEDA;border-color:#FAC775}
+.pf-item.fail{background:#FCEBEB;border-color:#F09595}
+.pf-item.idle{background:#F7F6F2;border-color:#D3D1C7}
+.pf-item-top{display:flex;align-items:center;gap:6px}
+.pf-dot{width:7px;height:7px;border-radius:50%;flex-shrink:0}
+.pf-dot.pass{background:#639922}.pf-dot.warn{background:#D4890A}.pf-dot.fail{background:#C0392B}.pf-dot.idle{background:#B4B2A9}
+.pf-label{font-size:11px;font-weight:600;flex:1}
+.pf-item.pass .pf-label,.pf-item.pass .pf-val,.pf-item.pass .pf-detail{color:#173404}
+.pf-item.warn .pf-label,.pf-item.warn .pf-val,.pf-item.warn .pf-detail{color:#412402}
+.pf-item.fail .pf-label,.pf-item.fail .pf-val,.pf-item.fail .pf-detail{color:#501313}
+.pf-item.idle .pf-label,.pf-item.idle .pf-val,.pf-item.idle .pf-detail{color:#5F5E5A}
+.pf-val{font-size:10px;font-weight:700}
+.pf-detail{font-size:10px;margin-top:2px;line-height:1.4}
+.pf-override{display:none;align-items:center;gap:5px;margin-top:6px;padding-top:6px;border-top:0.5px solid #FAC775}
+.pf-item.warn .pf-override{display:flex}
+.pf-override input[type=checkbox]{accent-color:#D4890A;width:11px;height:11px;cursor:pointer;flex-shrink:0}
+.pf-override label{font-size:9px;color:#412402;cursor:pointer;line-height:1.35;user-select:none}
+.pf-help{display:none;margin-top:6px;padding-top:6px;border-top:0.5px solid #F09595}
+.pf-item.warn .pf-help,.pf-item.fail .pf-help{display:block}
+.pf-item.warn .pf-help{border-top-color:#FAC775}
+.pf-help-btn{width:100%;padding:4px 8px;font-size:10px;font-weight:600;border-radius:5px;cursor:pointer;border:0.5px solid #F09595;background:#fff;color:#501313;text-align:left;font-family:'Inter',sans-serif}
+.pf-item.warn .pf-help-btn{border-color:#FAC775;color:#412402}
+.pf-help-btn:hover{opacity:0.75}
+.pf-help-btn-ai{background:#F47920;color:#fff;border-color:#F47920}
+.pf-item.warn .pf-help-btn-ai{background:#F47920;color:#fff;border-color:#F47920}
+.pf-help-btn-ai:hover{opacity:0.88}
+.pf-help-btn-ai:disabled{background:#D3D1C7;border-color:#D3D1C7;cursor:not-allowed;opacity:1}
+
+/* Action buttons */
+.rp-actions{padding:9px 10px;border-top:0.5px solid #D3D1C7;display:flex;flex-direction:column;gap:6px;flex-shrink:0}
+.rp-btn{width:100%;padding:8px 12px;font-size:12px;border-radius:8px;cursor:pointer;border:0.5px solid #D3D1C7;background:#fff;color:#5F5E5A;transition:background 0.12s;text-align:center;display:block;text-decoration:none;font-family:'Inter',sans-serif;font-weight:500}
+.rp-btn:hover{background:#F2F1F6}
+.rp-btn-blue{background:#185FA5;color:#fff;border-color:#185FA5}
+.rp-btn-blue:hover{opacity:0.88}
+.rp-btn-blue:disabled{background:#D3D1C7;border-color:#D3D1C7;color:#888780;cursor:not-allowed}
+.rp-btn-green{background:#3B6D11;color:#fff;border-color:#3B6D11}
+.rp-btn-green:hover{opacity:0.88}
+.rp-btn-green:disabled{background:#D3D1C7;border-color:#D3D1C7;color:#888780;cursor:not-allowed}
+
+/* Upscale modal */
+.upscale-modal-bg{display:none;position:fixed;inset:0;background:rgba(0,0,0,0.6);z-index:500;align-items:center;justify-content:center;padding:20px}
+.upscale-modal-bg.open{display:flex}
+.upscale-modal{background:#fff;border-radius:14px;width:60%;max-width:860px;min-width:520px;max-height:90vh;overflow-y:auto;box-shadow:0 12px 60px rgba(0,0,0,0.35);display:flex;flex-direction:column}
+.upscale-modal-header{display:flex;align-items:center;justify-content:space-between;padding:20px 26px 16px;border-bottom:1.5px solid #F47920;flex-shrink:0}
+.upscale-modal-header h2{font-size:17px;font-weight:600;color:#2C2C2A;margin:0}
+.upscale-modal-close{background:none;border:none;font-size:24px;cursor:pointer;color:#888780;line-height:1;padding:0 4px}
+.upscale-modal-close:hover{color:#2C2C2A}
+.upscale-modal-body{padding:20px 26px;display:flex;flex-direction:column;gap:14px}
+.upscale-modal-intro{font-size:13px;color:#5F5E5A;line-height:1.6;margin:0}
+.upscale-card{border:0.5px solid #D3D1C7;border-radius:10px;overflow:hidden;box-shadow:0 2px 8px rgba(0,0,0,0.05)}
+.upscale-card-head{display:flex;align-items:center;gap:12px;padding:12px 16px;background:#F7F6F2;border-bottom:0.5px solid #D3D1C7}
+.upscale-card-logo{width:34px;height:34px;border-radius:7px;object-fit:contain;background:#fff;padding:4px;border:0.5px solid #D3D1C7;flex-shrink:0}
+.upscale-card-logo-placeholder{width:34px;height:34px;border-radius:7px;background:#E8E6DE;flex-shrink:0;display:flex;align-items:center;justify-content:center;font-size:15px}
+.upscale-card-head-text{flex:1;min-width:0}
+.upscale-card-name{font-size:14px;font-weight:700;color:#2C2C2A;display:block}
+.upscale-card-badge{display:inline-block;font-size:10px;font-weight:700;padding:2px 8px;border-radius:20px;margin-top:3px;white-space:nowrap}
+.badge-free{background:#EAF3DE;color:#3B6D11;border:0.5px solid #C0DD97}
+.badge-freemium{background:#EEF5FF;color:#185FA5;border:0.5px solid #B5D4F4}
+.badge-techy{background:#F3EEFF;color:#6B3FA0;border:0.5px solid #D0B8F8}
+.badge-quick{background:#FFF3E8;color:#923D00;border:0.5px solid #FAC775}
+.upscale-card-body{padding:12px 16px;display:flex;flex-direction:column;gap:8px}
+.upscale-card-desc{font-size:12px;color:#2C2C2A;line-height:1.6;margin:0}
+.upscale-card-pros-cons{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.upscale-pros{background:#EAF3DE;border:0.5px solid #C0DD97;border-radius:7px;padding:9px 11px}
+.upscale-cons{background:#FCEBEB;border:0.5px solid #F09595;border-radius:7px;padding:9px 11px}
+.upscale-pros-title{font-size:11px;font-weight:700;color:#173404;margin:0 0 5px}
+.upscale-cons-title{font-size:11px;font-weight:700;color:#501313;margin:0 0 5px}
+.upscale-pros ul,.upscale-cons ul{margin:0;padding:0 0 0 13px;list-style:disc}
+.upscale-pros ul li,.upscale-cons ul li{font-size:11px;line-height:1.55;color:#2C2C2A;padding:1px 0}
+.upscale-card-link{display:inline-block;margin-top:3px;padding:7px 14px;font-size:12px;font-weight:600;border-radius:6px;background:#F47920;color:#fff;text-decoration:none;border:none;cursor:pointer;align-self:flex-start;font-family:'Inter',sans-serif}
+.upscale-card-link:hover{opacity:0.88}
+
+/* Toast */
+.toast{position:fixed;bottom:20px;left:50%;transform:translateX(-50%);background:#2C2C2A;color:#fff;padding:8px 16px;border-radius:8px;font-size:12px;font-weight:500;opacity:0;transition:opacity 0.2s;pointer-events:none;z-index:999;white-space:nowrap}
 .toast.show{opacity:1}
-
-/* ── Hidden file inputs ── */
-input[type=file]{display:none}
 </style>
 </head>
 <body>
 
-<!-- ══ SIDEBAR ══ -->
-<nav class="sidebar" id="sidebar">
-  <div class="sb-logo">
-    <div class="sb-logo-inner">
-      <svg viewBox="0 0 24 24"><path d="M3 6h18v2H3zm0 5h18v2H3zm0 5h18v2H3z"/></svg>
+<!-- ══ TOP BAR ══ -->
+<div class="topbar">
+  <a class="tb-back" href="/dashboard" title="Back to artwork list">←</a>
+  <div class="tb-div"></div>
+  <span class="tb-ref" id="topbarRef">Designer</span>
+  <span class="tb-sku" id="topbarSku" style="display:none"></span>
+  <div class="tb-sp"></div>
+  <!-- Undo/redo mirrored in topbar -->
+  <div class="tb-undo-group">
+    <button class="tb-undo-btn" id="undoBtn" onclick="undo()" disabled title="Undo (Ctrl+Z)">↩</button>
+    <button class="tb-undo-btn" id="redoBtn" onclick="redo()" disabled title="Redo (Ctrl+Y)">↪</button>
+  </div>
+  <div class="tb-div"></div>
+  <!-- View toggle -->
+  <div class="tb-view">
+    <button class="tb-vbtn active" id="stWorking" onclick="setViewMode('working')">Working</button>
+    <button class="tb-vbtn" id="stFull" onclick="setViewMode('full')">Full size</button>
+  </div>
+  <div class="tb-div"></div>
+  <!-- Zoom -->
+  <div class="zoom-group">
+    <div class="zoom-btn" onclick="zoomBy(-0.25)" title="Zoom out">−</div>
+    <span class="zoom-val" id="zoomVal">100%</span>
+    <div class="zoom-btn" onclick="zoomBy(0.25)" title="Zoom in">+</div>
+    <div class="zoom-btn" onclick="zoomReset()" style="font-size:10px;width:30px" title="Fit">Fit</div>
+  </div>
+  <div class="tb-div"></div>
+  <span class="tb-info" id="ctInfo">Scaled to fit screen</span>
+</div>
+
+<!-- Job bar (shown when editing existing job) -->
+<div class="job-bar" id="jobBar">
+  <span class="jb-label">Ref</span><span class="jb-val" id="jbRef">—</span>
+  <span class="jb-label" style="margin-left:12px">Customer</span><span class="jb-val" id="jbCustomer">—</span>
+  <span class="jb-label" style="margin-left:12px">Order</span><span class="jb-val" id="jbOrder">—</span>
+  <a class="jb-back" href="/dashboard">← Back to artwork list</a>
+</div>
+
+<div class="workspace">
+
+<!-- ══ LEFT PANEL ══ -->
+<div class="step-panel">
+
+  <div class="undo-bar">
+    <button class="undo-btn" id="undoBtnPanel" onclick="undo()" disabled>↩ Undo</button>
+    <button class="undo-btn" id="redoBtnPanel" onclick="redo()" disabled>↪ Redo</button>
+    <span class="undo-label" id="undoLabel"></span>
+  </div>
+
+  <!-- Step 1: SKU -->
+  <div class="step-block active" id="sb1">
+    <div class="step-header" onclick="toggleStep(1)">
+      <!-- Pending pill: white bg, dark border, dark number -->
+      <div class="step-num" style="background:#fff;border:2px solid #444441;color:#2C2C2A" id="sn1">1</div>
+      <span class="step-title" style="color:#888780" id="st1">Select SKU</span>
+      <span class="step-chevron" id="sc1">▾</span>
+    </div>
+    <div class="step-body">
+      <div class="sku-search-wrap">
+        <input type="text" class="sku-search-input" id="skuSearchInput"
+          placeholder="Search SKU or product name…"
+          autocomplete="off" spellcheck="false"
+          oninput="onSkuSearch(this.value)"
+          onkeydown="onSkuSearchKey(event)" />
+        <div class="sku-search-dd" id="skuSearchDd"></div>
+      </div>
+      <div id="skuSpecExpanded" style="display:none">
+        <div class="sku-spec-grid">
+          <div class="sku-spec-cell"><div class="sku-spec-key">Size</div><div class="sku-spec-val" id="ssSize">—</div></div>
+          <div class="sku-spec-cell"><div class="sku-spec-key">DPI min</div><div class="sku-spec-val" id="ssDpi">—</div></div>
+          <div class="sku-spec-cell"><div class="sku-spec-key">Colour</div><div class="sku-spec-val" id="ssColour">—</div></div>
+          <div class="sku-spec-cell"><div class="sku-spec-key">Bleed</div><div class="sku-spec-val" id="ssBleed">—</div></div>
+        </div>
+        <div class="flag-pills" id="ssFlags"></div>
+      </div>
     </div>
   </div>
-  <a class="sb-item active" href="/dashboard">
-    <span class="sb-icon">☰</span>
-    <span class="sb-label">Artwork list</span>
-  </a>
-  <a class="sb-item" href="/designer">
-    <span class="sb-icon">✏️</span>
-    <span class="sb-label">Designer</span>
-  </a>
-  <a class="sb-item" href="/artwork-assessor">
-    <span class="sb-icon">✓</span>
-    <span class="sb-label">Assessor</span>
-  </a>
-  <div class="sb-spacer"></div>
-  <div class="sb-divider"></div>
-  <a class="sb-item" href="/">
-    <span class="sb-icon">⚙</span>
-    <span class="sb-label">Settings</span>
-  </a>
-</nav>
 
-<!-- ══ MAIN ══ -->
-<div class="main">
-
-  <!-- Topbar -->
-  <div class="topbar">
-    <span class="topbar-title">Artwork list</span>
-    <div class="topbar-search">
-      <span class="search-icon">🔍</span>
-      <input type="text" placeholder="Search reference or SKU…" />
+  <div class="sku-summary" id="skuSummary" onclick="toggleStep(1)">
+    <div class="sku-summary-top">
+      <span class="sku-summary-code" id="sSum_code">—</span>
+      <span class="sku-summary-name" id="sSum_name">—</span>
     </div>
-    <div class="tb-spacer"></div>
-    <button class="btn-refresh" onclick="loadJobs()">↻ Refresh</button>
-    <button class="btn-csv" onclick="document.getElementById('csvInput').click()">Upload CSV</button>
-    <input type="file" id="csvInput" accept=".csv" onchange="handleCSV(event)" />
-    <button class="btn-new" onclick="document.getElementById('fileInput').click()">+ Add files</button>
-    <input type="file" id="fileInput" accept=".pdf,.eps,.zip,.png,.jpg,.jpeg" multiple onchange="handleFiles(event)" />
+    <div class="sku-summary-dims" id="sSum_dims">—</div>
+    <div class="sku-summary-hint">Click to change</div>
   </div>
 
-  <div class="content">
+  <!-- Step 2: Upload -->
+  <div class="step-block" id="sb2">
+    <div class="step-header" onclick="toggleStep(2)">
+      <div class="step-num" style="background:#fff;border:2px solid #444441;color:#2C2C2A" id="sn2">2</div>
+      <span class="step-title" style="color:#888780" id="st2">Upload artwork</span>
+      <span class="step-chevron" id="sc2">▾</span>
+    </div>
+    <div class="step-body">
+      <div class="upload-drop" id="uploadDrop"
+        ondragover="event.preventDefault();this.classList.add('drag-over')"
+        ondragleave="this.classList.remove('drag-over')"
+        ondrop="handleDropOnZone(event)"
+        onclick="document.getElementById('fileIn').click()">
+        <span class="ud-icon">📂</span>
+        <strong>Drop artwork here</strong>
+        <div class="ud-sub">or click to browse</div>
+        <div class="ud-formats">PDF · EPS · PNG · JPG · TIFF</div>
+      </div>
+      <input type="file" id="fileIn" accept=".png,.jpg,.jpeg,.pdf,.tif,.tiff,.eps" multiple onchange="handleFileInput(event)" style="display:none"/>
+    </div>
+  </div>
 
-    <!-- Stats -->
-    <div class="stats" id="statsRow">
-      <div class="stat">
-        <div class="stat-label">Total jobs</div>
-        <div class="stat-value" style="color:#2C2C2A" id="statTotal">—</div>
-        <div class="stat-sub">This session</div>
-      </div>
-      <div class="stat">
-        <div class="stat-label">Passed</div>
-        <div class="stat-value" style="color:#3B6D11" id="statPass">—</div>
-        <div class="stat-sub"><span class="stat-dot" style="background:#639922"></span>Ready to print</div>
-      </div>
-      <div class="stat">
-        <div class="stat-label">Warnings</div>
-        <div class="stat-value" style="color:#854F0B" id="statWarn">—</div>
-        <div class="stat-sub"><span class="stat-dot" style="background:#EF9F27"></span>Need review</div>
-      </div>
-      <div class="stat">
-        <div class="stat-label">Failed</div>
-        <div class="stat-value" style="color:#A32D2D" id="statFail">—</div>
-        <div class="stat-sub"><span class="stat-dot" style="background:#E24B4A"></span>Action required</div>
+  <!-- Step 3: Background -->
+  <div class="step-block" id="sb3">
+    <div class="step-header" onclick="toggleStep(3)">
+      <div class="step-num" style="background:#fff;border:2px solid #444441;color:#2C2C2A" id="sn3">3</div>
+      <span class="step-title" style="color:#888780" id="st3">Background fill</span>
+      <span class="step-chevron" id="sc3">▾</span>
+    </div>
+    <div class="step-body">
+      <div class="bg-swatches" id="bgSwatches"></div>
+      <div class="bg-custom-row">
+        <input type="color" id="bgColorPicker" value="#FFFFFF" oninput="setBgColor(this.value)"/>
+        <span>Custom</span>
+        <button class="bg-none-btn" onclick="clearBg()">✕ None</button>
       </div>
     </div>
+  </div>
 
-    <!-- Drop zone -->
-    <div class="drop-banner" id="dropBanner">
-      <div class="drop-icon-wrap">📂</div>
-      <div class="db-info">
-        <div class="db-title">Drop artwork files here to add to the list</div>
-        <div class="db-sub">Files are assessed automatically on upload</div>
-        <div class="db-formats">
-          <span class="fmt-pill">PDF</span>
-          <span class="fmt-pill">EPS</span>
-          <span class="fmt-pill">PNG</span>
-          <span class="fmt-pill">JPG</span>
-          <span class="fmt-pill">TIFF</span>
-          <span class="fmt-pill">ZIP</span>
+  <!-- Step 4: Position -->
+  <div class="step-block" id="sb4">
+    <div class="step-header" onclick="toggleStep(4)">
+      <div class="step-num" style="background:#fff;border:2px solid #444441;color:#2C2C2A" id="sn4">4</div>
+      <span class="step-title" style="color:#888780" id="st4">Position, scale &amp; rotate</span>
+      <span class="step-chevron" id="sc4">▾</span>
+    </div>
+    <div class="step-body">
+      <div class="active-layer-tag" id="posActiveTag"><div class="alt-dot"></div><span id="posActiveText">—</span></div>
+
+      <!-- Rotation dial -->
+      <div class="dial-wrap">
+        <div class="dial-svg-wrap" id="dialSvgWrap">
+          <svg id="rotDial" width="90" height="90" viewBox="0 0 100 100" style="display:block;touch-action:none">
+            <circle cx="50" cy="50" r="42" fill="#F7F6F2" stroke="#D3D1C7" stroke-width="3"/>
+            <circle cx="50" cy="50" r="42" fill="none" stroke="#F47920" stroke-width="3"
+              stroke-dasharray="264" stroke-dashoffset="264" id="dialArc"
+              stroke-linecap="round" transform="rotate(-90 50 50)"/>
+            <line x1="50" y1="8"  x2="50" y2="18" stroke="#B4B2A9" stroke-width="2"/>
+            <line x1="92" y1="50" x2="82" y2="50" stroke="#B4B2A9" stroke-width="2"/>
+            <line x1="50" y1="92" x2="50" y2="82" stroke="#B4B2A9" stroke-width="2"/>
+            <line x1="8"  y1="50" x2="18" y2="50" stroke="#B4B2A9" stroke-width="2"/>
+            <line x1="79.6" y1="20.4" x2="73.5" y2="26.5" stroke="#D3D1C7" stroke-width="1"/>
+            <line x1="79.6" y1="79.6" x2="73.5" y2="73.5" stroke="#D3D1C7" stroke-width="1"/>
+            <line x1="20.4" y1="79.6" x2="26.5" y2="73.5" stroke="#D3D1C7" stroke-width="1"/>
+            <line x1="20.4" y1="20.4" x2="26.5" y2="26.5" stroke="#D3D1C7" stroke-width="1"/>
+            <line id="dialNeedle" x1="50" y1="50" x2="50" y2="10" stroke="#F47920" stroke-width="2.5" stroke-linecap="round"/>
+            <circle cx="50" cy="50" r="5" fill="#F47920"/>
+            <circle id="dialKnob" cx="50" cy="10" r="10" fill="#F47920" stroke="#fff" stroke-width="2.5"/>
+            <text id="dialKnobTxt" x="50" y="14" text-anchor="middle" dominant-baseline="middle" fill="#fff" font-size="11" font-weight="700">↻</text>
+          </svg>
+        </div>
+        <div class="dial-right">
+          <div class="dial-readout" id="rotDialReadout">0°</div>
+          <div class="dial-presets">
+            <!-- Rotation presets: inline styles to prevent cascade override -->
+            <button id="rp0d"   onclick="setAbsoluteRot(0)"   style="padding:4px;font-size:10px;font-weight:700;border-radius:5px;border:1px solid #E07010;background:#F47920;color:#ffffff;cursor:pointer;text-align:center;font-family:'Inter',sans-serif">0°</button>
+            <button id="rp90d"  onclick="setAbsoluteRot(90)"  style="padding:4px;font-size:10px;font-weight:700;border-radius:5px;border:1px solid #888780;background:#D3D1C7;color:#2C2C2A;cursor:pointer;text-align:center;font-family:'Inter',sans-serif">90°</button>
+            <button id="rpn90d" onclick="setAbsoluteRot(-90)" style="padding:4px;font-size:10px;font-weight:700;border-radius:5px;border:1px solid #888780;background:#D3D1C7;color:#2C2C2A;cursor:pointer;text-align:center;font-family:'Inter',sans-serif">−90°</button>
+            <button id="rp180d" onclick="setAbsoluteRot(180)" style="padding:4px;font-size:10px;font-weight:700;border-radius:5px;border:1px solid #888780;background:#D3D1C7;color:#2C2C2A;cursor:pointer;text-align:center;font-family:'Inter',sans-serif">180°</button>
+          </div>
         </div>
       </div>
-      <span class="db-or">or</span>
-      <button class="db-browse" onclick="event.stopPropagation();document.getElementById('fileInput').click()">Browse files</button>
-    </div>
 
-    <!-- Controls / column toggles -->
-    <div class="controls-bar">
-      <span class="controls-label">Checks:</span>
-      <button class="col-pill on" data-col="dpi"          onclick="toggleCol(this)">DPI</button>
-      <button class="col-pill on" data-col="pixelation"   onclick="toggleCol(this)">Pixelation</button>
-      <button class="col-pill on" data-col="bleed"        onclick="toggleCol(this)">Bleed</button>
-      <button class="col-pill on" data-col="colour"       onclick="toggleCol(this)">Colour</button>
-      <button class="col-pill on" data-col="white_edge"   onclick="toggleCol(this)">White edge</button>
-      <button class="col-pill on" data-col="safe_zone"    onclick="toggleCol(this)">Safe zone</button>
-      <button class="col-pill on" data-col="fonts"        onclick="toggleCol(this)">Fonts</button>
-      <button class="col-pill on" data-col="transparency" onclick="toggleCol(this)">Transparency</button>
-    </div>
-
-    <!-- Table -->
-    <div class="table-card">
-      <div class="table-wrap">
-        <table id="jobTable">
-          <thead>
-            <tr>
-              <th>Reference</th>
-              <th>Customer</th>
-              <th>Order</th>
-              <th>File</th>
-              <th>Type</th>
-              <th>Source</th>
-              <th>Uploaded</th>
-              <th>Assessed</th>
-              <th>Score</th>
-              <th class="check-col check-cell" data-col="dpi">DPI</th>
-              <th class="check-col check-cell" data-col="pixelation">Pixelation</th>
-              <th class="check-col check-cell" data-col="bleed">Bleed</th>
-              <th class="check-col check-cell" data-col="colour">Colour</th>
-              <th class="check-col check-cell" data-col="white_edge">White edge</th>
-              <th class="check-col check-cell" data-col="safe_zone">Safe zone</th>
-              <th class="check-col check-cell" data-col="fonts">Fonts</th>
-              <th class="check-col check-cell" data-col="transparency">Transparency</th>
-              <th></th>
-            </tr>
-          </thead>
-          <tbody id="jobBody">
-            <tr><td colspan="19"><div class="empty-state"><div class="es-icon">⏳</div><p>Loading…</p></div></td></tr>
-          </tbody>
-        </table>
+      <!-- Scale -->
+      <div class="ctrl-row">
+        <div class="ctrl-lbl"><span>Scale</span><span class="ctrl-val" id="scaleVal">100%</span></div>
+        <input type="range" id="scaleSlider" min="5" max="300" step="1" value="100" oninput="onScaleSlider(this.value)"/>
       </div>
-      <div class="pagination" id="paginationBar">
-        <span class="pg-info" id="pgInfo"></span>
-        <div class="pg-size">
-          <span>Show</span>
-          <select id="pgSize" onchange="changePageSize(this.value)">
-            <option value="50">50</option>
-            <option value="100">100</option>
-            <option value="250">250</option>
-          </select>
-          <span>per page</span>
+
+      <!-- Fit / Centre / Reset -->
+      <div class="btn-row">
+        <button onclick="fitToBleed()" style="flex:1;height:24px;border-radius:6px;border:1px solid #888780;background:#D3D1C7;font-size:10px;font-weight:600;color:#2C2C2A;cursor:pointer;font-family:'Inter',sans-serif">Fit to bleed</button>
+        <button onclick="fitToTrim()"  style="flex:1;height:24px;border-radius:6px;border:1px solid #888780;background:#D3D1C7;font-size:10px;font-weight:600;color:#2C2C2A;cursor:pointer;font-family:'Inter',sans-serif">Fit to trim</button>
+      </div>
+      <div class="btn-row">
+        <button onclick="centreActive()" style="flex:1;height:24px;border-radius:6px;border:1px solid #888780;background:#D3D1C7;font-size:10px;font-weight:600;color:#2C2C2A;cursor:pointer;font-family:'Inter',sans-serif">Centre</button>
+        <button onclick="resetActive()"  style="flex:1;height:24px;border-radius:6px;border:1px solid #888780;background:#D3D1C7;font-size:10px;font-weight:600;color:#2C2C2A;cursor:pointer;font-family:'Inter',sans-serif">Reset all</button>
+      </div>
+
+      <!-- Flip -->
+      <div class="flip-row">
+        <button class="flip-btn" id="flipHBtn" onclick="flipLayer('h')" title="Flip horizontal" style="flex:1;height:24px;border-radius:6px;border:1px solid #888780;background:#D3D1C7;font-size:10px;font-weight:600;color:#2C2C2A;cursor:pointer;font-family:'Inter',sans-serif">↔ Flip H</button>
+        <button class="flip-btn" id="flipVBtn" onclick="flipLayer('v')" title="Flip vertical"   style="flex:1;height:24px;border-radius:6px;border:1px solid #888780;background:#D3D1C7;font-size:10px;font-weight:600;color:#2C2C2A;cursor:pointer;font-family:'Inter',sans-serif">↕ Flip V</button>
+      </div>
+
+      <label class="snap-toggle">
+        <input type="checkbox" id="snapToggle" onchange="snapEnabled=this.checked" checked/>
+        Snap to edges
+      </label>
+      <div class="pos-info">Offset: <span id="posReadout">—</span></div>
+
+      <div class="tmpl-rotate-row" id="tmplRotRow" style="display:none">
+        <span class="tmpl-rotate-label">Template rotation</span>
+        <button style="height:22px;width:32px;border-radius:5px;border:1px solid #888780;background:#D3D1C7;font-size:13px;font-weight:600;color:#2C2C2A;cursor:pointer" onclick="rotateTemplate(-90)">↺</button>
+        <button style="height:22px;width:32px;border-radius:5px;border:1px solid #888780;background:#D3D1C7;font-size:13px;font-weight:600;color:#2C2C2A;cursor:pointer" onclick="rotateTemplate(90)">↻</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Step 5: Opacity -->
+  <div class="step-block" id="sb5">
+    <div class="step-header" onclick="toggleStep(5)">
+      <div class="step-num" style="background:#fff;border:2px solid #444441;color:#2C2C2A" id="sn5">5</div>
+      <span class="step-title" style="color:#888780" id="st5">Layer opacity</span>
+      <span class="step-chevron" id="sc5">▾</span>
+    </div>
+    <div class="step-body">
+      <div class="active-layer-tag" id="opActiveTag"><div class="alt-dot"></div><span id="opActiveText">—</span></div>
+      <div class="op-row">
+        <span class="op-lbl">Selected</span>
+        <input type="range" min="0" max="100" step="1" value="92" id="layerOpacity" oninput="onLayerOpacity(this.value)"/>
+        <span class="op-val" id="layerOpVal">92%</span>
+      </div>
+      <div class="op-row">
+        <span class="op-lbl">Template</span>
+        <input type="range" min="0" max="100" step="1" value="55" id="tmplOpacity" oninput="onTmplOpacity()"/>
+        <span class="op-val" id="tmplOpVal">55%</span>
+      </div>
+    </div>
+  </div>
+
+  <div class="step-spacer"></div>
+</div><!-- end step-panel -->
+
+<!-- ══ CANVAS AREA ══ -->
+<div class="canvas-area">
+  <div class="canvas-spinner" id="canvasSpinner">
+    <svg viewBox="0 0 36 36" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <circle cx="18" cy="18" r="14" stroke="#E8E6DE" stroke-width="4"/>
+      <path d="M18 4a14 14 0 0 1 14 14" stroke="#F47920" stroke-width="4" stroke-linecap="round"/>
+    </svg>
+  </div>
+
+  <!-- Single-sided status pill -->
+  <div class="canvas-status cs-idle" id="canvasStatus">Select a SKU and upload artwork to begin</div>
+
+  <!-- Copy design button (dual-sided) -->
+  <button class="copy-design-btn side1" id="copyDesignBtn" onclick="copyDesignToOtherSide()">Copy design →</button>
+
+  <!-- Canvas scroll -->
+  <div class="canvas-scroll single-sided" id="canvasScroll">
+    <div class="canvas-outer" id="canvasOuter" style="position:relative">
+      <div class="canvas-transform" id="canvasTransform" style="position:relative;z-index:1">
+        <canvas id="mainCanvas" class="main-canvas" width="460" height="560"></canvas>
+        <canvas id="snapCanvas" class="snap-canvas" width="460" height="560"></canvas>
+      </div>
+    </div>
+  </div>
+
+  <!-- Floating guides legend -->
+  <div class="guides-float" id="guidesFloat">
+    <div class="gf-item"><div class="gf-dot" style="background:#F47920;border:1.5px dashed #C75E0A"></div><span class="gf-label">Bleed</span><span class="gf-sub" id="gfBleed">—</span></div>
+    <div class="gf-item"><div class="gf-dot" style="background:rgba(30,100,220,0.7)"></div><span class="gf-label">Trim</span><span class="gf-sub" id="gfTrim">—</span></div>
+    <div class="gf-item"><div class="gf-dot" style="background:#22AA66"></div><span class="gf-label">Safe zone</span><span class="gf-sub" id="gfSafe">—</span></div>
+  </div>
+
+  <div class="bleed-callout" id="bleedCallout">⚠ <span id="bleedCalloutText">Bleed required</span></div>
+</div><!-- end canvas-area -->
+
+<!-- ══ RIGHT PANEL ══ -->
+<div class="right-panel">
+  <div class="rp-side-banner" id="rpSideBanner"></div>
+
+  <div class="rp-section-title">
+    <span>Layers</span>
+    <span style="font-size:10px;color:#888780" id="panelSideTagWrap"></span>
+  </div>
+
+  <div class="layers-list" id="layersList">
+    <div style="padding:14px 10px;font-size:10px;color:#B4B2A9;text-align:center;line-height:1.5">No layers yet.<br>Upload artwork to begin.</div>
+  </div>
+  <button class="lp-add-bottom" onclick="document.getElementById('fileIn').click()">
+    <span style="font-size:14px;line-height:1">＋</span><span>Add layer</span>
+  </button>
+  <div class="lp-fixed">
+    <div class="lp-fixed-title">Fixed</div>
+    <div class="lp-fixed-row"><div class="lp-fixed-dot" style="background:#F47920"></div>Guides &amp; template<span class="lp-fixed-meta">always on</span></div>
+  </div>
+
+  <div class="rp-section-title" style="margin-top:0">Preflight</div>
+  <div class="preflight-section" id="preflightSection">
+    <div class="pf-item idle" id="pfBleed">
+      <div class="pf-item-top"><div class="pf-dot idle"></div><span class="pf-label">Bleed coverage</span><span class="pf-val" id="pfBleedVal">—</span></div>
+      <div class="pf-detail" id="pfBleedDetail"></div>
+      <div class="pf-override"><input type="checkbox" id="ovBleed" onchange="onOverrideChange()"><label for="ovBleed">I understand the risk and wish to proceed anyway</label></div>
+    </div>
+    <div class="pf-item idle" id="pfDpi">
+      <div class="pf-item-top"><div class="pf-dot idle"></div><span class="pf-label">Resolution (DPI)</span><span class="pf-val" id="pfDpiVal">—</span></div>
+      <div class="pf-detail" id="pfDpiDetail"></div>
+      <div class="pf-override"><input type="checkbox" id="ovDpi" onchange="onOverrideChange()"><label for="ovDpi">I understand the risk and wish to proceed anyway</label></div>
+      <div class="pf-help">
+        <button class="pf-help-btn pf-help-btn-ai" id="btnAiUpscale" onclick="upscaleWithAI()">↑ Upscale with AI — fix this automatically</button>
+        <button class="pf-help-btn" onclick="showUpscaleModal()" style="margin-top:4px">↑ Upscaling tools — do it yourself</button>
+      </div>
+    </div>
+    <div class="pf-item idle" id="pfSafe">
+      <div class="pf-item-top"><div class="pf-dot idle"></div><span class="pf-label">Safe zone</span><span class="pf-val" id="pfSafeVal">—</span></div>
+      <div class="pf-detail" id="pfSafeDetail"></div>
+      <div class="pf-override"><input type="checkbox" id="ovSafe" onchange="onOverrideChange()"><label for="ovSafe">I understand the risk and wish to proceed anyway</label></div>
+    </div>
+    <div class="pf-item idle" id="pfColour">
+      <div class="pf-item-top"><div class="pf-dot idle"></div><span class="pf-label">Colour mode</span><span class="pf-val" id="pfColourVal">—</span></div>
+      <div class="pf-detail" id="pfColourDetail"></div>
+      <div class="pf-override"><input type="checkbox" id="ovColour" onchange="onOverrideChange()"><label for="ovColour">I understand the risk and wish to proceed anyway</label></div>
+    </div>
+  </div>
+
+  <div class="rp-actions">
+    <button class="rp-btn rp-btn-green" id="btnSubmit" disabled onclick="submitToArtworkList()">Submit to artwork list →</button>
+    <button class="rp-btn rp-btn-blue"  id="btnAssessor" disabled onclick="goToAssessor()">Run checks in assessor</button>
+    <a class="rp-btn" href="/dashboard">← Artwork list</a>
+  </div>
+</div><!-- end right-panel -->
+
+</div><!-- end workspace -->
+
+<div class="toast" id="toast"></div>
+
+<!-- ══ UPSCALE MODAL ══ -->
+<div class="upscale-modal-bg" id="upscaleModalBg" onclick="handleUpscaleModalBgClick(event)">
+  <div class="upscale-modal" role="dialog" aria-modal="true" aria-labelledby="upscaleModalTitle">
+    <div class="upscale-modal-header">
+      <h2 id="upscaleModalTitle">↑ Improve your image resolution</h2>
+      <button class="upscale-modal-close" onclick="closeUpscaleModal()" aria-label="Close">×</button>
+    </div>
+    <div class="upscale-modal-body">
+      <p class="upscale-modal-intro">Your artwork is below the minimum DPI for print. AI upscaling adds detail and increases resolution before you re-upload. Choose the option that suits you best, upscale your image, then upload the improved version here.</p>
+      <div class="upscale-card">
+        <div class="upscale-card-head">
+          <img class="upscale-card-logo" src="https://www.adobe.com/favicon.ico" alt="Adobe" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'">
+          <div class="upscale-card-logo-placeholder" style="display:none">🅰</div>
+          <div class="upscale-card-head-text">
+            <span class="upscale-card-name">Adobe Express</span>
+            <span class="upscale-card-badge badge-freemium">Free account required</span>
+          </div>
         </div>
-        <button class="pg-btn" id="pgPrev" onclick="changePage(-1)" disabled>← Prev</button>
-        <span id="pgPages"></span>
-        <button class="pg-btn" id="pgNext" onclick="changePage(1)">Next →</button>
+        <div class="upscale-card-body">
+          <p class="upscale-card-desc">Browser-based upscaler from Adobe — no software to install. Upload your image, click upscale, download. The most recognisable name here and very straightforward to use.</p>
+          <div class="upscale-card-pros-cons">
+            <div class="upscale-pros"><p class="upscale-pros-title">✓ Pros</p><ul><li>No software to install</li><li>Very easy — works in your browser</li><li>Trusted Adobe brand</li></ul></div>
+            <div class="upscale-cons"><p class="upscale-cons-title">✗ Cons</p><ul><li>Requires a free Adobe account</li><li>Limited free exports per month</li><li>Quality average vs. dedicated tools</li></ul></div>
+          </div>
+          <a class="upscale-card-link" href="https://www.adobe.com/express/" target="_blank" rel="noopener">Open Adobe Express →</a>
+        </div>
       </div>
-    </div>
-
-  </div><!-- end .content -->
-</div><!-- end .main -->
-
-<!-- Delete modal -->
-<div class="modal-overlay" id="deleteModal">
-  <div class="modal">
-    <h2>Delete job</h2>
-    <p>This will permanently remove <span class="modal-ref" id="deleteRef"></span> from the queue. Type <strong>DELETE</strong> to confirm.</p>
-    <input type="text" id="deleteConfirmInput" placeholder="Type DELETE to confirm" oninput="validateDeleteInput(this)" />
-    <div class="modal-actions">
-      <button class="mbtn" onclick="closeDeleteModal()">Cancel</button>
-      <button class="mbtn mbtn-danger" id="deleteConfirmBtn" onclick="confirmDelete()" disabled>Delete</button>
+      <div class="upscale-card">
+        <div class="upscale-card-head">
+          <img class="upscale-card-logo" src="https://upscayl.org/favicon.ico" alt="Upscayl" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'">
+          <div class="upscale-card-logo-placeholder" style="display:none">⬆</div>
+          <div class="upscale-card-head-text">
+            <span class="upscale-card-name">Upscayl</span>
+            <span class="upscale-card-badge badge-free">100% Free</span>
+          </div>
+        </div>
+        <div class="upscale-card-body">
+          <p class="upscale-card-desc">Free, open-source desktop app. Runs AI upscaling entirely on your own computer — ideal for confidential client artwork.</p>
+          <div class="upscale-card-pros-cons">
+            <div class="upscale-pros"><p class="upscale-pros-title">✓ Pros</p><ul><li>Completely free, no account needed</li><li>Artwork stays on your machine</li><li>Batch processing supported</li></ul></div>
+            <div class="upscale-cons"><p class="upscale-cons-title">✗ Cons</p><ul><li>Requires a one-time download &amp; install</li><li>Slower without a dedicated GPU</li><li>Desktop only</li></ul></div>
+          </div>
+          <a class="upscale-card-link" href="https://upscayl.org/" target="_blank" rel="noopener">Download Upscayl →</a>
+        </div>
+      </div>
+      <div class="upscale-card">
+        <div class="upscale-card-head">
+          <img class="upscale-card-logo" src="https://replicate.com/favicon.ico" alt="Replicate" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'">
+          <div class="upscale-card-logo-placeholder" style="display:none">🔬</div>
+          <div class="upscale-card-head-text">
+            <span class="upscale-card-name">Real-ESRGAN via Replicate</span>
+            <span class="upscale-card-badge badge-techy">Technical option — best quality</span>
+          </div>
+        </div>
+        <div class="upscale-card-body">
+          <p class="upscale-card-desc">The AI model that powers most upscalers under the hood. Especially strong on illustrations, logos, and flat graphics.</p>
+          <div class="upscale-card-pros-cons">
+            <div class="upscale-pros"><p class="upscale-pros-title">✓ Pros</p><ul><li>Highest quality of all options</li><li>Excellent for logos &amp; illustrations</li><li>No install needed</li></ul></div>
+            <div class="upscale-cons"><p class="upscale-cons-title">✗ Cons</p><ul><li>Requires a Replicate account</li><li>Small pay-per-use fee</li><li>More technical interface</li></ul></div>
+          </div>
+          <a class="upscale-card-link" href="https://replicate.com/nightmareai/real-esrgan" target="_blank" rel="noopener">Open Real-ESRGAN →</a>
+        </div>
+      </div>
+      <div class="upscale-card">
+        <div class="upscale-card-head">
+          <img class="upscale-card-logo" src="https://imgupscaler.com/favicon.ico" alt="imgupscaler" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'">
+          <div class="upscale-card-logo-placeholder" style="display:none">🖼</div>
+          <div class="upscale-card-head-text">
+            <span class="upscale-card-name">imgupscaler.com</span>
+            <span class="upscale-card-badge badge-quick">Quickest start — no sign-up</span>
+          </div>
+        </div>
+        <div class="upscale-card-body">
+          <p class="upscale-card-desc">The fastest way to get started — no account, no install, no payment. Best for a one-off quick fix.</p>
+          <div class="upscale-card-pros-cons">
+            <div class="upscale-pros"><p class="upscale-pros-title">✓ Pros</p><ul><li>Zero friction — works immediately</li><li>No account or payment needed</li><li>Fast results</li></ul></div>
+            <div class="upscale-cons"><p class="upscale-cons-title">✗ Cons</p><ul><li>Lower quality than other options</li><li>File size limits on free tier</li><li>Ad-supported</li></ul></div>
+          </div>
+          <a class="upscale-card-link" href="https://imgupscaler.com/" target="_blank" rel="noopener">Open imgupscaler →</a>
+        </div>
+      </div>
+      <div class="upscale-card">
+        <div class="upscale-card-head">
+          <div class="upscale-card-logo-placeholder">✉</div>
+          <div class="upscale-card-head-text">
+            <span class="upscale-card-name">Contact our UKPOS design team</span>
+            <span class="upscale-card-badge badge-techy">For large or complex artwork</span>
+          </div>
+        </div>
+        <div class="upscale-card-body">
+          <p class="upscale-card-desc">For very large format prints (A0 and above) or artwork that needs more than a simple upscale, our in-house design team can help directly.</p>
+          <a class="upscale-card-link" href="https://www.ukpos.com/contact-us/" target="_blank" rel="noopener">Contact UKPOS →</a>
+        </div>
+      </div>
     </div>
   </div>
 </div>
 
-<div class="toast" id="toast"></div>
-
 <script>
-/* ══════════════════════════════════════════════════
-   ALL JS BELOW IS TRANSPLANTED UNCHANGED FROM THE
-   ORIGINAL public/dashboard/index.html
-   ══════════════════════════════════════════════════ */
+/* ══════════════════════════════════════════════════════════════
+   ALL JS BELOW IS TRANSPLANTED UNCHANGED FROM THE LIVE FILE
+   public/designer/index.html — fetched 01 Jul 2026
+   Step pill visual state is updated via updateStepStyles() which
+   patches the inline style attributes set in HTML above.
+   ══════════════════════════════════════════════════════════════ */
 
-const CHECK_COLS = ['dpi','pixelation','bleed','colour','white_edge','safe_zone','fonts','transparency'];
-let allJobs = [];
-let hiddenCols = new Set();
-let currentPage = 1;
-let pageSize = 50;
-let pendingDeleteId = null;
+// ── SKU Specs ──────────────────────────────────────────────
+const SKU_SPECS = {
+  'AS1-A0':  {label:'Acrylic Poster Holder A0', w:841, h:1189,dpi:150,colour:'CMYK',sides:1,bleed:3, safe_zone:5,rotatable:false,future_flags:[]},
+  'AS1-A1':  {label:'Acrylic Poster Holder A1', w:594, h:841, dpi:200,colour:'CMYK',sides:1,bleed:3, safe_zone:5,rotatable:false,future_flags:[]},
+  'AS1-A2':  {label:'Acrylic Poster Holder A2', w:420, h:594, dpi:200,colour:'CMYK',sides:1,bleed:3, safe_zone:5,rotatable:false,future_flags:[]},
+  'AS1-A3':  {label:'Acrylic Poster Holder A3', w:297, h:420, dpi:300,colour:'CMYK',sides:1,bleed:3, safe_zone:5,rotatable:false,future_flags:[]},
+  'AS1-A4':  {label:'Acrylic Poster Holder A4', w:210, h:297, dpi:300,colour:'CMYK',sides:1,bleed:3, safe_zone:5,rotatable:false,future_flags:[]},
+  'AS1-A5':  {label:'Acrylic Poster Holder A5', w:148, h:210, dpi:300,colour:'CMYK',sides:1,bleed:3, safe_zone:5,rotatable:false,future_flags:[]},
+  'WPG1':    {label:'WPG1 Pavement Sign',w:450,h:600,dpi:150,colour:'CMYK',sides:2,bleed:5,safe_zone:5,rotatable:false,future_flags:['cut_lines','double_sided']},
+  'WPG2':    {label:'WPG2 Pavement Sign',w:450,h:600,dpi:150,colour:'CMYK',sides:2,bleed:5,safe_zone:5,rotatable:false,future_flags:['cut_lines','double_sided']},
+  'WPG3':    {label:'WPG3 Pavement Sign',w:500,h:700,dpi:150,colour:'CMYK',sides:2,bleed:5,safe_zone:5,rotatable:false,future_flags:['cut_lines','double_sided']},
+  'WPG4':    {label:'WPG4 Pavement Sign',w:500,h:700,dpi:150,colour:'CMYK',sides:2,bleed:5,safe_zone:5,rotatable:false,future_flags:['cut_lines','double_sided']},
+  'WPG5':    {label:'WPG5 Pavement Sign',w:500,h:700,dpi:150,colour:'CMYK',sides:1,bleed:5,safe_zone:5,rotatable:false,future_flags:['cut_lines']},
+  'WPG6':    {label:'WPG6 Pavement Sign',w:500,h:700,dpi:150,colour:'CMYK',sides:1,bleed:5,safe_zone:5,rotatable:false,future_flags:['cut_lines']},
+  'WPG7':    {label:'WPG7 Pavement Sign',w:594,h:841,dpi:150,colour:'CMYK',sides:1,bleed:5,safe_zone:5,rotatable:false,future_flags:['cut_lines']},
+  'WPG8':    {label:'WPG8 Pavement Sign',w:594,h:841,dpi:150,colour:'CMYK',sides:2,bleed:5,safe_zone:5,rotatable:false,future_flags:['cut_lines','double_sided']},
+  'WPG9':    {label:'WPG9 Pavement Sign',w:594,h:841,dpi:150,colour:'CMYK',sides:1,bleed:5,safe_zone:5,rotatable:false,future_flags:['cut_lines']},
+  'WPG10':   {label:'WPG10 Pavement Sign',w:450,h:600,dpi:150,colour:'CMYK',sides:2,bleed:5,safe_zone:5,rotatable:false,future_flags:['cut_lines','double_sided']},
+  'WPG11':   {label:'WPG11 Pavement Sign',w:450,h:600,dpi:150,colour:'CMYK',sides:2,bleed:5,safe_zone:5,rotatable:false,future_flags:['cut_lines','double_sided']},
+  'WPG12':   {label:'WPG12 Pavement Sign',w:450,h:600,dpi:150,colour:'CMYK',sides:1,bleed:5,safe_zone:5,rotatable:false,future_flags:['cut_lines']},
+  'WPG13':   {label:'WPG13 Pavement Sign',w:594,h:841,dpi:150,colour:'CMYK',sides:2,bleed:5,safe_zone:5,rotatable:false,future_flags:['cut_lines','double_sided']},
+  'WPG14':   {label:'WPG14 Pavement Sign',w:594,h:841,dpi:150,colour:'CMYK',sides:2,bleed:5,safe_zone:5,rotatable:false,future_flags:['cut_lines','double_sided']},
+  'WPG15':   {label:'WPG15 Pavement Sign',w:594,h:841,dpi:150,colour:'CMYK',sides:1,bleed:5,safe_zone:5,rotatable:false,future_flags:['cut_lines']},
+  'WPG16':   {label:'WPG16 Pavement Sign',w:594,h:841,dpi:150,colour:'CMYK',sides:1,bleed:5,safe_zone:5,rotatable:false,future_flags:['cut_lines']},
+  'WPG17':   {label:'WPG17 Pavement Sign',w:594,h:841,dpi:150,colour:'CMYK',sides:2,bleed:5,safe_zone:5,rotatable:false,future_flags:['cut_lines','double_sided']},
+  'WPG18':   {label:'WPG18 Pavement Sign',w:594,h:841,dpi:150,colour:'CMYK',sides:2,bleed:5,safe_zone:5,rotatable:false,future_flags:['cut_lines','double_sided']},
+  'ABG1':    {label:'Aluminium Sign ABG1', w:594,h:841,dpi:150,colour:'CMYK',sides:2,bleed:5,safe_zone:5,rotatable:false,future_flags:['cut_lines','double_sided']},
+  'ABG9':    {label:'Aluminium Sign ABG9', w:594,h:841,dpi:150,colour:'CMYK',sides:2,bleed:5,safe_zone:5,rotatable:false,future_flags:['cut_lines','double_sided']},
+  'ABG10':   {label:'Aluminium Sign ABG10',w:594,h:841,dpi:150,colour:'CMYK',sides:2,bleed:5,safe_zone:5,rotatable:false,future_flags:['cut_lines','double_sided']},
+  'ABG12':   {label:'Aluminium Sign ABG12',w:594,h:841,dpi:150,colour:'CMYK',sides:2,bleed:5,safe_zone:5,rotatable:false,future_flags:['cut_lines','double_sided']},
+  'ABG13':   {label:'Aluminium Sign ABG13',w:594,h:841,dpi:150,colour:'CMYK',sides:2,bleed:5,safe_zone:5,rotatable:false,future_flags:['cut_lines','double_sided']},
+  'ABM2A1':  {label:'Aluminium Sign ABM2A1',w:594,h:841,dpi:150,colour:'CMYK',sides:2,bleed:5,safe_zone:5,rotatable:false,future_flags:['cut_lines','double_sided']},
+  'PABG':    {label:'Pavement Sign PABG', w:594,h:841,dpi:150,colour:'CMYK',sides:2,bleed:5,safe_zone:5,rotatable:false,future_flags:['cut_lines','double_sided']},
+  'BOLL05':  {label:'Bollard Sign',       w:300,h:300,dpi:300,colour:'CMYK',sides:1,bleed:3,safe_zone:5,rotatable:false,future_flags:['cut_lines']},
+  'SF-A0':   {label:'Snap Frame A0',w:841, h:1189,dpi:150,colour:'CMYK',sides:1,bleed:0,safe_zone:3,rotatable:false,future_flags:[]},
+  'SF-A1':   {label:'Snap Frame A1',w:594, h:841, dpi:200,colour:'CMYK',sides:1,bleed:0,safe_zone:3,rotatable:false,future_flags:[]},
+  'SF-A2':   {label:'Snap Frame A2',w:420, h:594, dpi:200,colour:'CMYK',sides:1,bleed:0,safe_zone:3,rotatable:false,future_flags:[]},
+  'SF-A3':   {label:'Snap Frame A3',w:297, h:420, dpi:300,colour:'CMYK',sides:1,bleed:0,safe_zone:3,rotatable:false,future_flags:[]},
+  'SF-A4':   {label:'Snap Frame A4',w:210, h:297, dpi:300,colour:'CMYK',sides:1,bleed:0,safe_zone:3,rotatable:false,future_flags:[]},
+  'VINYL':   {label:'Vinyl Banner (custom)',w:null,h:null,dpi:100,colour:'CMYK',sides:1,bleed:50,safe_zone:10,rotatable:false,future_flags:['vinyl_colour']},
+};
+const FLAG_LABELS={cut_lines:'Cut lines required',vinyl_colour:'White→pink conversion',double_sided:'Double-sided'};
+const BG_PRESETS=['transparent','#FFFFFF','#000000','#F47920','#1A2233','#D4E8FF','#FFF8E6','#E8F5E9','#FCE4EC','#F5F5F5'];
 
-function toggleCol(btn) {
-  const col = btn.dataset.col;
-  btn.classList.toggle('on');
-  hiddenCols.has(col) ? hiddenCols.delete(col) : hiddenCols.add(col);
-  applyColVisibility();
+// ── Core state ─────────────────────────────────────────────
+let currentSku='', viewMode='working', jobId=null, openStep=1;
+let templateRotDeg=0, zoomLevel=1;
+let snapEnabled=true;
+let dragSrcId=null;
+let dialDragging=false;
+let interactMode=null, activeHandle=null, mouseStart={}, layerSnap={};
+const SNAP_THRESH=6, HANDLE_R=7;
+
+// ── Dual-sided state ───────────────────────────────────────
+function blankSideState(){
+  return {layers:[], activeLayerId:null, bgColor:null, undoStack:[], redoStack:[]};
 }
+let sides=[blankSideState(), blankSideState()];
+let activeSide=0;
+let isDoubleSided=false;
 
-function applyColVisibility() {
-  document.querySelectorAll('.check-col').forEach(th => { th.style.display = hiddenCols.has(th.dataset.col) ? 'none' : ''; });
-  document.querySelectorAll('.check-td').forEach(td => { td.style.display = hiddenCols.has(td.dataset.col) ? 'none' : ''; });
-}
+function S(){ return sides[activeSide]; }
+function getLayers(){ return S().layers; }
+function getActiveLayerId(){ return S().activeLayerId; }
+function setActiveLayerId(id){ S().activeLayerId=id; }
+function getBgColor(){ return S().bgColor; }
+function setBgColorState(c){ S().bgColor=c; }
 
-function fmtDate(iso) {
-  if (!iso) return '—';
-  const d = new Date(iso);
-  return d.toLocaleDateString('en-GB', {day:'2-digit',month:'short'}) + ' ' + d.toLocaleTimeString('en-GB', {hour:'2-digit',minute:'2-digit'});
-}
+let CW=460, CH=560, TX, TY, TW, TH, BLEEDPX, SAFEPX;
+let activeCanvas=null, activeSnapCanvas=null, activeCtx=null, activeSnapCtx=null;
 
-function checkIcon(results, id) {
-  if (!results) return '<span class="muted">—</span>';
-  const r = results.find(r => r.id === id || r.id === id.replace('_',''));
-  if (!r) return '<span class="muted">—</span>';
-  if (r.status === 'pass') return '<span class="ck ck-pass" title="Pass"></span>';
-  if (r.status === 'fail') return '<span class="ck ck-fail" title="Fail"></span>';
-  if (r.status === 'warn') return '<span class="ck ck-warn" title="Warning"></span>';
-  return '<span class="ck ck-none" title="Info"></span>';
-}
+function getActiveCanvas(){ return activeCanvas; }
+function getActiveCtx(){ return activeCtx; }
+function getActiveSnapCtx(){ return activeSnapCtx; }
 
-function renderRow(job) {
-  const results = job.results || null;
-  const statusDot = {pass:'dot-pass',fail:'dot-fail',warn:'dot-warn'}[job.overall_status] || 'dot-pending';
-  const pct = job.score_pct;
-  const ringColor = pct >= 80 ? '#639922' : pct >= 50 ? '#EF9F27' : '#E24B4A';
-  const ringNumColor = pct >= 80 ? '#3B6D11' : pct >= 50 ? '#854F0B' : '#A32D2D';
-  const circ = 81.7;
-  const offset = pct !== null && pct !== undefined ? circ * (1 - pct/100) : circ;
-  const scoreHtml = pct !== null && pct !== undefined
-    ? `<div class="score-wrap">
-         <svg width="34" height="34" viewBox="0 0 34 34" style="transform:rotate(-90deg)">
-           <circle cx="17" cy="17" r="13" fill="none" stroke="#F2F1F6" stroke-width="2.5"/>
-           <circle cx="17" cy="17" r="13" fill="none" stroke="${ringColor}" stroke-width="2.5" stroke-linecap="round" stroke-dasharray="${circ}" stroke-dashoffset="${offset.toFixed(1)}"/>
-         </svg>
-         <div class="score-num" style="color:${ringNumColor}">${pct}</div>
-       </div>`
-    : job.assessed_at ? '<span class="muted">—</span>' : '<span class="spinner-sm"></span>';
-
-  const badgeType = 'badge-' + (job.file_type||'').toLowerCase();
-  const badgeSrc  = 'badge-' + (job.source||'manual').toLowerCase().replace(/\s/g,'');
-  const ref = (job.reference||'').replace(/</g,'&lt;');
-  const fname = (job.file_name||'').replace(/</g,'&lt;');
-
-  const checkCells = CHECK_COLS.map(col => {
-    const hidden = hiddenCols.has(col) ? ' style="display:none"' : '';
-    return `<td class="check-cell check-td" data-col="${col}"${hidden}>${checkIcon(results, col)}</td>`;
-  }).join('');
-
-  return `<tr data-id="${job.id}">
-    <td><div class="ref-cell"><span class="status-dot ${statusDot}"></span><span class="ref-text" title="${ref}">${ref}</span></div></td>
-    <td>${job.customer_name || '<span class="muted">—</span>'}</td>
-    <td>${job.order_number  || '<span class="muted">—</span>'}</td>
-    <td><div class="filename-cell" title="${fname}">${fname}</div></td>
-    <td><span class="badge ${badgeType}">${job.file_type||'?'}</span></td>
-    <td class="source-cell">${job.source||'manual'}</td>
-    <td class="date-cell">${fmtDate(job.uploaded_at)}</td>
-    <td class="date-cell">${fmtDate(job.assessed_at)}</td>
-    <td>${scoreHtml}</td>
-    ${checkCells}
-    <td><div class="actions-cell">
-      <button class="view-btn" onclick="openJob('${job.id}')">Assess →</button>
-      <button class="design-btn" onclick="openDesigner('${job.id}','${ref}','${encodeURIComponent(job.file_name||'')}','${job.sku||''}')">Design →</button>
-      <button class="del-btn" onclick="openDeleteModal('${job.id}','${ref}')">✕</button>
-    </div></td>
-  </tr>`;
-}
-
-function updateStats() {
-  document.getElementById('statTotal').textContent = allJobs.length;
-  document.getElementById('statPass').textContent  = allJobs.filter(j=>j.overall_status==='pass').length;
-  document.getElementById('statWarn').textContent  = allJobs.filter(j=>j.overall_status==='warn').length;
-  document.getElementById('statFail').textContent  = allJobs.filter(j=>j.overall_status==='fail').length;
-}
-
-function renderTable() {
-  const tbody = document.getElementById('jobBody');
-  const total = allJobs.length;
-  const totalPages = Math.max(1, Math.ceil(total / pageSize));
-  if (currentPage > totalPages) currentPage = totalPages;
-  const start = (currentPage - 1) * pageSize;
-  const pageJobs = allJobs.slice(start, start + pageSize);
-
-  if (!total) {
-    tbody.innerHTML = `<tr><td colspan="19"><div class="empty-state"><div class="es-icon">📭</div><p>No jobs yet — drop files above to get started</p></div></td></tr>`;
-  } else {
-    tbody.innerHTML = pageJobs.map(renderRow).join('');
+// ── Step visual state update ───────────────────────────────
+// Updates inline styles on the step pills and titles to reflect done/active/pending
+function updateStepStyles(){
+  for(let i=1;i<=5;i++){
+    const block=document.getElementById('sb'+i);
+    const pill=document.getElementById('sn'+i);
+    const title=document.getElementById('st'+i);
+    if(!pill||!title) continue;
+    if(block.classList.contains('done')){
+      pill.style.cssText='background:#3B6D11;border:none;color:#fff;width:20px;height:20px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:9px;font-weight:700;flex-shrink:0';
+      pill.innerHTML='✓';
+      title.style.color='#3B6D11';
+    } else if(block.classList.contains('active')){
+      pill.style.cssText='background:#F47920;border:none;color:#fff;width:20px;height:20px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:9px;font-weight:700;flex-shrink:0';
+      pill.innerHTML=i;
+      title.style.color='#F47920';
+    } else {
+      pill.style.cssText='background:#fff;border:2px solid #444441;color:#2C2C2A;width:20px;height:20px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:9px;font-weight:700;flex-shrink:0';
+      pill.innerHTML=i;
+      title.style.color='#888780';
+    }
   }
-  applyColVisibility();
-  updateStats();
-
-  const showing = total ? `${start + 1}–${Math.min(start + pageSize, total)} of ${total} jobs` : '0 jobs';
-  document.getElementById('pgInfo').textContent = showing;
-  document.getElementById('pgPages').textContent = `Page ${currentPage} of ${totalPages}`;
-  document.getElementById('pgPrev').disabled = currentPage <= 1;
-  document.getElementById('pgNext').disabled = currentPage >= totalPages;
+  // Update rotation preset active state
+  const snapped=[0,90,-90,180];
+  const l=getActiveLayer();
+  const deg=l?Math.round((l.rotation||0)*180/Math.PI):0;
+  ['rp0d','rp90d','rpn90d','rp180d'].forEach((id,i)=>{
+    const btn=document.getElementById(id);
+    if(!btn) return;
+    if(Math.round(deg)===snapped[i]){
+      btn.style.background='#F47920';btn.style.color='#ffffff';btn.style.borderColor='#E07010';
+    } else {
+      btn.style.background='#D3D1C7';btn.style.color='#2C2C2A';btn.style.borderColor='#888780';
+    }
+  });
+  // Update topbar SKU chip
+  if(currentSku){
+    const skuEl=document.getElementById('topbarSku');
+    if(skuEl){skuEl.textContent=currentSku;skuEl.style.display='flex';}
+  }
 }
 
-function changePage(dir) { currentPage += dir; renderTable(); window.scrollTo(0,0); }
-function changePageSize(val) { pageSize = parseInt(val); currentPage = 1; renderTable(); }
-
-async function loadJobs() {
-  document.getElementById('jobBody').innerHTML =
-    `<tr><td colspan="19"><div class="empty-state"><div class="es-icon">⏳</div><p>Loading…</p></div></td></tr>`;
-  try {
-    const r = await fetch('/api/jobs');
-    const data = await r.json();
-    allJobs = Array.isArray(data) ? data : [];
-    currentPage = 1;
-    renderTable();
-  } catch(e) { console.error('loadJobs failed', e); }
+function initSingleSidedCanvas(){
+  const scroll=document.getElementById('canvasScroll');
+  scroll.className='canvas-scroll single-sided';
+  scroll.innerHTML=`
+    <div class="canvas-outer" id="canvasOuter" style="position:relative">
+      <div class="canvas-transform" id="canvasTransform" style="position:relative;z-index:1">
+        <canvas id="mainCanvas" class="main-canvas" width="${CW}" height="${CH}"></canvas>
+        <canvas id="snapCanvas" class="snap-canvas" width="${CW}" height="${CH}"></canvas>
+      </div>
+      <div class="tmpl-iframe-wrap" id="tmplIframe0" style="display:none;z-index:0">
+        <iframe id="tmplFrame0" src="" title="Print template"></iframe>
+      </div>
+    </div>`;
+  activeCanvas=document.getElementById('mainCanvas');
+  activeSnapCanvas=document.getElementById('snapCanvas');
+  activeCtx=activeCanvas.getContext('2d');
+  activeSnapCtx=activeSnapCanvas.getContext('2d');
+  document.getElementById('canvasStatus').style.display='';
+  bindCanvasEvents(activeCanvas);
 }
 
-function openJob(id) { window.location.href = `/artwork-assessor?job=${id}`; }
-function openDesigner(id, ref, fileName, sku) {
-  const params = new URLSearchParams({ job: id });
-  if (sku) params.set('sku', sku);
-  window.location.href = `/designer?${params.toString()}`;
+function initDualSidedCanvas(){
+  const scroll=document.getElementById('canvasScroll');
+  scroll.className='canvas-scroll';
+  scroll.innerHTML=`
+    <div class="dual-side side-active" id="dualSide0" style="position:relative;display:flex;flex-direction:column;align-items:center;min-width:0;flex:1">
+      <div class="canvas-outer" id="canvasOuter0" style="position:relative">
+        <div class="tmpl-iframe-wrap" id="tmplIframe0" style="display:none">
+          <iframe id="tmplFrame0" src="" title="Print template side 1"></iframe>
+        </div>
+        <div class="canvas-transform" id="canvasTransform0">
+          <canvas id="mainCanvas0" class="main-canvas" width="${CW}" height="${CH}"></canvas>
+          <canvas id="snapCanvas0" class="snap-canvas" width="${CW}" height="${CH}"></canvas>
+        </div>
+      </div>
+      <div class="canvas-side-label"><span>Side 1 — Active</span></div>
+    </div>
+    <div class="dual-divider"></div>
+    <div class="dual-side side-inactive" id="dualSide1" style="position:relative;display:flex;flex-direction:column;align-items:center;min-width:0;flex:1">
+      <div class="canvas-outer" id="canvasOuter1" style="position:relative">
+        <div class="tmpl-iframe-wrap" id="tmplIframe1" style="display:none">
+          <iframe id="tmplFrame1" src="" title="Print template side 2"></iframe>
+        </div>
+        <div class="canvas-transform" id="canvasTransform1">
+          <canvas id="mainCanvas1" class="main-canvas" width="${CW}" height="${CH}"></canvas>
+          <canvas id="snapCanvas1" class="snap-canvas" width="${CW}" height="${CH}"></canvas>
+        </div>
+      </div>
+      <div class="canvas-side-label"><span>Side 2 — Inactive</span></div>
+    </div>`;
+  document.getElementById('canvasStatus').style.display='none';
+  setDualActiveCanvas(activeSide);
+  const inactiveEl=document.getElementById('dualSide'+(activeSide===0?1:0));
+  if(inactiveEl) inactiveEl.onclick=()=>switchToSide(activeSide===0?1:0);
+  bindCanvasEvents(document.getElementById('mainCanvas'+activeSide));
 }
 
-function openDeleteModal(id, ref) {
-  pendingDeleteId = id;
-  document.getElementById('deleteRef').textContent = ref;
-  document.getElementById('deleteConfirmInput').value = '';
-  document.getElementById('deleteConfirmInput').classList.remove('error');
-  document.getElementById('deleteConfirmBtn').disabled = true;
-  document.getElementById('deleteModal').classList.add('show');
-  setTimeout(() => document.getElementById('deleteConfirmInput').focus(), 50);
+function setDualActiveCanvas(sideIdx){
+  activeCanvas=document.getElementById('mainCanvas'+sideIdx);
+  activeSnapCanvas=document.getElementById('snapCanvas'+sideIdx);
+  activeCtx=activeCanvas ? activeCanvas.getContext('2d') : null;
+  activeSnapCtx=activeSnapCanvas ? activeSnapCanvas.getContext('2d') : null;
 }
 
-function closeDeleteModal() { document.getElementById('deleteModal').classList.remove('show'); pendingDeleteId = null; }
-
-function validateDeleteInput(inp) {
-  const ok = inp.value.trim() === 'DELETE';
-  document.getElementById('deleteConfirmBtn').disabled = !ok;
-  inp.classList.toggle('error', inp.value.length > 0 && !ok);
+function switchToSide(sideIdx){
+  if(sideIdx===activeSide) return;
+  activeSide=sideIdx;
+  setDualActiveCanvas(sideIdx);
+  const side0=document.getElementById('dualSide0');
+  const side1=document.getElementById('dualSide1');
+  if(side0&&side1){
+    side0.className='dual-side '+(activeSide===0?'side-active':'side-inactive');
+    side1.className='dual-side '+(activeSide===1?'side-active':'side-inactive');
+    [side0,side1].forEach(s=>{s.style.position='relative';s.style.display='flex';s.style.flexDirection='column';s.style.alignItems='center';s.style.minWidth='0';s.style.flex='1';});
+    side0.querySelector('.canvas-side-label span').textContent='Side 1 — '+(activeSide===0?'Active':'Inactive');
+    side1.querySelector('.canvas-side-label span').textContent='Side 2 — '+(activeSide===1?'Active':'Inactive');
+    const nowInactive=activeSide===0?side1:side0;
+    const nowInactiveIdx=activeSide===0?1:0;
+    nowInactive.onclick=()=>switchToSide(nowInactiveIdx);
+    const nowActive=activeSide===0?side0:side1;
+    nowActive.onclick=null;
+  }
+  bindCanvasEvents(activeCanvas);
+  updateSideTags();
+  syncControlsToActive();
+  renderLayersList();
+  draw();
 }
 
-async function confirmDelete() {
-  if (!pendingDeleteId) return;
-  const id = pendingDeleteId;
-  closeDeleteModal();
-  try {
-    const r = await fetch(`/api/job?id=${id}`, { method: 'DELETE' });
-    if (r.ok) { allJobs = allJobs.filter(j => j.id !== id); renderTable(); showToast('Job deleted'); }
-    else showToast('Delete failed — try again');
-  } catch(e) { showToast('Delete failed: ' + e.message); }
+function updateSideTags(){
+  const banner=document.getElementById('rpSideBanner');
+  const copyBtn=document.getElementById('copyDesignBtn');
+  if(!isDoubleSided){
+    banner.classList.remove('show');
+    copyBtn.classList.remove('show');
+    return;
+  }
+  banner.classList.add('show');
+  banner.textContent='Side '+(activeSide+1)+' of 2';
+  copyBtn.classList.add('show');
+  if(activeSide===0){
+    copyBtn.classList.add('side1');copyBtn.classList.remove('side2');
+    copyBtn.textContent='Copy design →';
+  }else{
+    copyBtn.classList.add('side2');copyBtn.classList.remove('side1');
+    copyBtn.textContent='← Copy design';
+  }
+  updateStepStyles();
 }
 
-document.getElementById('deleteModal').addEventListener('click', function(e) { if (e.target === this) closeDeleteModal(); });
-document.addEventListener('keydown', e => {
-  if (e.key === 'Escape') closeDeleteModal();
-  if (e.key === 'Enter' && !document.getElementById('deleteConfirmBtn').disabled) confirmDelete();
+function drawInactiveSide(){
+  if(!isDoubleSided) return;
+  const inactiveIdx=activeSide===0?1:0;
+  const inactiveCanvas=document.getElementById('mainCanvas'+inactiveIdx);
+  if(!inactiveCanvas) return;
+  const ictx=inactiveCanvas.getContext('2d');
+  const inactiveSide=sides[inactiveIdx];
+  drawToContext(ictx, inactiveSide.layers, inactiveSide.bgColor, false);
+}
+
+// ── Undo/Redo ──────────────────────────────────────────────
+function captureState(label){
+  const s=S();
+  s.undoStack.push({label,layers:s.layers.map(l=>({...l,img:undefined})),layerImgs:s.layers.map(l=>l.img),activeLayerId:s.activeLayerId,bgColor:s.bgColor,templateRotDeg});
+  if(s.undoStack.length>50) s.undoStack.shift();
+  s.redoStack=[];
+  updateUndoUI();
+}
+function applyState(snap){
+  const s=S();
+  s.layers=snap.layers.map((l,i)=>({...l,img:snap.layerImgs[i]}));
+  s.activeLayerId=snap.activeLayerId;
+  s.bgColor=snap.bgColor;
+  templateRotDeg=snap.templateRotDeg;
+  syncControlsToActive();renderLayersList();draw();updateUndoUI();
+}
+function undo(){
+  const s=S();if(!s.undoStack.length)return;
+  const cur={label:'',layers:s.layers.map(l=>({...l,img:undefined})),layerImgs:s.layers.map(l=>l.img),activeLayerId:s.activeLayerId,bgColor:s.bgColor,templateRotDeg};
+  s.redoStack.push(cur);applyState(s.undoStack.pop());
+}
+function redo(){
+  const s=S();if(!s.redoStack.length)return;
+  const cur={label:'',layers:s.layers.map(l=>({...l,img:undefined})),layerImgs:s.layers.map(l=>l.img),activeLayerId:s.activeLayerId,bgColor:s.bgColor,templateRotDeg};
+  s.undoStack.push(cur);applyState(s.redoStack.pop());
+}
+function updateUndoUI(){
+  const s=S();
+  const disabled=!s.undoStack.length;
+  const rdisabled=!s.redoStack.length;
+  ['undoBtn','undoBtnPanel'].forEach(id=>{const el=document.getElementById(id);if(el)el.disabled=disabled;});
+  ['redoBtn','redoBtnPanel'].forEach(id=>{const el=document.getElementById(id);if(el)el.disabled=rdisabled;});
+  const last=s.undoStack[s.undoStack.length-1];
+  const lbl=document.getElementById('undoLabel');if(lbl)lbl.textContent=last?last.label:'';
+}
+document.addEventListener('keydown',e=>{
+  if((e.ctrlKey||e.metaKey)&&!e.shiftKey&&e.key==='z'){e.preventDefault();undo();}
+  if((e.ctrlKey||e.metaKey)&&(e.key==='y'||(e.shiftKey&&e.key==='z'))){e.preventDefault();redo();}
 });
 
-function bufToB64(buf) {
-  const bytes = new Uint8Array(buf);
-  let binary = '';
-  const chunk = 8192;
-  for (let i = 0; i < bytes.length; i += chunk) binary += String.fromCharCode(...bytes.subarray(i, i + chunk));
-  return btoa(binary);
+// ── Step nav ───────────────────────────────────────────────
+function toggleStep(n){
+  if(openStep===n)return;
+  document.getElementById('sb'+openStep).classList.remove('active');
+  for(let i=1;i<n;i++){const b=document.getElementById('sb'+i);b.classList.remove('active');b.classList.add('done');}
+  openStep=n;
+  document.getElementById('sb'+n).classList.add('active');
+  document.getElementById('sb'+n).classList.remove('done');
+  updateStepStyles();
 }
 
-function getFileType(name) { return name.split('.').pop().toUpperCase(); }
-function makeReference(fileName) { return fileName.replace(/\.[^.]+$/, '').substring(0, 40); }
+// ── Background ─────────────────────────────────────────────
+function initBgSwatches(){
+  document.getElementById('bgSwatches').innerHTML=BG_PRESETS.map(c=>{
+    const cls=c==='transparent'?'bg-sw bg-transparent':'bg-sw';
+    const style=c==='transparent'?'':'background:'+c;
+    return `<div class="${cls}" data-color="${c}" style="${style}" title="${c==='transparent'?'Transparent':c}" onclick="setBgColor('${c}')"></div>`;
+  }).join('');
+}
+function setBgColor(c){
+  setBgColorState(c==='transparent'?null:c);
+  if(c!=='transparent') document.getElementById('bgColorPicker').value=c;
+  document.querySelectorAll('.bg-sw').forEach(s=>s.classList.toggle('active',s.dataset.color===c));
+  captureState('Background');draw();
+}
+function clearBg(){
+  setBgColorState(null);
+  document.querySelectorAll('.bg-sw').forEach(s=>s.classList.remove('active'));
+  captureState('Remove background');draw();
+}
 
-async function encodeFile(f) {
-  const ext = f.name.split('.').pop().toLowerCase();
-  if (ext === 'pdf')  return { b64: bufToB64(await f.arrayBuffer()), mediaType: 'application/pdf', fileType: 'PDF', fileName: f.name };
-  if (ext === 'png')  return { b64: bufToB64(await f.arrayBuffer()), mediaType: 'image/png',        fileType: 'PNG', fileName: f.name };
-  if (ext === 'jpg' || ext === 'jpeg') return { b64: bufToB64(await f.arrayBuffer()), mediaType: 'image/jpeg', fileType: 'JPG', fileName: f.name };
-  if (ext === 'eps')  { const text = await f.text(); return { b64: btoa(unescape(encodeURIComponent(text))), mediaType: 'text/plain', fileType: 'EPS', fileName: f.name }; }
-  if (ext === 'zip' && typeof JSZip !== 'undefined') {
-    const zip = await JSZip.loadAsync(f);
-    const entry = Object.values(zip.files).find(e => e.name.toLowerCase().endsWith('.eps') && !e.name.startsWith('__MACOSX'));
-    if (!entry) throw new Error('No EPS found in ZIP');
-    const text = await entry.async('text');
-    return { b64: btoa(unescape(encodeURIComponent(text))), mediaType: 'text/plain', fileType: 'EPS', fileName: entry.name.split('/').pop() };
+// ── Layout ─────────────────────────────────────────────────
+function computeLayout(){
+  const spec=SKU_SPECS[currentSku];
+  if(!spec||!spec.w){TX=50;TY=50;TW=360;TH=460;BLEEDPX=10;SAFEPX=8;setCanvasSize(460,560);return;}
+  if(viewMode==='full'){
+    const mmPx=25.4/spec.dpi;
+    TW=Math.round(spec.w/mmPx);TH=Math.round(spec.h/mmPx);
+    BLEEDPX=Math.round(spec.bleed/mmPx);SAFEPX=Math.round((spec.safe_zone||5)/mmPx);
+    CW=TW+BLEEDPX*2+80;CH=TH+BLEEDPX*2+80;
+  }else{
+    const scrollEl=document.getElementById('canvasScroll');
+    const availW=isDoubleSided?Math.floor((scrollEl.clientWidth-40-12)*0.62):scrollEl.clientWidth-64;
+    const availH=scrollEl.clientHeight-80;
+    const pad=44, ar=spec.w/spec.h;
+    let tW=Math.min(availW-pad*2,460), tH=tW/ar;
+    if(tH>availH-pad*2){tH=availH-pad*2;tW=tH*ar;}
+    TW=Math.round(tW);TH=Math.round(tH);
+    BLEEDPX=Math.round(spec.bleed*(TW/spec.w));
+    SAFEPX=Math.round((spec.safe_zone||5)*(TW/spec.w));
+    CW=TW+BLEEDPX*2+80; if(CW<200)CW=460;
+    CH=TH+BLEEDPX*2+80; if(CH<200)CH=560;
   }
-  throw new Error('Unsupported file type: ' + ext);
+  TX=Math.round((CW-TW)/2);TY=Math.round((CH-TH)/2);
+  setCanvasSize(CW,CH);
 }
 
-function buildAssessmentPrompt(fileType) {
-  const isPDF = fileType === 'PDF';
-  const isImage = ['PNG','JPG','JPEG'].includes(fileType);
-  const fileDesc = isPDF ? 'PDF artwork file' : isImage ? `${fileType} image file` : 'EPS PostScript file';
-  const checks = [
-    isPDF  ? `IMAGE RESOLUTION: Check all embedded raster images. Minimum DPI is 300. Report actual DPI and pass/fail. If purely vector mark pass. id: "dpi"`
-    : isImage ? `IMAGE RESOLUTION: Assess pixel dimensions relative to expected print output. Minimum 300 DPI. id: "dpi"`
-    : `IMAGE RESOLUTION: Check embedded raster images meet 300 DPI minimum via image dictionary entries. If entirely vector mark pass. id: "dpi"`,
-    `PIXELATION / UPSAMPLING: Inspect for blocky pixel grid, jagged staircase edges, or blurry areas suggesting upsampling from a low-res original. id: "pixelation"`,
-    `BLEED: Expected 3mm bleed on all sides beyond trim. Does the artwork include sufficient bleed? id: "bleed"`,
-    isPDF  ? `COLOUR MODE: Inspect embedded images and colour spaces. Flag if RGB found (CMYK expected for print). id: "colour"`
-    : isImage ? `COLOUR MODE: PNG/JPG are typically RGB — flag this as a warning since CMYK is expected for print. id: "colour"`
-    : `COLOUR MODE: Check for setcmykcolor/DeviceCMYK vs setrgbcolor/DeviceRGB. Flag if RGB found. id: "colour"`,
-    isPDF  ? `WHITE EDGE: Visually inspect all four edges for any thin white or light strip — artwork not extended to the bleed line. Even 1–3mm is a FAIL. id: "white_edge"`
-    : isImage ? `WHITE EDGE: Inspect all four edges for any thin white or light strip not extending to the bleed line. id: "white_edge"`
-    : `WHITE EDGE: Do PostScript drawing commands fill to the BoundingBox edges, or stop short leaving implied white space? id: "white_edge"`,
-    `SAFE ZONE: Are any text, logos, or important elements within ~5mm of the trim edge, risking being cut off? id: "safe_zone"`,
-    isPDF  ? `FONTS: Are all fonts fully embedded or outlined in this PDF? Any missing fonts = FAIL. id: "fonts"`
-    : isImage ? `FONTS: Does visible text appear sharp and clean, or show rasterisation artefacts? Note embedding cannot be checked in raster files. id: "fonts"`
-    : `FONTS: Are fonts fully embedded or outlined in the EPS? Any unembedded non-outlined fonts = FAIL. id: "fonts"`,
-    isImage ? `TRANSPARENCY: Does this image contain transparent areas (alpha channel)? Transparency can cause unexpected backgrounds on press. id: "transparency"`
-    : `TRANSPARENCY / OVERPRINT: Any unflattened transparency or overprint settings that could cause unexpected results at print? id: "transparency"`,
-  ];
-  return `You are a professional print production specialist reviewing a ${fileDesc} for print readiness. Analyse it thoroughly and respond ONLY as a JSON array — no markdown, no preamble.\n\nEach object must have: "id" (from check), "label" (human-readable name), "status" (pass/fail/warn/info), "headline" (≤12 words), "detail" (1–3 sentences of specific findings).\n\nChecks:\n${checks.map((c,i) => `${i+1}. ${c}`).join('\n')}\n\nAdd a final object: id "overall", label "Overall verdict", status based on any fails present, headline and brief detail summary.\n\nJSON array only.`;
-}
-
-async function saveJob(jobData) {
-  try {
-    const r = await fetch('/api/jobs', { method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify(jobData) });
-    const data = await r.json();
-    if (!r.ok) { console.error('saveJob error', data); return null; }
-    return Array.isArray(data) ? data[0] : data;
-  } catch(e) { console.error('saveJob failed', e); return null; }
-}
-
-async function assessAndPatch(jobId, encoded) {
-  try {
-    const isImage = ['PNG','JPG','JPEG'].includes(encoded.fileType);
-    const contentBlock = isImage
-      ? { type:'image',    source:{ type:'base64', media_type:encoded.mediaType, data:encoded.b64 } }
-      : { type:'document', source:{ type:'base64', media_type:encoded.mediaType, data:encoded.b64 } };
-    const resp = await fetch('/api/assess', {
-      method:'POST', headers:{'Content-Type':'application/json'},
-      body: JSON.stringify({ model:'claude-sonnet-4-5', max_tokens:1500, messages:[{ role:'user', content:[contentBlock,{type:'text',text:buildAssessmentPrompt(encoded.fileType)}] }] })
-    });
-    const data = await resp.json();
-    if (data.error) throw new Error(data.error.message || JSON.stringify(data.error));
-    const raw = (data.content||[]).filter(b=>b.type==='text').map(b=>b.text).join('');
-    const results = JSON.parse(raw.replace(/```json|```/g,'').trim());
-    const overall = results.find(r=>r.id==='overall');
-    const checks  = results.filter(r=>r.id!=='overall');
-    const scorePct = checks.length ? Math.round(checks.filter(r=>r.status==='pass').length/checks.length*100) : null;
-    await fetch(`/api/job?id=${jobId}`, {
-      method:'PATCH', headers:{'Content-Type':'application/json'},
-      body:JSON.stringify({ assessed_at:new Date().toISOString(), results, score_pct:scorePct, overall_status:overall?overall.status:null, file_name:encoded.fileName, file_type:encoded.fileType })
-    });
-    return { results, scorePct, overallStatus: overall ? overall.status : null };
-  } catch(e) { console.error('assessAndPatch failed', e); return null; }
-}
-
-async function uploadToStorage(encoded, jobId) {
-  const extMap = {PDF:'pdf',PNG:'png',JPG:'jpg',JPEG:'jpg',EPS:'eps'};
-  const path = `${jobId}.${extMap[encoded.fileType]||'bin'}`;
-  try {
-    const r = await fetch('/api/upload', { method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify({ path, mediaType:encoded.mediaType, data:encoded.b64 }) });
-    const data = await r.json();
-    if (!r.ok) { console.error('upload failed', data); return null; }
-    await fetch(`/api/job?id=${jobId}`, { method:'PATCH', headers:{'Content-Type':'application/json'}, body:JSON.stringify({ storage_path:path }) });
-    return path;
-  } catch(e) { console.error('uploadToStorage failed', e); return null; }
-}
-
-async function addFilesToQueue(files) {
-  const validFiles = Array.from(files).filter(f => ['pdf','eps','zip','png','jpg','jpeg'].includes(f.name.split('.').pop().toLowerCase()));
-  if (!validFiles.length) { showToast('No supported files found'); return; }
-  showToast(`Adding ${validFiles.length} file${validFiles.length > 1 ? 's' : ''}…`);
-  const encodedFiles = await Promise.all(validFiles.map(async f => { try { return await encodeFile(f); } catch(e) { console.error('encodeFile failed', f.name, e); return null; } }));
-  const jobRecords = await Promise.all(encodedFiles.map(enc => enc ? saveJob({ reference:makeReference(enc.fileName), file_name:enc.fileName, file_type:enc.fileType, source:'Manual', customer_name:null, order_number:null }) : null));
-  const pairs = jobRecords.map((job,i) => ({job, enc:encodedFiles[i]})).filter(p => p.job && p.job.id && p.enc);
-  pairs.forEach(({job}) => allJobs.unshift(job));
-  renderTable();
-  showToast(`Uploading and assessing ${pairs.length} file${pairs.length!==1?'s':''}…`);
-  await Promise.all(pairs.map(async ({job,enc}) => {
-    uploadToStorage(enc, job.id).catch(e => console.error('storage upload error', e));
-    const assessment = await assessAndPatch(job.id, enc);
-    if (assessment) {
-      const idx = allJobs.findIndex(j => j.id === job.id);
-      if (idx !== -1) { allJobs[idx] = {...allJobs[idx], results:assessment.results, score_pct:assessment.scorePct, overall_status:assessment.overallStatus, assessed_at:new Date().toISOString()}; renderTable(); }
-    }
-  }));
-  showToast(`${pairs.length} file${pairs.length!==1?'s':''} assessed`);
-}
-
-async function handleCSV(e) {
-  const f = e.target.files[0]; if (!f) return;
-  const text = await f.text();
-  const lines = text.trim().split('\n');
-  if (lines.length < 2) { showToast('CSV appears empty'); return; }
-  const headers = lines[0].split(',').map(h => h.trim().toLowerCase().replace(/[^a-z_]/g,''));
-  const promises = lines.slice(1).map(async line => {
-    const vals = line.split(',').map(v => v.trim().replace(/^"|"$/g,''));
-    const row = {}; headers.forEach((h,i) => row[h] = vals[i]||'');
-    const fileName = row['file_name']||row['filename']||row['file']||''; if (!fileName) return null;
-    return saveJob({ reference:row['reference']||row['ref']||makeReference(fileName), file_name:fileName, file_type:getFileType(fileName), source:'CSV', customer_name:row['customer_name']||row['customer']||null, order_number:row['order_number']||row['order']||row['order_no']||null });
+function setCanvasSize(w,h){
+  CW=w;CH=h;
+  ['mainCanvas','snapCanvas','mainCanvas0','snapCanvas0','mainCanvas1','snapCanvas1'].forEach(id=>{
+    const el=document.getElementById(id);
+    if(el){el.width=w;el.height=h;}
   });
-  const results = await Promise.all(promises);
-  const saved = results.filter(j => j && j.id);
-  saved.forEach(job => allJobs.unshift(job));
-  renderTable();
-  showToast(`${saved.length} job${saved.length!==1?'s':''} added from CSV`);
-  e.target.value = '';
+  applyZoom();
 }
 
-function handleFiles(e) { addFilesToQueue(Array.from(e.target.files)); e.target.value = ''; }
-
-function showToast(msg) {
-  const t = document.getElementById('toast');
-  t.textContent = msg; t.classList.add('show');
-  setTimeout(() => t.classList.remove('show'), 2500);
+function remapLayersToNewLayout(oTW,oTH,oTX,oTY,nTW,nTH,nTX,nTY){
+  if(!oTW||!nTW)return;
+  const sx=nTW/oTW,sy=nTH/oTH;
+  S().layers.forEach(l=>{const rx=l.offsetX-oTX-oTW/2,ry=l.offsetY-oTY-oTH/2;l.offsetX=nTX+nTW/2+rx*sx;l.offsetY=nTY+nTH/2+ry*sy;l.scale*=sx;});
 }
 
-const banner = document.getElementById('dropBanner');
-banner.addEventListener('dragover', e => { e.preventDefault(); banner.classList.add('drag-over'); });
-banner.addEventListener('dragleave', () => banner.classList.remove('drag-over'));
-banner.addEventListener('drop', e => { e.preventDefault(); banner.classList.remove('drag-over'); addFilesToQueue(Array.from(e.dataTransfer.files)); });
-banner.addEventListener('click', e => { if (!e.target.closest('.db-browse')) document.getElementById('fileInput').click(); });
+// ── Zoom ───────────────────────────────────────────────────
+function applyZoom(){
+  ['canvasTransform','canvasTransform0','canvasTransform1'].forEach(id=>{
+    const t=document.getElementById(id);
+    if(!t)return;
+    t.style.transform=`scale(${zoomLevel})`;t.style.transformOrigin='top left';
+    t.style.width=CW+'px';t.style.height=CH+'px';
+  });
+  ['canvasOuter','canvasOuter0','canvasOuter1'].forEach(id=>{
+    const outer=document.getElementById(id);
+    if(!outer)return;
+    outer.style.width=Math.round(CW*zoomLevel)+'px';
+    outer.style.height=Math.round(CH*zoomLevel)+'px';
+  });
+  document.getElementById('zoomVal').textContent=Math.round(zoomLevel*100)+'%';
+}
+function zoomBy(delta){zoomLevel=Math.max(0.2,Math.min(4,zoomLevel+delta));applyZoom();}
+function zoomReset(){
+  const s=document.getElementById('canvasScroll');
+  zoomLevel=Math.min(1,Math.min((s.clientWidth-64)/CW,(s.clientHeight-64)/CH));
+  applyZoom();
+}
 
-loadJobs();
+// ── Draw ───────────────────────────────────────────────────
+function draw(){
+  if(!activeCtx) return;
+  const tmplA=parseInt(document.getElementById('tmplOpacity').value)/100;
+  document.getElementById('tmplOpVal').textContent=Math.round(tmplA*100)+'%';
+  drawToContext(activeCtx, S().layers, S().bgColor, true, tmplA);
+  updatePreflight();
+  updateStatusUI();
+  updatePosReadout();
+  drawInactiveSide();
+}
+
+function drawToContext(ctx, layers, bgColor, drawHandlesFlag, tmplA){
+  if(!ctx) return;
+  tmplA=tmplA!==undefined?tmplA:(parseInt(document.getElementById('tmplOpacity').value)/100);
+  ctx.clearRect(0,0,CW,CH);
+  ctx.fillStyle='#EEEDEA';ctx.fillRect(0,0,CW,CH);
+  if(!currentSku){return;}
+  const spec=SKU_SPECS[currentSku];
+  const bx=TX-BLEEDPX,by=TY-BLEEDPX,bw=TW+BLEEDPX*2,bh=TH+BLEEDPX*2;
+  if(bgColor){
+    ctx.save();ctx.beginPath();ctx.rect(bx,by,bw,bh);ctx.clip();
+    ctx.fillStyle=bgColor;ctx.fillRect(bx,by,bw,bh);ctx.restore();
+  }
+  for(let i=layers.length-1;i>=0;i--){
+    const l=layers[i];if(!l.visible||!l.img)continue;
+    const aw=l.img.width*l.scale,ah=l.img.height*l.scale;
+    ctx.save();ctx.globalAlpha=l.opacity;
+    ctx.translate(l.offsetX,l.offsetY);ctx.rotate(l.rotation||0);
+    if(l.flipX||l.flipY)ctx.scale(l.flipX?-1:1,l.flipY?-1:1);
+    ctx.drawImage(l.img,-aw/2,-ah/2,aw,ah);
+    ctx.restore();ctx.globalAlpha=1;
+  }
+  const svgTrim=spec.svg_trim||null;
+  const svgBleed=spec.svg_bleed||null;
+  const svgSafe=spec.svg_safe||null;
+  const svgVB=spec.svg_viewbox||'0 0 1000 1000';
+  const vbH=parseFloat(svgVB.split(' ')[3])||1000;
+  const svgScaleX=TW/1000;
+  const svgScaleY=TH/vbH;
+  function svgPathToCanvas(d){
+    if(!d)return null;
+    return new Path2D(d.replace(/(-?\d+\.?\d*)\s+(-?\d+\.?\d*)/g,(m,x,y)=>`${(parseFloat(x)*svgScaleX+TX).toFixed(2)} ${(parseFloat(y)*svgScaleY+TY).toFixed(2)}`));
+  }
+  function rectPath(x,y,w,h){const p=new Path2D();p.rect(x,y,w,h);return p;}
+  const trimPath=svgTrim?svgPathToCanvas(svgTrim):rectPath(TX,TY,TW,TH);
+  const bleedPath=svgBleed?svgPathToCanvas(svgBleed):rectPath(bx,by,bw,bh);
+  const safePath=svgSafe?svgPathToCanvas(svgSafe):(SAFEPX>0?rectPath(TX+SAFEPX,TY+SAFEPX,TW-SAFEPX*2,TH-SAFEPX*2):null);
+  ctx.save();ctx.globalAlpha=0.12;ctx.fillStyle='#fff';ctx.fill(bleedPath);ctx.restore();ctx.globalAlpha=1;
+  ctx.save();ctx.globalAlpha=tmplA;
+  ctx.fillStyle='rgba(30,100,220,0.10)';ctx.fill(trimPath);
+  ctx.strokeStyle='rgba(30,100,220,0.75)';ctx.lineWidth=1.5;ctx.stroke(trimPath);
+  ctx.restore();ctx.globalAlpha=1;
+  if(safePath){
+    ctx.save();ctx.strokeStyle='rgba(34,170,102,0.85)';ctx.lineWidth=1.5;
+    ctx.setLineDash([4,3]);ctx.stroke(safePath);ctx.setLineDash([]);ctx.restore();
+    ctx.globalAlpha=0.85;ctx.fillStyle='#1A8855';
+    ctx.font='bold 8px Inter,-apple-system,sans-serif';ctx.textAlign='left';
+    ctx.fillText(`Safe ${spec.safe_zone||5}mm`,TX+SAFEPX+3,TY+TH-SAFEPX-4);
+    ctx.globalAlpha=1;
+  }
+  if(spec.bleed>0){
+    ctx.save();ctx.strokeStyle='#F47920';ctx.lineWidth=2.5;
+    ctx.setLineDash([7,4]);ctx.stroke(bleedPath);ctx.setLineDash([]);ctx.restore();
+    ctx.globalAlpha=0.8;ctx.fillStyle='#C75E0A';
+    ctx.font='bold 8px Inter,-apple-system,sans-serif';ctx.textAlign='left';
+    ctx.fillText(`Bleed ${spec.bleed}mm`,bx+3,by+10);
+    ctx.globalAlpha=1;
+  }
+  ctx.globalAlpha=0.75;ctx.fillStyle='rgba(30,100,220,0.9)';
+  ctx.font='bold 8px Inter,-apple-system,sans-serif';ctx.textAlign='right';
+  ctx.fillText(`${spec.w||'?'}×${spec.h||'?'}mm`,TX+TW-3,TY+10);
+  ctx.globalAlpha=1;ctx.textAlign='start';
+  if(drawHandlesFlag) drawHandles(ctx);
+}
+
+// ── Snap guides ────────────────────────────────────────────
+function clearSnaps(){if(activeSnapCtx)activeSnapCtx.clearRect(0,0,CW,CH);}
+function checkSnaps(l){
+  if(!l||!snapEnabled){clearSnaps();return;}
+  if(!l.img)return;
+  clearSnaps();
+  const aw=l.img.width*l.scale,ah=l.img.height*l.scale;
+  const thresh=SNAP_THRESH/zoomLevel;
+  const xTargets=[TX,TX+TW/2,TX+TW];
+  const yTargets=[TY,TY+TH/2,TY+TH];
+  const lxPoints=[
+    {val:l.offsetX-aw/2,adjust:dx=>l.offsetX=dx+aw/2},
+    {val:l.offsetX,     adjust:dx=>l.offsetX=dx},
+    {val:l.offsetX+aw/2,adjust:dx=>l.offsetX=dx-aw/2},
+  ];
+  const lyPoints=[
+    {val:l.offsetY-ah/2,adjust:dy=>l.offsetY=dy+ah/2},
+    {val:l.offsetY,     adjust:dy=>l.offsetY=dy},
+    {val:l.offsetY+ah/2,adjust:dy=>l.offsetY=dy-ah/2},
+  ];
+  for(const xt of xTargets){for(const lp of lxPoints){if(Math.abs(lp.val-xt)<thresh){lp.adjust(xt);drawSnapLine('v',xt);break;}}}
+  for(const yt of yTargets){for(const lp of lyPoints){if(Math.abs(lp.val-yt)<thresh){lp.adjust(yt);drawSnapLine('h',yt);break;}}}
+}
+function drawSnapLine(dir,val){
+  if(!activeSnapCtx)return;
+  activeSnapCtx.strokeStyle='rgba(0,200,255,0.85)';activeSnapCtx.lineWidth=1;activeSnapCtx.setLineDash([4,3]);
+  activeSnapCtx.beginPath();
+  if(dir==='v'){activeSnapCtx.moveTo(val,0);activeSnapCtx.lineTo(val,CH);}
+  else{activeSnapCtx.moveTo(0,val);activeSnapCtx.lineTo(CW,val);}
+  activeSnapCtx.stroke();activeSnapCtx.setLineDash([]);
+}
+
+// ── Transform handles ──────────────────────────────────────
+function getHandlePositions(l){
+  if(!l||!l.img)return{};
+  const aw=l.img.width*l.scale,ah=l.img.height*l.scale,rot=l.rotation||0;
+  const c=Math.cos(rot),s=Math.sin(rot);
+  const ROT_DIST=28;
+  function pt(lx,ly){return{x:l.offsetX+lx*c-ly*s,y:l.offsetY+lx*s+ly*c};}
+  return{tl:pt(-aw/2,-ah/2),tc:pt(0,-ah/2),tr:pt(aw/2,-ah/2),ml:pt(-aw/2,0),mr:pt(aw/2,0),bl:pt(-aw/2,ah/2),bc:pt(0,ah/2),br:pt(aw/2,ah/2),rot:pt(0,-ah/2-ROT_DIST)};
+}
+function drawHandles(ctx){
+  const l=getActiveLayer();if(!l||!l.img)return;
+  const hp=getHandlePositions(l);
+  const tc=hp.tc;
+  ctx.beginPath();ctx.moveTo(tc.x,tc.y);ctx.lineTo(hp.rot.x,hp.rot.y);
+  ctx.strokeStyle='rgba(24,95,165,0.5)';ctx.lineWidth=1;ctx.stroke();
+  ['tl','tc','tr','ml','mr','bl','bc','br'].forEach(k=>{
+    const p=hp[k];ctx.fillStyle='#fff';ctx.strokeStyle='#185FA5';ctx.lineWidth=1.5;
+    ctx.beginPath();ctx.rect(p.x-HANDLE_R/2,p.y-HANDLE_R/2,HANDLE_R,HANDLE_R);ctx.fill();ctx.stroke();
+  });
+  ctx.fillStyle='#185FA5';ctx.strokeStyle='#fff';ctx.lineWidth=2;
+  ctx.beginPath();ctx.arc(hp.rot.x,hp.rot.y,HANDLE_R+1,0,Math.PI*2);ctx.fill();ctx.stroke();
+  ctx.fillStyle='#fff';ctx.font='bold 10px sans-serif';ctx.textAlign='center';ctx.textBaseline='middle';
+  ctx.fillText('↻',hp.rot.x,hp.rot.y);ctx.textAlign='start';ctx.textBaseline='alphabetic';
+}
+function hitTestHandle(x,y){
+  const l=getActiveLayer();if(!l)return null;
+  const hp=getHandlePositions(l);
+  for(const[k,p]of Object.entries(hp)){
+    const d=Math.hypot(x-p.x,y-p.y);
+    if(k==='rot'&&d<=HANDLE_R+3)return k;
+    if(k!=='rot'&&Math.abs(x-p.x)<=HANDLE_R&&Math.abs(y-p.y)<=HANDLE_R)return k;
+  }return null;
+}
+function pointInLayer(x,y,l){
+  if(!l||!l.img)return false;
+  const rot=l.rotation||0,c=Math.cos(-rot),s=Math.sin(-rot);
+  const dx=x-l.offsetX,dy=y-l.offsetY,lx=dx*c-dy*s,ly=dx*s+dy*c;
+  const hw=l.img.width*l.scale/2,hh=l.img.height*l.scale/2;
+  return lx>=-hw&&lx<=hw&&ly>=-hh&&ly<=hh;
+}
+function getCanvasXY(e){
+  const c=activeCanvas;if(!c)return{x:0,y:0};
+  const r=c.getBoundingClientRect();
+  return{x:(e.clientX-r.left)/zoomLevel,y:(e.clientY-r.top)/zoomLevel};
+}
+
+// ── Canvas event binding ───────────────────────────────────
+let _boundMousedown=null, _boundMousemove=null, _boundMouseup=null;
+function bindCanvasEvents(canvas){
+  if(!canvas)return;
+  if(_boundMousedown) document.removeEventListener('mousemove',_boundMousemove);
+  if(_boundMouseup)   document.removeEventListener('mouseup',_boundMouseup);
+  _boundMousedown=function(e){
+    const{x,y}=getCanvasXY(e);
+    const hk=hitTestHandle(x,y);
+    if(hk){
+      captureState('Transform');interactMode='handle';activeHandle=hk;
+      const l=getActiveLayer();
+      layerSnap={scale:l.scale,rotation:l.rotation||0,offsetX:l.offsetX,offsetY:l.offsetY};
+      mouseStart={x,y};canvas.style.cursor=hk==='rot'?'crosshair':'nwse-resize';return;
+    }
+    const layers=getLayers();
+    for(const l of layers){
+      if(!l.visible)continue;
+      if(pointInLayer(x,y,l)){
+        if(l.id!==getActiveLayerId())setActive(l.id);
+        captureState('Move');interactMode='drag';mouseStart={x,y};
+        const la=getActiveLayer();layerSnap={offsetX:la.offsetX,offsetY:la.offsetY};
+        canvas.style.cursor='grabbing';return;
+      }
+    }
+    setActiveLayerId(null);syncControlsToActive();renderLayersList();draw();
+  };
+  canvas.addEventListener('mousedown',_boundMousedown);
+  _boundMousemove=function(e){
+    if(!interactMode)return;
+    const{x,y}=getCanvasXY(e);const l=getActiveLayer();if(!l)return;
+    const dx=x-mouseStart.x,dy=y-mouseStart.y;
+    if(interactMode==='drag'){
+      l.offsetX=layerSnap.offsetX+dx;l.offsetY=layerSnap.offsetY+dy;
+      checkSnaps(l);draw();return;
+    }
+    if(interactMode==='handle'){
+      if(activeHandle==='rot'){
+        const sa=Math.atan2(mouseStart.y-l.offsetY,mouseStart.x-l.offsetX);
+        const na=Math.atan2(y-l.offsetY,x-l.offsetX);
+        l.rotation=layerSnap.rotation+(na-sa);syncControlsToActive();
+      }else{
+        const sd=Math.hypot(mouseStart.x-l.offsetX,mouseStart.y-l.offsetY);
+        const nd=Math.hypot(x-l.offsetX,y-l.offsetY);
+        if(sd>2)l.scale=Math.max(0.02,layerSnap.scale*(nd/sd));
+        syncControlsToActive();
+      }
+      draw();
+    }
+  };
+  document.addEventListener('mousemove',_boundMousemove);
+  _boundMouseup=function(){
+    if(interactMode){interactMode=null;activeHandle=null;canvas.style.cursor='';clearSnaps();renderLayersList();}
+  };
+  document.addEventListener('mouseup',_boundMouseup);
+  canvas.addEventListener('mousemove',function(e){
+    if(interactMode)return;
+    const{x,y}=getCanvasXY(e);
+    const hk=hitTestHandle(x,y);
+    if(hk)canvas.style.cursor=hk==='rot'?'crosshair':'nwse-resize';
+    else canvas.style.cursor=getLayers().some(l=>l.visible&&pointInLayer(x,y,l))?'grab':'default';
+  });
+  let tS={x:0,y:0},tL={};
+  canvas.addEventListener('touchstart',function(e){const l=getActiveLayer();if(!l)return;e.preventDefault();const t=e.touches[0],r=canvas.getBoundingClientRect();tS={x:(t.clientX-r.left)/zoomLevel,y:(t.clientY-r.top)/zoomLevel};tL={offsetX:l.offsetX,offsetY:l.offsetY};},{passive:false});
+  canvas.addEventListener('touchmove',function(e){const l=getActiveLayer();if(!l)return;e.preventDefault();const t=e.touches[0],r=canvas.getBoundingClientRect();l.offsetX=tL.offsetX+(t.clientX-r.left)/zoomLevel-tS.x;l.offsetY=tL.offsetY+(t.clientY-r.top)/zoomLevel-tS.y;checkSnaps(l);draw();},{passive:false});
+  canvas.addEventListener('touchend',function(){clearSnaps();renderLayersList();});
+}
+
+document.addEventListener('dragover',e=>{if(!e.target.closest('.right-panel')&&!e.target.closest('.upload-drop'))e.preventDefault();});
+document.addEventListener('drop',e=>{if(e.target.closest('.right-panel')||e.target.closest('.upload-drop'))return;e.preventDefault();Array.from(e.dataTransfer.files).forEach(loadLayerFile);});
+
+// ── Layer helpers ──────────────────────────────────────────
+function getActiveLayer(){return getLayers().find(l=>l.id===getActiveLayerId())||null;}
+function setActive(id){setActiveLayerId(id);syncControlsToActive();renderLayersList();draw();}
+function syncControlsToActive(){
+  const l=getActiveLayer();
+  const pct=l?Math.min(300,Math.max(5,Math.round(l.scale*100))):100;
+  document.getElementById('scaleSlider').value=pct;document.getElementById('scaleVal').textContent=pct+'%';
+  const rotDeg=l?Math.round((l.rotation||0)*180/Math.PI):0;
+  updateDial(rotDeg);
+  const op=l?Math.round(l.opacity*100):92;
+  document.getElementById('layerOpacity').value=op;document.getElementById('layerOpVal').textContent=op+'%';
+  const name=l?l.name:'No layer selected',short=name.length>22?name.slice(0,20)+'…':name;
+  document.getElementById('posActiveText').textContent=short;document.getElementById('opActiveText').textContent=short;
+  document.getElementById('posActiveTag').classList.toggle('show',!!l);
+  document.getElementById('opActiveTag').classList.toggle('show',!!l);
+  document.getElementById('flipHBtn').classList.toggle('flipped',!!(l&&l.flipX));
+  document.getElementById('flipVBtn').classList.toggle('flipped',!!(l&&l.flipY));
+  updateStepStyles();
+}
+function getActiveLayerOrOnlyVisible(){
+  let l=getActiveLayer();
+  if(!l){const vis=getLayers().filter(x=>x.visible);if(vis.length===1){setActive(vis[0].id);l=getActiveLayer();}}
+  return l;
+}
+function getRotatedFootprint(l){
+  const rotDeg=Math.round(((l.rotation||0)*180/Math.PI)%360+360)%360;
+  const swapped=(rotDeg===90||rotDeg===270);
+  return swapped?{w:l.img.height,h:l.img.width}:{w:l.img.width,h:l.img.height};
+}
+function centreOnTemplate(l){l.offsetX=TX+TW/2;l.offsetY=TY+TH/2;}
+function fitLayerToBleed(l){
+  if(!l.img||!currentSku)return;
+  const bw=TW+BLEEDPX*2,bh=TH+BLEEDPX*2;
+  const fp=getRotatedFootprint(l);
+  l.scale=Math.max(bw/fp.w,bh/fp.h);
+  centreOnTemplate(l);
+}
+function fitToBleed(){const l=getActiveLayerOrOnlyVisible();if(l){captureState('Fit to bleed');fitLayerToBleed(l);syncControlsToActive();draw();}}
+function fitToTrim(){
+  const l=getActiveLayerOrOnlyVisible();if(!l||!l.img)return;
+  captureState('Fit to trim');
+  const fp=getRotatedFootprint(l);
+  l.scale=Math.max(TW/fp.w,TH/fp.h);
+  centreOnTemplate(l);syncControlsToActive();draw();
+}
+function centreActive(){const l=getActiveLayerOrOnlyVisible();if(l){captureState('Centre');centreOnTemplate(l);draw();}}
+function resetActive(){const l=getActiveLayerOrOnlyVisible();if(!l)return;captureState('Reset');l.scale=1;l.rotation=0;centreOnTemplate(l);syncControlsToActive();draw();}
+function onScaleSlider(v){const l=getActiveLayer();if(!l)return;l.scale=parseInt(v)/100;document.getElementById('scaleVal').textContent=Math.round(l.scale*100)+'%';draw();}
+function setAbsoluteRot(deg){const l=getActiveLayer();if(!l)return;captureState(`Rotate ${deg}°`);l.rotation=deg*Math.PI/180;updateDial(deg);syncControlsToActive();draw();}
+function rotateTemplate(deg){templateRotDeg=(templateRotDeg+deg+360)%360;draw();}
+function onLayerOpacity(v){const l=getActiveLayer();if(!l)return;l.opacity=parseInt(v)/100;document.getElementById('layerOpVal').textContent=v+'%';draw();renderLayersList();}
+function updatePosReadout(){const l=getActiveLayer();if(!l||!TW){document.getElementById('posReadout').textContent='—';return;}document.getElementById('posReadout').textContent=`x ${Math.round(l.offsetX-TX-TW/2)}, y ${Math.round(l.offsetY-TY-TH/2)}`;}
+
+// ── Rotation dial ──────────────────────────────────────────
+const dialSvg=document.getElementById('rotDial');
+function updateDial(deg){
+  const rad=deg*Math.PI/180;const cx=50,cy=50,r=40;
+  const nx=cx+r*Math.sin(rad),ny=cy-r*Math.cos(rad);
+  document.getElementById('dialNeedle').setAttribute('x2',nx.toFixed(1));
+  document.getElementById('dialNeedle').setAttribute('y2',ny.toFixed(1));
+  document.getElementById('dialKnob').setAttribute('cx',nx.toFixed(1));
+  document.getElementById('dialKnob').setAttribute('cy',ny.toFixed(1));
+  document.getElementById('dialKnobTxt').setAttribute('x',nx.toFixed(1));
+  document.getElementById('dialKnobTxt').setAttribute('y',ny.toFixed(1));
+  const circ=2*Math.PI*42,frac=((deg%360)+360)%360/360;
+  document.getElementById('dialArc').setAttribute('stroke-dasharray',circ.toFixed(1));
+  document.getElementById('dialArc').setAttribute('stroke-dashoffset',(circ*(1-frac)).toFixed(1));
+  document.getElementById('rotDialReadout').textContent=Math.round(deg)+'°';
+  // update preset button styles
+  const snapped=[0,90,-90,180];
+  ['rp0d','rp90d','rpn90d','rp180d'].forEach((id,i)=>{
+    const btn=document.getElementById(id);if(!btn)return;
+    if(Math.round(deg)===snapped[i]){
+      btn.style.background='#F47920';btn.style.color='#ffffff';btn.style.borderColor='#E07010';
+    } else {
+      btn.style.background='#D3D1C7';btn.style.color='#2C2C2A';btn.style.borderColor='#888780';
+    }
+  });
+}
+function getDialDeg(e){
+  const r=dialSvg.getBoundingClientRect();
+  const cx=r.left+r.width/2,cy=r.top+r.height/2;
+  const cx2=e.touches?e.touches[0].clientX:e.clientX;
+  const cy2=e.touches?e.touches[0].clientY:e.clientY;
+  return Math.atan2(cx2-cx,-(cy2-cy))*180/Math.PI;
+}
+dialSvg.addEventListener('mousedown',e=>{dialDragging=true;captureState('Rotate');e.preventDefault();});
+dialSvg.addEventListener('touchstart',e=>{dialDragging=true;captureState('Rotate');e.preventDefault();},{passive:false});
+window.addEventListener('mousemove',e=>{if(!dialDragging)return;const deg=getDialDeg(e);const l=getActiveLayer();if(!l)return;l.rotation=deg*Math.PI/180;updateDial(deg);draw();});
+window.addEventListener('touchmove',e=>{if(!dialDragging)return;e.preventDefault();const deg=getDialDeg(e);const l=getActiveLayer();if(!l)return;l.rotation=deg*Math.PI/180;updateDial(deg);draw();},{passive:false});
+window.addEventListener('mouseup',()=>{if(dialDragging){dialDragging=false;renderLayersList();}});
+window.addEventListener('touchend',()=>{if(dialDragging){dialDragging=false;renderLayersList();}});
+
+// ── File loading ───────────────────────────────────────────
+function handleFileInput(e){Array.from(e.target.files).forEach(loadLayerFile);e.target.value='';}
+function handleDropOnZone(e){e.preventDefault();document.getElementById('uploadDrop').classList.remove('drag-over');Array.from(e.dataTransfer.files).forEach(loadLayerFile);}
+function loadLayerFile(file){
+  if(file.type.startsWith('image/')){
+    const reader=new FileReader();
+    reader.onload=ev=>{const img=new Image();img.onload=()=>{captureState('Add layer');addLayer(file.name,img,ev.target.result,file.type);};img.src=ev.target.result;};
+    reader.readAsDataURL(file);
+  }else{
+    const oc=document.createElement('canvas');oc.width=Math.max(TW||300,200);oc.height=Math.max(TH||400,200);
+    const c=oc.getContext('2d');c.fillStyle='#ddeeff';c.fillRect(0,0,oc.width,oc.height);
+    c.fillStyle='#3366aa';c.font=`bold ${Math.round(oc.width/10)}px sans-serif`;c.textAlign='center';
+    c.fillText(file.name.split('.').pop().toUpperCase(),oc.width/2,oc.height/2-12);
+    c.font=`${Math.round(oc.width/18)}px sans-serif`;c.fillStyle='#5588bb';c.fillText('Preview unavailable',oc.width/2,oc.height/2+16);
+    const img=new Image();img.onload=()=>{captureState('Add layer');addLayer(file.name,img,null,file.type);};img.src=oc.toDataURL();
+  }
+}
+function addLayer(name,img,srcB64,srcMime){
+  const id='layer_'+Date.now()+'_'+Math.random().toString(36).slice(2,5);
+  const layer={id,name,img,srcB64,srcMime:srcMime||'image/png',scale:1,offsetX:TX+TW/2||230,offsetY:TY+TH/2||280,rotation:0,visible:true,opacity:0.92,flipX:false,flipY:false};
+  S().layers.unshift(layer);
+  setActiveLayerId(id);
+  computeLayout();fitLayerToBleed(layer);
+  syncControlsToActive();renderLayersList();draw();
+  if(openStep<4)toggleStep(4);
+}
+
+// ── Layers panel ───────────────────────────────────────────
+function renderLayersList(){
+  const list=document.getElementById('layersList');
+  const layers=getLayers();
+  if(!layers.length){list.innerHTML='<div style="padding:14px 10px;font-size:10px;color:#B4B2A9;text-align:center;line-height:1.5">No layers yet.<br>Upload artwork to begin.</div>';return;}
+  list.innerHTML=layers.map(l=>{
+    const sel=l.id===getActiveLayerId(),rotDeg=Math.round((l.rotation||0)*180/Math.PI);
+    const flipStr=(l.flipX?'↔':'')+( l.flipY?'↕':'');
+    return `<div class="layer-item${sel?' selected':''}${!l.visible?' hidden-layer':''}" draggable="true" data-id="${l.id}">
+      <span class="li-drag">⠿</span>
+      <canvas class="li-thumb" id="th_${l.id}" width="26" height="26"></canvas>
+      <div class="li-info">
+        <div class="li-name" title="${l.name}">${l.name}</div>
+        <div class="li-meta">${Math.round(l.scale*100)}%${rotDeg?` · ${rotDeg}°`:''}${flipStr?` · ${flipStr}`:''}</div>
+      </div>
+      <div class="li-btns">
+        <button class="li-btn${l.visible?' vis-on':''}" data-action="vis" data-id="${l.id}" title="${l.visible?'Hide':'Show'}">${l.visible?'👁':'🚫'}</button>
+        <button class="li-btn del" data-action="del" data-id="${l.id}" title="Delete">✕</button>
+      </div>
+    </div>`;
+  }).join('');
+  layers.forEach(l=>{if(!l.img)return;const tc=document.getElementById('th_'+l.id);if(!tc)return;const c=tc.getContext('2d');c.clearRect(0,0,26,26);const ar=l.img.width/l.img.height;let tw=26,th=26;if(ar>1)th=Math.round(26/ar);else tw=Math.round(26*ar);c.drawImage(l.img,(26-tw)/2,(26-th)/2,tw,th);});
+}
+document.getElementById('layersList').addEventListener('click',e=>{
+  const btn=e.target.closest('button[data-action]');
+  if(btn){
+    if(btn.dataset.action==='vis'){toggleVis(btn.dataset.id);return;}
+    if(btn.dataset.action==='del'){captureState('Delete layer');delLayer(btn.dataset.id);return;}
+  }
+  const item=e.target.closest('.layer-item[data-id]');
+  if(item&&!e.target.closest('button'))setActive(item.dataset.id);
+});
+document.getElementById('layersList').addEventListener('dragstart',e=>{const item=e.target.closest('.layer-item[data-id]');if(item)dragSrcId=item.dataset.id;});
+document.getElementById('layersList').addEventListener('dragover',e=>e.preventDefault());
+document.getElementById('layersList').addEventListener('drop',e=>{
+  e.preventDefault();const item=e.target.closest('.layer-item[data-id]');
+  if(!item||dragSrcId===item.dataset.id)return;
+  captureState('Reorder');
+  const layers=S().layers;
+  const fi=layers.findIndex(x=>x.id===dragSrcId),ti=layers.findIndex(x=>x.id===item.dataset.id);
+  if(fi!==-1&&ti!==-1){const[m]=layers.splice(fi,1);layers.splice(ti,0,m);}
+  renderLayersList();draw();
+});
+document.getElementById('layersList').addEventListener('dragend',()=>{dragSrcId=null;});
+function toggleVis(id){const l=getLayers().find(x=>x.id===id);if(!l)return;captureState('Visibility');l.visible=!l.visible;renderLayersList();draw();}
+function delLayer(id){
+  S().layers=S().layers.filter(x=>x.id!==id);
+  if(getActiveLayerId()===id) setActiveLayerId(S().layers[0]?.id||null);
+  syncControlsToActive();renderLayersList();draw();
+}
+
+// ── Status UI ──────────────────────────────────────────────
+function allWarnsAcknowledged(){
+  const pairs=[['pfBleed','ovBleed'],['pfDpi','ovDpi'],['pfSafe','ovSafe'],['pfColour','ovColour']];
+  return pairs.every(([pfId,cbId])=>{
+    const item=document.getElementById(pfId);
+    if(!item||item.dataset.pfState!=='warn')return true;
+    const cb=document.getElementById(cbId);
+    return !!(cb&&cb.checked);
+  });
+}
+function hasFailItems(){
+  return['pfBleed','pfDpi','pfSafe','pfColour'].some(id=>{
+    const item=document.getElementById(id);
+    return !!(item&&item.dataset.pfState==='fail');
+  });
+}
+function onOverrideChange(){updateStatusUI();}
+
+function updateStatusUI(){
+  try{
+    const layers=getLayers();
+    const enbl=v=>{
+      document.getElementById('btnSubmit').disabled=!v;
+      document.getElementById('btnAssessor').disabled=layers.length===0;
+    };
+    if(isDoubleSided){
+      document.getElementById('btnSubmit').disabled=true;
+      document.getElementById('btnAssessor').disabled=layers.length===0;
+      return;
+    }
+    const statusEl=document.getElementById('canvasStatus');
+    if(!statusEl){enbl(false);return;}
+    function set(cls,msg){statusEl.className='canvas-status '+cls;statusEl.textContent=msg;}
+    if(!currentSku){set('cs-idle','Select a SKU and upload artwork to begin');enbl(false);return;}
+    const vis=layers.filter(l=>l.visible&&l.img);
+    if(!vis.length){set('cs-idle','Upload artwork to continue');enbl(false);return;}
+    const spec=SKU_SPECS[currentSku];
+    if(!spec){set('cs-idle','Select a SKU to continue');enbl(false);return;}
+    const bx=TX-BLEEDPX,by=TY-BLEEDPX,bw=TW+BLEEDPX*2,bh=TH+BLEEDPX*2;
+    const top=vis[0],fp=getRotatedFootprint(top),aw=fp.w*top.scale,ah=fp.h*top.scale;
+    const al=top.offsetX-aw/2,at=top.offsetY-ah/2;
+    const COVERAGE_EPS=0.5;
+    const coversBleed=al<=bx+COVERAGE_EPS&&at<=by+COVERAGE_EPS&&(al+aw)>=(bx+bw)-COVERAGE_EPS&&(at+ah)>=(by+bh)-COVERAGE_EPS;
+    const coversTrim=al<=TX+COVERAGE_EPS&&at<=TY+COVERAGE_EPS&&(al+aw)>=(TX+TW)-COVERAGE_EPS&&(at+ah)>=(TY+TH)-COVERAGE_EPS;
+    const coverageOk=spec.bleed===0?coversTrim:coversBleed;
+    if(!coversTrim&&!coverageOk){set('cs-warn','⚠ Artwork does not cover the trim area');enbl(false);return;}
+    if(hasFailItems()){set('cs-warn','⚠ Critical issues must be resolved before submitting');enbl(false);return;}
+    const warnsOk=allWarnsAcknowledged();
+    if(!warnsOk){
+      const warnMsg=coverageOk?'⚠ Acknowledge all warnings below before submitting':'⚠ Covers trim but not bleed — acknowledge warnings to proceed';
+      set('cs-warn',warnMsg);enbl(false);return;
+    }
+    set('cs-ok','✓ Artwork covers the '+(spec.bleed>0?'bleed':'trim')+' area — ready to submit');enbl(true);
+  }catch(e){console.error('updateStatusUI error:',e);}
+}
+
+// ── Preflight ──────────────────────────────────────────────
+function setPF(id,state,val,detail){
+  const item=document.getElementById(id);
+  const prevState=item.dataset.pfState||'idle';
+  item.className='pf-item '+state;
+  item.dataset.pfState=state;
+  item.querySelector('.pf-dot').className='pf-dot '+state;
+  item.querySelector('.pf-val').textContent=val;
+  item.querySelector('.pf-detail').textContent=detail||'';
+  if(state!==prevState){const cb=item.querySelector('input[type=checkbox]');if(cb)cb.checked=false;}
+}
+function updatePreflight(){
+  const spec=currentSku?SKU_SPECS[currentSku]:null;
+  const layers=getLayers();
+  const vis=layers.filter(l=>l.visible&&l.img);
+  if(!spec||!vis.length){['pfBleed','pfDpi','pfSafe','pfColour'].forEach(id=>setPF(id,'idle','—',''));return;}
+  const top=vis[0];
+  const bx=TX-BLEEDPX,by=TY-BLEEDPX,bw=TW+BLEEDPX*2,bh=TH+BLEEDPX*2;
+  const fp=getRotatedFootprint(top),aw=fp.w*top.scale,ah=fp.h*top.scale;
+  const al=top.offsetX-aw/2,at=top.offsetY-ah/2;
+  const COVERAGE_EPS=0.5;
+  const coversBleed=al<=bx+COVERAGE_EPS&&at<=by+COVERAGE_EPS&&(al+aw)>=(bx+bw)-COVERAGE_EPS&&(at+ah)>=(by+bh)-COVERAGE_EPS;
+  const coversTrim=al<=TX+COVERAGE_EPS&&at<=TY+COVERAGE_EPS&&(al+aw)>=(TX+TW)-COVERAGE_EPS&&(at+ah)>=(TY+TH)-COVERAGE_EPS;
+  if(spec.bleed===0){setPF('pfBleed',coversTrim?'pass':'warn',coversTrim?'OK':'Check',coversTrim?'Trim covered':'Artwork may not reach trim edges');}
+  else{
+    if(coversBleed)setPF('pfBleed','pass','OK',`Artwork extends ${spec.bleed}mm beyond trim`);
+    else if(coversTrim)setPF('pfBleed','warn','Trim only',`Artwork doesn't reach the ${spec.bleed}mm bleed boundary`);
+    else setPF('pfBleed','fail','Missing','Artwork does not cover the trim area');
+  }
+  if(spec.w){
+    const artWidthMM=aw*(spec.w/TW);
+    const dpiEst=Math.round(top.img.width/(artWidthMM/25.4));
+    if(dpiEst>=spec.dpi)setPF('pfDpi','pass',dpiEst+'dpi',`Meets ${spec.dpi}dpi minimum`);
+    else if(dpiEst>=spec.dpi*0.75)setPF('pfDpi','warn',dpiEst+'dpi',`Below ${spec.dpi}dpi minimum — may show pixelation`);
+    else setPF('pfDpi','fail',dpiEst+'dpi',`Significantly below ${spec.dpi}dpi — will pixelate in print`);
+  }else{setPF('pfDpi','idle','—','Custom size — check DPI manually');}
+  const aiBtn=document.getElementById('btnAiUpscale');
+  if(aiBtn){
+    const tooLarge=top.img.width>UPSCALE_MAX_DIMENSION||top.img.height>UPSCALE_MAX_DIMENSION;
+    aiBtn.style.display=tooLarge?'none':'';
+  }
+  const szL=TX+SAFEPX,szT=TY+SAFEPX,szR=TX+TW-SAFEPX,szB=TY+TH-SAFEPX;
+  const inSafe=al>=szL&&at>=szT&&(al+aw)<=szR&&(at+ah)<=szB;
+  const sz=spec.safe_zone||5;
+  if(inSafe)setPF('pfSafe','pass','Clear',`Content within the ${sz}mm safe zone`);
+  else setPF('pfSafe','warn','Check edges',`Content may be within ${sz}mm of trim — risk of cut-off`);
+  const mime=top.srcMime||'';
+  const isRaster=mime.includes('png')||mime.includes('jpeg')||mime.includes('jpg');
+  if(spec.colour==='CMYK'&&isRaster)setPF('pfColour','warn','RGB file',`${spec.colour} expected — convert before final submission`);
+  else setPF('pfColour','pass',spec.colour,'Colour mode appears correct');
+}
+
+// ── View mode ──────────────────────────────────────────────
+function setViewMode(m){
+  const spec=currentSku?SKU_SPECS[currentSku]:null;if(!spec||!spec.w){viewMode=m;return;}
+  document.getElementById('stWorking').classList.toggle('active',m==='working');
+  document.getElementById('stFull').classList.toggle('active',m==='full');
+  const spinner=document.getElementById('canvasSpinner');
+  if(spinner)spinner.classList.add('active');
+  requestAnimationFrame(()=>{
+    setTimeout(()=>{
+      const oTW=TW,oTH=TH,oTX=TX,oTY=TY;viewMode=m;
+      computeLayout();remapLayersToNewLayout(oTW,oTH,oTX,oTY,TW,TH,TX,TY);
+      updateViewInfo();draw();
+      if(spinner)spinner.classList.remove('active');
+    },0);
+  });
+}
+function updateViewInfo(){
+  const spec=currentSku?SKU_SPECS[currentSku]:null;const info=document.getElementById('ctInfo');
+  if(viewMode==='full'&&spec&&spec.w){const mmPx=25.4/spec.dpi;info.textContent=`Full size: ${Math.round(spec.w/mmPx)}×${Math.round(spec.h/mmPx)}px at ${spec.dpi}dpi`;}
+  else info.textContent='Scaled to fit screen';
+}
+
+// ── Flip ───────────────────────────────────────────────────
+function flipLayer(axis){
+  const l=getActiveLayer();if(!l)return;
+  captureState('Flip '+(axis==='h'?'horizontal':'vertical'));
+  if(axis==='h') l.flipX=!l.flipX;
+  else           l.flipY=!l.flipY;
+  syncControlsToActive();renderLayersList();draw();
+}
+
+// ── Copy design to other side ──────────────────────────────
+function copyDesignToOtherSide(){
+  if(!isDoubleSided)return;
+  const destIdx=activeSide===0?1:0;
+  const destLabel='Side '+(destIdx+1);
+  const srcLabel='Side '+(activeSide+1);
+  if(!confirm(`Copy ${srcLabel} to ${destLabel}?\n\nThis will overwrite any artwork already on ${destLabel}.`))return;
+  const srcState=S();
+  const copiedLayers=srcState.layers.map(l=>({...l}));
+  sides[destIdx].layers=copiedLayers;
+  sides[destIdx].activeLayerId=srcState.activeLayerId;
+  sides[destIdx].bgColor=srcState.bgColor;
+  sides[destIdx].undoStack=[];
+  sides[destIdx].redoStack=[];
+  showToast(`${srcLabel} copied to ${destLabel}`);
+  drawInactiveSide();
+}
+
+// ── Submit ─────────────────────────────────────────────────
+async function submitToArtworkList(){
+  if(isDoubleSided){showToast('Double-sided submit not yet implemented');return;}
+  const layers=getLayers();
+  if(!layers.length){showToast('No artwork to submit');return;}
+  const topLayer=layers[0];
+  const ref=(topLayer.name||'designer-upload').replace(/\.[^.]+$/,'').substring(0,40);
+  showToast('Creating job record…');
+  let job=null;
+  try{
+    const r=await fetch('/api/jobs',{method:'POST',headers:{'Content-Type':'application/json'},
+    body:JSON.stringify({reference:ref,file_name:topLayer.name||'artwork',
+        file_type:(topLayer.srcMime||'').split('/').pop().toUpperCase()||'IMG',
+        source:'Designer',sku:currentSku||null,sku_name:currentSkuRow?currentSkuRow.sku_file||null:null,customer_name:null,order_number:null})});
+    if(!r.ok) throw new Error('HTTP '+r.status+': '+await r.text());
+    const d=await r.json();job=Array.isArray(d)?d[0]:d;
+  }catch(e){showToast('Job creation failed: '+e.message);return;}
+  if(!job?.id){showToast('Job creation failed — no ID returned');return;}
+  jobId=job.id;
+  if(topLayer.srcB64){
+    showToast('Uploading artwork…');
+    try{
+      const SUPABASE_URL='https://fqaxuhbcwoikeldnxuvv.supabase.co';
+      const SUPABASE_ANON_KEY='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImZxYXh1aGJjd29pa2VsZG54dXZ2Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODExNjk2NTQsImV4cCI6MjA5Njc0NTY1NH0.0XtMq5p6L9pnRilG5GUI5j72zPNuhl4PnD9ihDxeT1c';
+      const mime=topLayer.srcMime||'image/png';
+      const ext=mime.split('/').pop().replace('jpeg','jpg');
+      const storagePath=`${job.id}.${ext}`;
+      const b64data=topLayer.srcB64.includes(',')?topLayer.srcB64.split(',')[1]:topLayer.srcB64;
+      const byteChars=atob(b64data);
+      const byteNums=new Array(byteChars.length);
+      for(let i=0;i<byteChars.length;i++) byteNums[i]=byteChars.charCodeAt(i);
+      const blob=new Blob([new Uint8Array(byteNums)],{type:mime});
+      const uploadResp=await fetch(
+        `${SUPABASE_URL}/storage/v1/object/artwork/${storagePath}`,
+        {method:'POST',
+         headers:{'apikey':SUPABASE_ANON_KEY,'Authorization':'Bearer '+SUPABASE_ANON_KEY,
+                  'Content-Type':mime,'x-upsert':'true'},
+         body:blob}
+      );
+      if(!uploadResp.ok){
+        const errBody=await uploadResp.text();
+        throw new Error('Storage upload failed ('+uploadResp.status+'): '+errBody);
+      }
+      showToast('Linking file to job…');
+      const pfIds=['pfBleed','pfDpi','pfSafe','pfColour'];
+      const pfResults=pfIds.map(id=>{
+        const el=document.getElementById(id);
+        const state=el?el.dataset.pfState:'idle';
+        const label=el?el.querySelector('.pf-label')?.textContent||id:id;
+        const detail=el?el.querySelector('.pf-detail')?.textContent||'':'';
+        const val=el?el.querySelector('.pf-val')?.textContent||'':'';
+        return {id,label,status:state==='pass'?'pass':state==='fail'?'fail':state==='warn'?'warn':'info',headline:val,detail};
+      }).filter(r=>r.status!=='info');
+      const passed=pfResults.filter(r=>r.status==='pass').length;
+      const scorePct=pfResults.length?Math.round(passed/pfResults.length*100):null;
+      const overallStatus=pfResults.some(r=>r.status==='fail')?'fail':pfResults.some(r=>r.status==='warn')?'warn':'pass';
+      const now=new Date().toISOString();
+      const patchResp=await fetch(`/api/job?id=${job.id}`,
+        {method:'PATCH',headers:{'Content-Type':'application/json'},
+         body:JSON.stringify({
+           storage_path:storagePath,
+           score_pct:scorePct,
+           overall_status:overallStatus,
+           assessed_at:now,
+           results:pfResults,
+           sku:currentSku||null,
+           sku_name:currentSkuRow?currentSkuRow.sku_file||null:null
+         })});
+      if(!patchResp.ok){
+        const pe=await patchResp.text();
+        throw new Error('Job link failed ('+patchResp.status+'): '+pe);
+      }
+    }catch(e){
+      console.error('Artwork upload error:',e);
+      showToast('⚠ Upload error: '+e.message);
+      return;
+    }
+  }
+  showToast('Saved — redirecting…');
+  setTimeout(()=>window.location.href='/dashboard',1200);
+}
+function goToAssessor(){const p=new URLSearchParams();if(jobId)p.set('job',jobId);if(currentSku)p.set('sku',currentSku);window.location.href='/artwork-assessor'+(p.toString()?'?'+p.toString():'');}
+function showToast(msg){const t=document.getElementById('toast');t.textContent=msg;t.classList.add('show');setTimeout(()=>t.classList.remove('show'),2200);}
+
+// ── Init ───────────────────────────────────────────────────
+initBgSwatches();
+activeCanvas=document.getElementById('mainCanvas');
+activeSnapCanvas=document.getElementById('snapCanvas');
+activeCtx=activeCanvas.getContext('2d');
+activeSnapCtx=activeSnapCanvas.getContext('2d');
+bindCanvasEvents(activeCanvas);
+
+const _p=new URLSearchParams(window.location.search);
+jobId=_p.get('job')||null;const urlSku=_p.get('sku')||'';
+async function loadArtworkFromStorage(job){
+  if(!job.storage_path)return;
+  try{
+    const r=await fetch('/api/file?path='+encodeURIComponent(job.storage_path));
+    if(!r.ok)return;
+    const d=await r.json();
+    if(!d?.b64)return;
+    const img=new Image();
+    const dataUrl='data:'+d.mediaType+';base64,'+d.b64;
+    img.onload=()=>addLayer(job.file_name||'Stored file',img,dataUrl,d.mediaType);
+    img.src=dataUrl;
+  }catch(e){console.error('artwork load failed',e);}
+}
+
+async function loadSkuAndArtwork(skuKey, job){
+  if(SKU_SPECS[skuKey]){
+    applySkuRow(Object.assign({sku_family:skuKey},SKU_SPECS[skuKey]));
+    if(job)await loadArtworkFromStorage(job);
+    return;
+  }
+  try{
+    const db=await loadSkuDb();
+    const row=db.find(r=>(r.sku_file||'').toLowerCase()===skuKey.toLowerCase())||
+              db.find(r=>(r.sku_family||'').toLowerCase()===skuKey.toLowerCase());
+    if(row){
+      applySkuRow(row);
+      if(job)await loadArtworkFromStorage(job);
+    }
+  }catch(e){console.error('SKU lookup failed',e);}
+}
+
+if(jobId){
+  fetch('/api/job?id='+jobId).then(r=>r.json()).then(async job=>{
+    if(!job)return;
+    document.getElementById('jobBar').classList.add('show');
+    document.getElementById('jbRef').textContent=job.reference||'—';
+    document.getElementById('jbCustomer').textContent=job.customer_name||'—';
+    document.getElementById('jbOrder').textContent=job.order_number||'—';
+    // Update topbar ref
+    const refEl=document.getElementById('topbarRef');
+    if(refEl)refEl.textContent=job.reference||'Designer';
+    const sku=job.sku_name||job.sku||urlSku;
+    if(sku) await loadSkuAndArtwork(sku, job);
+    else if(job.storage_path) await loadArtworkFromStorage(job);
+  }).catch(e=>console.error('job load',e));
+}else if(urlSku){
+  loadSkuAndArtwork(urlSku, null);
+}
+computeLayout();draw();updateDial(0);
+
+// ═══════════════════════════════════════════════════════════
+// TEMPLATE INTEGRATION — Supabase sku_specs + PDF overlay
+// ═══════════════════════════════════════════════════════════
+const SUPABASE_STORAGE='https://fqaxuhbcwoikeldnxuvv.supabase.co/storage/v1/object/public/templates/';
+let skuDbCache=null;
+let skuSearchTimeout=null;
+let currentSkuRow=null;
+
+async function loadSkuDb(){
+  if(skuDbCache) return skuDbCache;
+  try{
+    const r=await fetch('/api/sku?limit=600');
+    if(!r.ok) throw new Error('SKU load failed');
+    skuDbCache=await r.json();
+    return skuDbCache;
+  }catch(e){console.error('SKU DB load failed:',e);return[];}
+}
+
+async function onSkuSearch(q){
+  const dd=document.getElementById('skuSearchDd');
+  clearTimeout(skuSearchTimeout);
+  if(!q||q.length<1){dd.classList.remove('show');return;}
+  dd.innerHTML='<div class="sku-loading">Loading…</div>';
+  dd.classList.add('show');
+  skuSearchTimeout=setTimeout(async()=>{
+    const db=await loadSkuDb();
+    const ql=q.toLowerCase();
+    const matches=db.filter(r=>
+      (r.sku_family||'').toLowerCase().includes(ql)||
+      (r.product_name||'').toLowerCase().includes(ql)||
+      (r.template_code||'').toLowerCase().includes(ql)||
+      (r.sku_file||'').toLowerCase().includes(ql)
+    ).slice(0,40);
+    if(!matches.length){dd.innerHTML='<div class="sku-dd-empty">No results for "'+q+'"</div>';return;}
+    dd._matches=matches;
+    dd.innerHTML=matches.map((r,i)=>{
+      const w=r.finished_w_mm,h=r.finished_h_mm;
+      const dims=w?`${Math.round(w)}×${Math.round(h)}mm`:'';
+      const dpi=r.required_dpi?`${r.required_dpi}dpi`:'';
+      return `<div class="sku-dd-opt" data-idx="${i}" onclick="selectSkuFromDd(${i})">
+        <span class="sku-dd-family">${r.sku_family||'—'}<span style="font-weight:400;color:#B4B2A9;margin-left:5px">${r.template_code||''}</span></span>
+        <span class="sku-dd-name">${r.product_name||r.sku_file||'—'}</span>
+        ${(dims||dpi)?`<span class="sku-dd-dims">${[dims,dpi,r.colour_profile].filter(Boolean).join(' · ')}</span>`:''}
+      </div>`;
+    }).join('');
+  },180);
+}
+
+function onSkuSearchKey(e){
+  const dd=document.getElementById('skuSearchDd');
+  const opts=[...dd.querySelectorAll('.sku-dd-opt')];
+  const hi=dd.querySelector('.hi');
+  if(e.key==='ArrowDown'){e.preventDefault();const nx=hi?(opts[opts.indexOf(hi)+1]||opts[0]):opts[0];hi?.classList.remove('hi');nx?.classList.add('hi');nx?.scrollIntoView({block:'nearest'});}
+  else if(e.key==='ArrowUp'){e.preventDefault();const pv=hi?(opts[opts.indexOf(hi)-1]||opts[opts.length-1]):opts[opts.length-1];hi?.classList.remove('hi');pv?.classList.add('hi');pv?.scrollIntoView({block:'nearest'});}
+  else if(e.key==='Enter'){e.preventDefault();const hiOpt=dd.querySelector('.hi');if(hiOpt&&dd._matches){applySkuRow(dd._matches[parseInt(hiOpt.dataset.idx)]);dd.classList.remove('show');}}
+  else if(e.key==='Escape'){dd.classList.remove('show');}
+}
+
+function selectSkuFromDd(idx){
+  const dd=document.getElementById('skuSearchDd');
+  if(dd._matches&&dd._matches[idx]){applySkuRow(dd._matches[idx]);dd.classList.remove('show');}
+}
+
+function applySkuRow(row){
+  currentSkuRow=row;
+  let bleedPerSide=0;
+  if(row.bleed_w_mm&&row.finished_w_mm){
+    bleedPerSide=Math.round((parseFloat(row.bleed_w_mm)-parseFloat(row.finished_w_mm))/2);
+  }
+  let safeMargin=5;
+  if(row.safe_w_mm&&row.finished_w_mm){
+    safeMargin=Math.max(1,Math.round((parseFloat(row.finished_w_mm)-parseFloat(row.safe_w_mm))/2));
+  }
+  const isDS=(row.single_or_double_sided||'').toLowerCase().includes('double');
+  const spec={
+    label:row.product_name||row.sku_file,
+    w:row.finished_w_mm?Math.round(parseFloat(row.finished_w_mm)):null,
+    h:row.finished_h_mm?Math.round(parseFloat(row.finished_h_mm)):null,
+    dpi:parseInt(row.required_dpi)||300,
+    colour:row.colour_profile||'CMYK',
+    sides:isDS?2:1,
+    bleed:bleedPerSide,
+    safe_zone:safeMargin,
+    rotatable:false,
+    future_flags:isDS?['double_sided']:[],
+    template_pdf_path:row.template_pdf_path||null,
+    template_pdf_path_side2:row.template_pdf_path_side2||null,
+    svg_trim:row.svg_trim||null,
+    svg_bleed:row.svg_bleed||null,
+    svg_safe:row.svg_safe||null,
+    svg_viewbox:row.svg_viewbox||null,
+  };
+  currentSku=row.sku_family||row.sku_file;
+  SKU_SPECS[currentSku]=spec;
+  document.getElementById('skuSearchInput').value=`${row.sku_family||''} — ${spec.label}`;
+  document.getElementById('ssSize').textContent=spec.w?`${spec.w}×${spec.h}mm`:'Custom';
+  document.getElementById('ssDpi').textContent=spec.dpi+'';
+  document.getElementById('ssColour').textContent=spec.colour;
+  document.getElementById('ssBleed').textContent=spec.bleed?`${spec.bleed}mm`:'None';
+  document.getElementById('ssFlags').innerHTML=spec.future_flags.map(f=>`<span class="flag-pill">${FLAG_LABELS[f]||f}</span>`).join('');
+  document.getElementById('skuSpecExpanded').style.display='block';
+  document.getElementById('sSum_code').textContent=currentSku;
+  document.getElementById('sSum_name').textContent=spec.label;
+  document.getElementById('sSum_dims').textContent=spec.w?`${spec.w}×${spec.h}mm · ${spec.dpi}dpi · ${spec.bleed}mm bleed`:'Custom size';
+  document.getElementById('skuSummary').classList.add('show');
+  // Update topbar SKU chip
+  const skuEl=document.getElementById('topbarSku');
+  if(skuEl){skuEl.textContent=currentSku;skuEl.style.display='flex';}
+  const wasDoubleSided=isDoubleSided;
+  isDoubleSided=spec.sides===2;
+  document.getElementById('guidesFloat').classList.add('show-guides');
+  document.getElementById('tmplRotRow').style.display=spec.rotatable?'flex':'none';
+  document.getElementById('bleedCalloutText').textContent=spec.bleed>0?`${spec.bleed}mm bleed required — artwork must reach the orange line`:'No bleed required — cover the trim line';
+  document.getElementById('bleedCallout').classList.toggle('show',!!spec.w);
+  document.getElementById('gfBleed').textContent=spec.bleed>0?`${spec.bleed}mm`:'None required';
+  document.getElementById('gfTrim').textContent=spec.w?`${spec.w}×${spec.h}mm`:'—';
+  document.getElementById('gfSafe').textContent=`${spec.safe_zone||5}mm inset`;
+  templateRotDeg=0;
+  if(isDoubleSided!==wasDoubleSided||true){
+    sides=[blankSideState(),blankSideState()];
+    activeSide=0;
+    computeLayout();
+    if(isDoubleSided)initDualSidedCanvas();
+    else initSingleSidedCanvas();
+  }
+  updateSideTags();
+  updateViewInfo();
+  computeLayout();
+  S().layers.forEach(l=>centreOnTemplate(l));
+  loadTemplateOverlay();
+  draw();
+  if(S().layers.length===0)toggleStep(2);else toggleStep(4);
+  updateStepStyles();
+}
+
+// ── Template PDF overlay ───────────────────────────────────
+function loadTemplateOverlay(){
+  const spec=currentSku?SKU_SPECS[currentSku]:null;
+  clearTemplateOverlay();
+  if(!spec||!spec.template_pdf_path)return;
+  const filename=spec.template_pdf_path.replace(/^templates\//,'');
+  const pdfUrl=SUPABASE_STORAGE+encodeURIComponent(filename)+'#toolbar=0&navpanes=0&scrollbar=0&view=FitH';
+  setTemplateIframe('tmplIframe0','tmplFrame0',pdfUrl);
+  if(isDoubleSided&&spec.template_pdf_path_side2){
+    const fn2=spec.template_pdf_path_side2.replace(/^templates\//,'');
+    const pdf2Url=SUPABASE_STORAGE+encodeURIComponent(fn2)+'#toolbar=0&navpanes=0&scrollbar=0&view=FitH';
+    setTemplateIframe('tmplIframe1','tmplFrame1',pdf2Url);
+  }
+  onTmplOpacity();
+}
+function setTemplateIframe(wrapId,frameId,pdfUrl){
+  const wrap=document.getElementById(wrapId);
+  const frame=document.getElementById(frameId);
+  if(!wrap||!frame)return;
+  wrap.style.display='block';wrap.style.width=CW+'px';wrap.style.height=CH+'px';
+  frame.src=pdfUrl;
+}
+function clearTemplateOverlay(){
+  ['tmplIframe0','tmplIframe1'].forEach(id=>{const el=document.getElementById(id);if(el)el.style.display='none';});
+  ['tmplFrame0','tmplFrame1'].forEach(id=>{const el=document.getElementById(id);if(el)el.src='';});
+}
+function onTmplOpacity(){
+  const v=parseInt(document.getElementById('tmplOpacity').value)/100;
+  document.getElementById('tmplOpVal').textContent=Math.round(v*100)+'%';
+  ['tmplIframe0','tmplIframe1'].forEach(id=>{const el=document.getElementById(id);if(el&&el.style.display!=='none')el.style.opacity=v;});
+  draw();
+}
+
+// ── Upscale modal ───────────────────────────────────────────
+function showUpscaleModal(){document.getElementById('upscaleModalBg').classList.add('open');}
+function closeUpscaleModal(){document.getElementById('upscaleModalBg').classList.remove('open');}
+function handleUpscaleModalBgClick(e){if(e.target===document.getElementById('upscaleModalBg'))closeUpscaleModal();}
+document.addEventListener('keydown',e=>{if(e.key==='Escape')closeUpscaleModal();});
+
+// ── AI Upscaler ────────────────────────────────────────────
+const UPSCALE_API='https://ecommerce-ukpos-ukpos-upscaler.hf.space/upscale';
+const UPSCALE_TIMEOUT_MS=120000;
+const UPSCALE_MAX_DIMENSION=4000;
+const UPSCALE_MESSAGES=[
+  '⏳ Upscaling… please wait',
+  '⏳ Still working — this can take a minute',
+  '⏳ Nearly there — keep waiting…',
+  '⏳ Almost done — large images take longer',
+  '⏳ First use today may be slower — still working'
+];
+
+async function upscaleWithAI(){
+  const l=getActiveLayer();
+  if(!l||!l.srcB64){showToast('No artwork selected to upscale');return;}
+  const w=l.img?.naturalWidth||l.img?.width||0;
+  const h=l.img?.naturalHeight||l.img?.height||0;
+  if(w>UPSCALE_MAX_DIMENSION||h>UPSCALE_MAX_DIMENSION){showToast(`Image is ${w}×${h}px — too large for automatic AI upscaling`);showUpscaleModal();return;}
+  const UPSCALE_MAX_OUTSCALE=6;
+  let requiredOutscale=2;
+  const spec=currentSku?SKU_SPECS[currentSku]:null;
+  if(spec&&spec.w){
+    const fp=getRotatedFootprint(l);
+    const aw=fp.w*l.scale;
+    const artWidthMM=aw*(spec.w/TW);
+    const currentDpi=l.img.width/(artWidthMM/25.4);
+    if(currentDpi>0&&currentDpi<spec.dpi){
+      const SAFETY_MARGIN=1.10;
+      const uncappedOutscale=(spec.dpi/currentDpi)*SAFETY_MARGIN;
+      if(uncappedOutscale>UPSCALE_MAX_OUTSCALE){
+        const bestPossibleDpi=Math.round(currentDpi*UPSCALE_MAX_OUTSCALE);
+        const proceed=confirm(`This image is too low-resolution for AI upscaling to fully reach ${spec.dpi}dpi.\n\nCurrent: ${Math.round(currentDpi)}dpi\nBest achievable with AI: approximately ${bestPossibleDpi}dpi\n\nClick OK to proceed anyway, or Cancel to choose another option.`);
+        if(!proceed){showUpscaleModal();return;}
+      }
+      requiredOutscale=Math.ceil(uncappedOutscale*2)/2;
+      requiredOutscale=Math.min(Math.max(requiredOutscale,1.5),UPSCALE_MAX_OUTSCALE);
+    }
+  }
+  const btn=document.getElementById('btnAiUpscale');
+  const origText=btn.textContent;
+  btn.disabled=true;
+  let msgIdx=0;
+  btn.textContent=UPSCALE_MESSAGES[0];
+  const msgTimer=setInterval(()=>{msgIdx=Math.min(msgIdx+1,UPSCALE_MESSAGES.length-1);btn.textContent=UPSCALE_MESSAGES[msgIdx];},8000);
+  const resetButton=()=>{clearInterval(msgTimer);btn.disabled=false;btn.textContent=origText;};
+  const controller=new AbortController();
+  const timeoutId=setTimeout(()=>controller.abort(),UPSCALE_TIMEOUT_MS);
+  try{
+    const res=await fetch(l.srcB64);
+    const blob=await res.blob();
+    const form=new FormData();
+    form.append('file',blob,l.name||'artwork.png');
+    form.append('outscale',String(requiredOutscale));
+    const response=await fetch(UPSCALE_API,{method:'POST',body:form,signal:controller.signal});
+    clearTimeout(timeoutId);
+    if(!response.ok){let errText=response.statusText;try{errText=await response.text()||errText;}catch(_e){}throw new Error(`Server error (${response.status}): ${errText}`);}
+    const upscaledBlob=await response.blob();
+    if(!upscaledBlob||upscaledBlob.size===0){throw new Error('Server returned an empty result');}
+    const dataUrl=await new Promise((resolve,reject)=>{const reader=new FileReader();reader.onload=()=>resolve(reader.result);reader.onerror=reject;reader.readAsDataURL(upscaledBlob);});
+    await new Promise((resolve,reject)=>{
+      const img=new Image();
+      img.onload=()=>{
+        captureState('AI Upscale');
+        const oldW=l.img?l.img.width:img.width;
+        const ratio=oldW?(oldW/img.width):1;
+        l.scale=(l.scale||1)*ratio;
+        l.img=img;l.srcB64=dataUrl;l.srcMime='image/png';
+        l.name=(l.name||'artwork').replace(/\.[^.]+$/,'')+'_upscaled.png';
+        syncControlsToActive();renderLayersList();draw();resolve();
+      };
+      img.onerror=()=>reject(new Error('Failed to load upscaled image'));
+      img.src=dataUrl;
+    });
+    resetButton();
+    showToast('✓ Upscale complete — DPI rechecked');
+  }catch(e){
+    clearTimeout(timeoutId);
+    console.error('Upscale error:',e);
+    resetButton();
+    if(e.name==='AbortError'){showToast('⚠ Upscale timed out after 2 minutes — try the manual tools below');}
+    else{showToast('⚠ Upscale failed: '+(e.message||'unknown error')+' — try the manual tools below');}
+  }
+}
+
+// Pre-load SKU DB in background
+loadSkuDb();
+
+// Close SKU dropdown on outside click
+document.addEventListener('click',e=>{
+  if(!e.target.closest('.sku-search-wrap'))
+    document.getElementById('skuSearchDd')?.classList.remove('show');
+});
 </script>
 </body>
 </html>
