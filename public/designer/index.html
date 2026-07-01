@@ -1857,23 +1857,53 @@ bindCanvasEvents(activeCanvas);
 
 const _p=new URLSearchParams(window.location.search);
 jobId=_p.get('job')||null;const urlSku=_p.get('sku')||'';
+async function loadArtworkFromStorage(job){
+  if(!job.storage_path)return;
+  try{
+    const r=await fetch('/api/file?path='+encodeURIComponent(job.storage_path));
+    if(!r.ok)return;
+    const d=await r.json();
+    if(!d?.b64)return;
+    const img=new Image();
+    const dataUrl='data:'+d.mediaType+';base64,'+d.b64;
+    img.onload=()=>addLayer(job.file_name||'Stored file',img,dataUrl,d.mediaType);
+    img.src=dataUrl;
+  }catch(e){console.error('artwork load failed',e);}
+}
+
+async function loadSkuAndArtwork(skuKey, job){
+  // First check if it's in the local hardcoded SKU_SPECS
+  if(SKU_SPECS[skuKey]){
+    applySkuRow(Object.assign({sku_family:skuKey},SKU_SPECS[skuKey]));
+    if(job)await loadArtworkFromStorage(job);
+    return;
+  }
+  // Otherwise look it up from Supabase via the SKU API
+  try{
+    const db=await loadSkuDb();
+    const row=db.find(r=>(r.sku_family||'').toLowerCase()===skuKey.toLowerCase()||
+                          (r.sku_file||'').toLowerCase()===skuKey.toLowerCase());
+    if(row){
+      applySkuRow(row);
+      if(job)await loadArtworkFromStorage(job);
+    }
+  }catch(e){console.error('SKU lookup failed',e);}
+}
+
 if(jobId){
-  fetch('/api/job?id='+jobId).then(r=>r.json()).then(job=>{
+  fetch('/api/job?id='+jobId).then(r=>r.json()).then(async job=>{
     if(!job)return;
     document.getElementById('jobBar').classList.add('show');
     document.getElementById('jbRef').textContent=job.reference||'—';
     document.getElementById('jbCustomer').textContent=job.customer_name||'—';
     document.getElementById('jbOrder').textContent=job.order_number||'—';
     const sku=job.sku||urlSku;
-    if(sku&&SKU_SPECS[sku]){document.getElementById('skuSelect').value=sku;onSkuChange();}
-    if(job.storage_path){
-      fetch('/api/file?path='+encodeURIComponent(job.storage_path)).then(r=>r.ok?r.json():null).then(d=>{
-        if(!d?.b64)return;const img=new Image();const dataUrl='data:'+d.mediaType+';base64,'+d.b64;
-        img.onload=()=>addLayer(job.file_name||'Stored file',img,dataUrl,d.mediaType);img.src=dataUrl;
-      });
-    }
+    if(sku) await loadSkuAndArtwork(sku, job);
+    else if(job.storage_path) await loadArtworkFromStorage(job);
   }).catch(e=>console.error('job load',e));
-}else if(urlSku&&SKU_SPECS[urlSku]){document.getElementById('skuSelect').value=urlSku;onSkuChange();}
+}else if(urlSku){
+  loadSkuAndArtwork(urlSku, null);
+}
 computeLayout();draw();updateDial(0);
 
 // ═══════════════════════════════════════════════════════════
