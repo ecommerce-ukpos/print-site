@@ -1784,26 +1784,64 @@ async function submitToArtworkList(){
   if(isDoubleSided){showToast('Double-sided submit not yet implemented');return;}
   const layers=getLayers();
   if(!layers.length){showToast('No artwork to submit');return;}
-  showToast('Saving…');
+
   const topLayer=layers[0];
   const ref=(topLayer.name||'designer-upload').replace(/\.[^.]+$/,'').substring(0,40);
+
+  showToast('Creating job record…');
   let job=null;
   try{
     const r=await fetch('/api/jobs',{method:'POST',headers:{'Content-Type':'application/json'},
-      body:JSON.stringify({reference:ref,file_name:topLayer.name||'artwork',file_type:(topLayer.srcMime||'').split('/').pop().toUpperCase()||'IMG',source:'Designer',sku:currentSku||null,customer_name:null,order_number:null})});
+      body:JSON.stringify({reference:ref,file_name:topLayer.name||'artwork',
+        file_type:(topLayer.srcMime||'').split('/').pop().toUpperCase()||'IMG',
+        source:'Designer',sku:currentSku||null,customer_name:null,order_number:null})});
+    if(!r.ok) throw new Error('HTTP '+r.status+': '+await r.text());
     const d=await r.json();job=Array.isArray(d)?d[0]:d;
-  }catch(e){showToast('Failed: '+e.message);return;}
-  if(!job?.id){showToast('Job creation failed');return;}
+  }catch(e){showToast('Job creation failed: '+e.message);return;}
+  if(!job?.id){showToast('Job creation failed — no ID returned');return;}
   jobId=job.id;
+
   if(topLayer.srcB64){
+    showToast('Uploading artwork…');
     try{
-      const ext=(topLayer.srcMime||'image/png').split('/').pop().replace('jpeg','jpg');
-      const path=`${job.id}.${ext}`;
-      await fetch('/api/upload',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({path,mediaType:topLayer.srcMime,data:topLayer.srcB64.split(',')[1]})});
-      await fetch(`/api/job?id=${job.id}`,{method:'PATCH',headers:{'Content-Type':'application/json'},body:JSON.stringify({storage_path:path})});
-    }catch(e){console.error('storage upload failed',e);}
+      const SUPABASE_URL='https://fqaxuhbcwoikeldnxuvv.supabase.co';
+      const SUPABASE_ANON_KEY='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImZxYXh1aGJjd29pa2VsZG54dXZ2Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODExNjk2NTQsImV4cCI6MjA5Njc0NTY1NH0.0XtMq5p6L9pnRilG5GUI5j72zPNuhl4PnD9ihDxeT1c';
+      const mime=topLayer.srcMime||'image/png';
+      const ext=mime.split('/').pop().replace('jpeg','jpg');
+      const storagePath=`${job.id}.${ext}`;
+      const b64data=topLayer.srcB64.includes(',')?topLayer.srcB64.split(',')[1]:topLayer.srcB64;
+      const byteChars=atob(b64data);
+      const byteNums=new Array(byteChars.length);
+      for(let i=0;i<byteChars.length;i++) byteNums[i]=byteChars.charCodeAt(i);
+      const blob=new Blob([new Uint8Array(byteNums)],{type:mime});
+      const uploadResp=await fetch(
+        `${SUPABASE_URL}/storage/v1/object/artwork/${storagePath}`,
+        {method:'POST',
+         headers:{'apikey':SUPABASE_ANON_KEY,'Authorization':'Bearer '+SUPABASE_ANON_KEY,
+                  'Content-Type':mime,'x-upsert':'true'},
+         body:blob}
+      );
+      if(!uploadResp.ok){
+        const errBody=await uploadResp.text();
+        throw new Error('Storage upload failed ('+uploadResp.status+'): '+errBody);
+      }
+      showToast('Linking file to job…');
+      const patchResp=await fetch(`/api/job?id=${job.id}`,
+        {method:'PATCH',headers:{'Content-Type':'application/json'},
+         body:JSON.stringify({storage_path:storagePath})});
+      if(!patchResp.ok){
+        const pe=await patchResp.text();
+        throw new Error('Job link failed ('+patchResp.status+'): '+pe);
+      }
+    }catch(e){
+      console.error('Artwork upload error:',e);
+      showToast('⚠ Upload error: '+e.message);
+      return;
+    }
   }
-  showToast('Saved — redirecting…');setTimeout(()=>window.location.href='/dashboard',1200);
+
+  showToast('Saved — redirecting…');
+  setTimeout(()=>window.location.href='/dashboard',1200);
 }
 function goToAssessor(){const p=new URLSearchParams();if(jobId)p.set('job',jobId);if(currentSku)p.set('sku',currentSku);window.location.href='/artwork-assessor'+(p.toString()?'?'+p.toString():'');}
 function showToast(msg){const t=document.getElementById('toast');t.textContent=msg;t.classList.add('show');setTimeout(()=>t.classList.remove('show'),2200);}
