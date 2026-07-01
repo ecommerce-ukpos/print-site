@@ -2050,6 +2050,8 @@ function applySkuRow(row){
     future_flags:isDS?['double_sided']:[],
     template_pdf_path:row.template_pdf_path||null,
     template_pdf_path_side2:row.template_pdf_path_side2||null,
+    template_img_path:row.template_img_path||null,
+    template_img_path_side2:row.template_img_path_side2||null,
     svg_trim:row.svg_trim||null,
     svg_bleed:row.svg_bleed||null,
     svg_safe:row.svg_safe||null,
@@ -2099,39 +2101,47 @@ function applySkuRow(row){
   updateStepStyles();
 }
 
-// ── Template image (drawn on canvas, not iframe) ───────────
-// currentTemplateImg[0] and [1] hold loaded Image objects for side 1 and 2
+// ── Template image (plain Image from pre-converted PNG) ─────
+// currentTemplateImg[0] and [1] hold loaded Image objects for each side
 let currentTemplateImg = [null, null];
 
-function loadTemplateOverlay(){
-  const spec = currentSku ? SKU_SPECS[currentSku] : null;
-  currentTemplateImg = [null, null];
-  const pdfPath = (spec && spec.template_pdf_path) || (currentSkuRow && currentSkuRow.template_pdf_path) || null;
-  if(!pdfPath) { draw(); return; }
-  function buildStorageUrl(rawPath){
-    const stripped = rawPath.replace(/^templates\//,'');
-    const encoded = stripped.split('/').map(s=>encodeURIComponent(s)).join('/');
-    return SUPABASE_STORAGE + encoded;
-  }
-  // Load side 1 template
-  const img0 = new Image();
-  img0.crossOrigin = 'anonymous';
-  img0.onload = () => { currentTemplateImg[0] = img0; draw(); };
-  img0.onerror = () => { console.warn('Template image failed to load:', buildStorageUrl(pdfPath)); draw(); };
-  img0.src = buildStorageUrl(pdfPath);
-  // Load side 2 template if double-sided
-  const pdf2Path = (spec && spec.template_pdf_path_side2) || (currentSkuRow && currentSkuRow.template_pdf_path_side2) || null;
-  if(isDoubleSided && pdf2Path){
-    const img1 = new Image();
-    img1.crossOrigin = 'anonymous';
-    img1.onload = () => { currentTemplateImg[1] = img1; draw(); };
-    img1.onerror = () => { draw(); };
-    img1.src = buildStorageUrl(pdf2Path);
-  }
+function buildStorageUrl(rawPath){
+  const stripped = rawPath.replace(/^templates\//,'');
+  const encoded  = stripped.split('/').map(s=>encodeURIComponent(s)).join('/');
+  return SUPABASE_STORAGE + encoded;
 }
+
+function loadTemplateImage(imgPath, slot){
+  if(!imgPath) return;
+  const img = new Image();
+  img.crossOrigin = 'anonymous';
+  img.onload  = () => { currentTemplateImg[slot] = img; draw(); };
+  img.onerror = () => { console.warn('Template PNG failed to load:', imgPath); };
+  img.src = buildStorageUrl(imgPath);
+}
+
+function loadTemplateOverlay(){
+  currentTemplateImg = [null, null];
+  const spec = currentSku ? SKU_SPECS[currentSku] : null;
+
+  // Prefer pre-converted PNG (template_img_path), fall back to nothing
+  // (PDF paths are not loadable as Image — they require server-side conversion)
+  const imgPath  = (spec && spec.template_img_path)
+                 || (currentSkuRow && currentSkuRow.template_img_path)
+                 || null;
+  const img2Path = (spec && spec.template_img_path_side2)
+                 || (currentSkuRow && currentSkuRow.template_img_path_side2)
+                 || null;
+
+  if(!imgPath){ draw(); return; }
+  loadTemplateImage(imgPath, 0);
+  if(isDoubleSided && img2Path) loadTemplateImage(img2Path, 1);
+}
+
 function clearTemplateOverlay(){
   currentTemplateImg = [null, null];
 }
+
 function onTmplOpacity(){
   const v = parseInt(document.getElementById('tmplOpacity').value) / 100;
   document.getElementById('tmplOpVal').textContent = Math.round(v * 100) + '%';
