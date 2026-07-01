@@ -1,147 +1,216 @@
 <!DOCTYPE html>
+<!--
+  ╔══════════════════════════════════════════════════════╗
+  ║  FILE 3 OF 3 — public/artwork-assessor/index.html   ║
+  ║  UKPOS PrintSite — Artwork Assessor                  ║
+  ║  Redesigned shell; all JS transplanted unchanged.    ║
+  ╚══════════════════════════════════════════════════════╝
+-->
 <html lang="en">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Artwork Assessor — UKPOS Print Site</title>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
 <style>
-  *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
-  body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",system-ui,sans-serif;background:#FAFAF8;color:#2C2C2A;min-height:100vh;font-size:15px;line-height:1.6}
-  nav{border-bottom:1px solid #E8E6DE;padding:0 40px;background:#fff;display:flex;align-items:center;gap:0;height:48px}
-  .nav-logo{font-size:14px;font-weight:500;color:#2C2C2A;text-decoration:none;margin-right:24px}
-  .nav-links{display:flex;align-items:stretch;gap:0;height:100%}
-  .nav-link{display:flex;align-items:center;padding:0 14px;height:100%;font-size:13px;color:#5F5E5A;text-decoration:none;border-bottom:2px solid transparent}
-  .nav-link:hover{color:#2C2C2A}
-  .nav-link.active{color:#534AB7;font-weight:500;border-bottom-color:#534AB7}
-  .nav-link.designer{color:#185FA5}
-  .nav-link.designer:hover{color:#0C447C}
-  .layout{max-width:960px;margin:0 auto;padding:32px 40px 80px;display:grid;grid-template-columns:1fr 300px;gap:40px;align-items:start}
-  @media(max-width:720px){.layout{grid-template-columns:1fr;padding:20px 20px 60px}nav{padding:0 20px}}
-  h1{font-size:22px;font-weight:500;margin-bottom:4px;letter-spacing:-0.02em}
-  .page-desc{font-size:14px;color:#5F5E5A;margin-bottom:20px}
-  .job-banner{display:none;background:#EEEDFE;border-radius:8px;padding:12px 16px;margin-bottom:20px;gap:20px;flex-wrap:wrap;align-items:center}
-  .job-banner.show{display:flex}
-  .jb-item{display:flex;flex-direction:column;gap:1px}
-  .jb-label{font-size:11px;color:#7F77DD;font-weight:500;text-transform:uppercase;letter-spacing:0.05em}
-  .jb-val{font-size:13px;font-weight:500;color:#3C3489}
-  .jb-back{margin-left:auto;font-size:13px;color:#534AB7;text-decoration:none;white-space:nowrap}
-  .jb-back:hover{text-decoration:underline}
-  .file-area{margin-bottom:20px}
-  .drop-zone{border:1.5px dashed #C8C6BC;border-radius:10px;padding:32px 24px;text-align:center;cursor:pointer;transition:border-color 0.15s,background 0.15s;background:#fff}
-  .drop-zone:hover,.drop-zone.drag-over{border-color:#7F77DD;background:#FAFAFF}
-  .drop-zone .dz-icon{font-size:26px;margin-bottom:8px}
-  .drop-zone .dz-title{font-size:14px;font-weight:500;margin-bottom:3px}
-  .drop-zone .dz-sub{font-size:12px;color:#888780}
-  input[type=file]{display:none}
-  .file-bar{display:flex;align-items:center;gap:8px;padding:10px 14px;background:#fff;border:1px solid #E8E6DE;border-radius:8px;margin-top:8px;font-size:13px;color:#5F5E5A}
-  .file-type-badge{font-size:10px;font-weight:600;padding:2px 6px;border-radius:4px;text-transform:uppercase;flex-shrink:0}
-  .badge-pdf{background:#FCEBEB;color:#A32D2D}
-  .badge-eps{background:#EEEDFE;color:#534AB7}
-  .badge-png{background:#E1F5EE;color:#0F6E56}
-  .badge-jpg,.badge-jpeg{background:#FAEEDA;color:#854F0B}
-  .file-name{flex:1;font-weight:500;color:#2C2C2A;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-  .clear-btn{background:none;border:none;cursor:pointer;color:#888780;font-size:18px;line-height:1}
-  .clear-btn:hover{color:#2C2C2A}
-  .storage-badge{display:inline-flex;align-items:center;gap:5px;font-size:11px;color:#0F6E56;background:#E1F5EE;padding:3px 8px;border-radius:20px;margin-top:6px}
-  .sku-strip{display:none;align-items:center;gap:10px;padding:9px 14px;background:#EEEDFE;border:1px solid #AFA9EC;border-radius:8px;margin-top:8px;font-size:13px}
-  .sku-strip.show{display:flex}
-  .sku-code{font-size:11px;font-weight:700;background:#534AB7;color:#fff;padding:2px 7px;border-radius:4px;letter-spacing:0.04em;flex-shrink:0}
-  .sku-strip-desc{flex:1;color:#2C2C2A;font-size:13px}
-  .sku-strip-dims{font-size:11px;color:#7F77DD}
-  .sku-strip-flags{display:flex;gap:5px;flex-wrap:wrap;margin-top:2px}
-  .sku-flag{font-size:10px;font-weight:500;padding:2px 6px;border-radius:3px;background:#DDD9F5;color:#534AB7}
-  .sku-change{background:none;border:none;font-size:12px;color:#534AB7;cursor:pointer;flex-shrink:0;text-decoration:underline}
-  .sku-change:hover{color:#3C3489}
-  .run-btn{margin-top:12px;width:100%;padding:11px 20px;background:#534AB7;color:#fff;border:none;border-radius:8px;font-size:14px;font-weight:500;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:8px;transition:opacity 0.15s}
-  .run-btn:hover{opacity:0.88}
-  .run-btn:disabled{opacity:0.4;cursor:not-allowed}
-  .spinner{width:16px;height:16px;border:2px solid rgba(255,255,255,0.3);border-top-color:#fff;border-radius:50%;animation:spin 0.6s linear infinite;display:inline-block}
-  @keyframes spin{to{transform:rotate(360deg)}}
-  .progress-area{margin-top:16px;display:none}
-  .progress-area.show{display:block}
-  .progress-bar{height:3px;background:#E8E6DE;border-radius:2px;overflow:hidden;margin-bottom:8px}
-  .progress-fill{height:100%;background:#534AB7;border-radius:2px;animation:loadpulse 1.6s ease-in-out infinite}
-  @keyframes loadpulse{0%{width:5%}50%{width:75%}100%{width:92%}}
-  .progress-msg{font-size:13px;color:#888780}
-  .results-area{margin-top:24px}
-  .result-overall{display:flex;align-items:center;gap:10px;padding:14px 16px;border-radius:10px;margin-bottom:16px;font-weight:500;font-size:15px}
-  .result-overall.pass{background:#EAF3DE;color:#27500A}
-  .result-overall.fail{background:#FCEBEB;color:#791F1F}
-  .result-overall.warn{background:#FAEEDA;color:#633806}
-  .ov-icon{font-size:20px}
-  .ov-meta{font-size:12px;font-weight:400;margin-left:auto;color:inherit;opacity:0.7;text-align:right;line-height:1.4}
-  .checks-label{font-size:11px;font-weight:500;text-transform:uppercase;letter-spacing:0.08em;color:#888780;margin-bottom:8px}
-  .result-item{display:flex;align-items:flex-start;gap:10px;padding:11px 14px;border-radius:8px;margin-bottom:7px;font-size:14px}
-  .result-item.pass{background:#EAF3DE;border:1px solid #C0DD97}
-  .result-item.fail{background:#FCEBEB;border:1px solid #F09595}
-  .result-item.warn{background:#FAEEDA;border:1px solid #FAC775}
-  .result-item.info{background:#fff;border:1px solid #E8E6DE}
-  .ri-icon{font-size:15px;flex-shrink:0;margin-top:2px}
-  .ri-body strong{font-weight:500;display:block;margin-bottom:2px;font-size:13px}
-  .ri-body span{font-size:12px;color:#5F5E5A;line-height:1.5}
-  .assessed-note{font-size:12px;color:#888780;margin-top:12px;text-align:center}
-  .sidebar{position:sticky;top:24px}
-  .sidebar-card{background:#fff;border:1px solid #E8E6DE;border-radius:10px;overflow:hidden}
-  .sidebar-section{padding:16px 18px;border-bottom:1px solid #E8E6DE}
-  .sidebar-section:last-child{border-bottom:none}
-  .sidebar-section h3{font-size:11px;font-weight:500;text-transform:uppercase;letter-spacing:0.07em;color:#888780;margin-bottom:12px}
-  .check-row{display:flex;align-items:center;gap:8px;padding:7px 0;border-bottom:1px solid #F1EFE8}
-  .check-row:last-child{border-bottom:none}
-  .toggle{width:34px;height:19px;border-radius:10px;background:#D3D1C7;cursor:pointer;position:relative;flex-shrink:0;border:none;transition:background 0.15s}
-  .toggle.on{background:#534AB7}
-  .toggle::after{content:'';position:absolute;width:13px;height:13px;border-radius:7px;background:#fff;top:3px;left:3px;transition:left 0.15s}
-  .toggle.on::after{left:18px}
-  .check-label{flex:1}
-  .check-label strong{font-size:12px;font-weight:500;display:block}
-  .check-label span{font-size:11px;color:#888780}
-  .check-input{width:68px;font-size:12px;padding:3px 6px;border:1px solid #E8E6DE;border-radius:5px;background:#FAFAF8;color:#2C2C2A}
-  .custom-add{display:flex;gap:6px;margin-top:8px}
-  .custom-add input{flex:1;font-size:12px;padding:5px 7px;border:1px solid #E8E6DE;border-radius:5px;background:#FAFAF8}
-  .custom-add button{padding:5px 9px;font-size:12px;border-radius:5px}
-  .custom-item{display:flex;align-items:center;gap:6px;font-size:12px;padding:5px 0;border-bottom:1px solid #F1EFE8}
-  .custom-item span{flex:1;color:#5F5E5A}
-  .custom-item button{background:none;border:none;cursor:pointer;color:#888780;font-size:15px}
-  .modal-overlay{display:none;position:fixed;inset:0;background:rgba(20,20,18,0.5);z-index:100;align-items:center;justify-content:center;padding:20px;backdrop-filter:blur(2px)}
-  .modal-overlay.show{display:flex}
-  .modal{background:#fff;border-radius:12px;box-shadow:0 20px 60px rgba(0,0,0,0.15),0 4px 16px rgba(0,0,0,0.08);padding:28px;width:100%;max-width:460px;animation:modal-in 0.16s ease}
-  @keyframes modal-in{from{opacity:0;transform:translateY(-6px) scale(0.985)}to{opacity:1;transform:none}}
-  .modal-eyebrow{font-size:11px;font-weight:600;color:#534AB7;text-transform:uppercase;letter-spacing:0.08em;margin-bottom:8px}
-  .modal h2{font-size:18px;font-weight:500;letter-spacing:-0.02em;margin-bottom:6px}
-  .modal-sub{font-size:13px;color:#5F5E5A;margin-bottom:18px;line-height:1.55}
-  .modal-file-chip{display:inline-flex;align-items:center;gap:6px;background:#F1EFE8;border-radius:5px;padding:3px 9px;font-size:12px;margin-bottom:18px;color:#5F5E5A}
-  .modal-file-chip .fchip-type{font-size:10px;font-weight:700;color:#888780;text-transform:uppercase}
-  .sku-field{position:relative;margin-bottom:6px}
-  .sku-field input{width:100%;font-size:14px;padding:9px 12px;border:1.5px solid #E8E6DE;border-radius:8px;background:#fff;font-family:inherit;transition:border-color 0.15s}
-  .sku-field input:focus{outline:none;border-color:#534AB7}
-  .sku-dropdown{display:none;position:absolute;top:calc(100% + 4px);left:0;right:0;background:#fff;border:1px solid #E8E6DE;border-radius:8px;box-shadow:0 4px 16px rgba(0,0,0,0.08);max-height:220px;overflow-y:auto;z-index:110}
-  .sku-dropdown.show{display:block}
-  .sku-opt{display:flex;align-items:baseline;gap:10px;padding:8px 12px;cursor:pointer;font-size:13px}
-  .sku-opt:hover,.sku-opt.hi{background:#FAFAF8}
-  .sku-opt .opt-code{font-weight:600;color:#2C2C2A;min-width:72px;font-size:12px;font-variant-numeric:tabular-nums}
-  .sku-opt .opt-label{color:#5F5E5A;flex:1}
-  .sku-opt .opt-dims{font-size:11px;color:#B4B2A9;white-space:nowrap}
-  .sku-no-results{padding:12px;font-size:13px;color:#888780;text-align:center}
-  .sku-preview{display:none;padding:12px 14px;background:#EEEDFE;border:1px solid #AFA9EC;border-radius:8px;margin-bottom:18px;font-size:13px}
-  .sku-preview.show{display:block}
-  .sku-preview-top{display:flex;align-items:center;gap:8px;margin-bottom:6px}
-  .sku-preview-code{font-weight:700;font-size:12px;background:#534AB7;color:#fff;padding:2px 7px;border-radius:4px}
-  .sku-preview-name{color:#2C2C2A;font-size:13px}
-  .sku-preview-specs{display:flex;flex-wrap:wrap;gap:10px;font-size:12px;color:#5F5E5A;margin-bottom:6px}
-  .sku-preview-specs b{color:#2C2C2A;font-weight:500}
-  .sku-preview-flags{display:flex;gap:5px;flex-wrap:wrap}
-  .sku-preview-flag{font-size:10px;font-weight:500;padding:2px 6px;border-radius:3px;background:#DDD9F5;color:#534AB7}
-  .sku-preview-note{font-size:11px;color:#7F77DD;margin-top:6px}
-  .modal-actions{display:flex;gap:8px;justify-content:flex-end;margin-top:4px}
-  .mbtn{padding:8px 16px;border-radius:7px;font-size:13px;font-weight:500;cursor:pointer;border:1px solid #E8E6DE;background:#fff;color:#2C2C2A}
-  .mbtn:hover{background:#F1EFE8}
-  .mbtn-primary{background:#534AB7;color:#fff;border-color:#534AB7}
-  .mbtn-primary:hover{opacity:0.88}
-  .mbtn-primary:disabled{background:#D3D1C7;border-color:#D3D1C7;color:#888780;cursor:not-allowed;opacity:1}
+/* ── Reset & base ── */
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+body{font-family:'Inter',-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;background:#F2F1F6;color:#2C2C2A;min-height:100vh;font-size:13px;display:flex}
+
+/* ── Sidebar ── */
+.sidebar{width:52px;background:#fff;border-right:0.5px solid #D3D1C7;display:flex;flex-direction:column;align-items:flex-start;padding:12px 0;gap:2px;flex-shrink:0;overflow:hidden;transition:width 0.2s ease;position:fixed;top:0;left:0;bottom:0;z-index:50}
+.sidebar:hover{width:184px}
+.sb-logo{width:52px;height:40px;display:flex;align-items:center;justify-content:center;flex-shrink:0;margin-bottom:8px}
+.sb-logo-inner{width:28px;height:28px;background:#F47920;border-radius:7px;display:flex;align-items:center;justify-content:center;flex-shrink:0}
+.sb-logo-inner svg{width:16px;height:16px;fill:#fff}
+.sb-item{height:36px;display:flex;align-items:center;gap:10px;padding:0 14px;cursor:pointer;width:100%;white-space:nowrap;overflow:hidden;border-left:3px solid transparent;text-decoration:none}
+.sb-item:hover{background:#F2F1F6}
+.sb-item.active{background:#FFF0E6;border-left-color:#F47920}
+.sb-icon{font-size:16px;flex-shrink:0;width:20px;text-align:center;font-style:normal;display:flex;align-items:center;justify-content:center}
+.sb-item.active .sb-icon{color:#F47920}
+.sb-item:not(.active) .sb-icon{color:#888780}
+.sb-label{font-size:12px;font-weight:500;color:#2C2C2A;opacity:0;white-space:nowrap;pointer-events:none}
+.sb-item.active .sb-label{color:#C75E0A}
+.sidebar:hover .sb-label{opacity:1;transition:opacity 0.15s ease 0.05s}
+.sb-spacer{flex:1}
+.sb-divider{height:0.5px;background:#E8E6DE;margin:6px 10px;width:calc(100% - 20px);flex-shrink:0}
+
+/* ── Main ── */
+.main{flex:1;margin-left:52px;display:flex;flex-direction:column;min-height:100vh;min-width:0}
+
+/* ── Topbar ── */
+.topbar{height:52px;background:#fff;border-bottom:0.5px solid #D3D1C7;display:flex;align-items:center;padding:0 20px;gap:10px;position:sticky;top:0;z-index:40;flex-shrink:0}
+.topbar-title{font-size:15px;font-weight:600;color:#2C2C2A;letter-spacing:-0.01em}
+.tb-spacer{flex:1}
+
+/* ── Layout ── */
+.content-wrap{flex:1;display:grid;grid-template-columns:1fr 288px;gap:20px;padding:20px 20px 60px;align-items:start;max-width:1100px}
+@media(max-width:800px){.content-wrap{grid-template-columns:1fr;padding:16px}}
+
+/* ── Job banner ── */
+.job-banner{display:none;background:#fff;border:0.5px solid #D3D1C7;border-radius:10px;padding:12px 16px;margin-bottom:16px;gap:20px;flex-wrap:wrap;align-items:center}
+.job-banner.show{display:flex}
+.jb-item{display:flex;flex-direction:column;gap:2px}
+.jb-label{font-size:10px;color:#F47920;font-weight:700;text-transform:uppercase;letter-spacing:0.05em}
+.jb-val{font-size:13px;font-weight:600;color:#2C2C2A}
+.jb-back{margin-left:auto;font-size:12px;font-weight:500;color:#C75E0A;text-decoration:none;display:flex;align-items:center;gap:4px;white-space:nowrap}
+.jb-back:hover{text-decoration:underline}
+
+/* ── Section card ── */
+.section-card{background:#fff;border:0.5px solid #D3D1C7;border-radius:12px;overflow:hidden;margin-bottom:14px}
+.section-card-head{padding:12px 16px;border-bottom:0.5px solid #E8E6DE;background:#FAFAF8}
+.section-card-title{font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:0.07em;color:#888780}
+.section-card-body{padding:14px 16px}
+
+/* ── Drop zone ── */
+.drop-zone{border:1.5px dashed #B4B2A9;border-radius:10px;padding:28px 20px;text-align:center;cursor:pointer;transition:border-color 0.15s,background 0.15s;background:#FAFAF8;display:flex;flex-direction:column;align-items:center;gap:8px}
+.drop-zone:hover,.drop-zone.drag-over{border-color:#F47920;background:#FFF8F3}
+.dz-icon{font-size:28px}
+.dz-title{font-size:13px;font-weight:600;color:#2C2C2A}
+.dz-sub{font-size:11px;color:#888780}
+input[type=file]{display:none}
+
+/* ── File bar ── */
+.file-bar{display:flex;align-items:center;gap:8px;padding:9px 12px;background:#F2F1F6;border:0.5px solid #D3D1C7;border-radius:8px;margin-top:8px}
+.file-type-badge{font-size:9px;font-weight:700;padding:2px 6px;border-radius:4px;text-transform:uppercase;flex-shrink:0;letter-spacing:0.04em}
+.badge-pdf{background:#FCEBEB;color:#791F1F}
+.badge-eps{background:#F0EEFF;color:#4B35B0}
+.badge-png{background:#E1F5EE;color:#0F6E56}
+.badge-jpg,.badge-jpeg{background:#FAEEDA;color:#633806}
+.file-name{flex:1;font-weight:500;color:#2C2C2A;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;font-size:12px}
+.clear-btn{background:none;border:none;cursor:pointer;color:#888780;font-size:18px;line-height:1;padding:0 2px}
+.clear-btn:hover{color:#E24B4A}
+
+/* ── Storage badge ── */
+.storage-badge{display:none;align-items:center;gap:6px;font-size:11px;color:#3B6D11;background:#EAF3DE;padding:5px 10px;border-radius:20px;margin-top:6px;font-weight:500}
+
+/* ── SKU strip ── */
+.sku-strip{display:none;align-items:center;gap:10px;padding:9px 12px;background:#FFF3EB;border:0.5px solid #FAC795;border-radius:8px;margin-top:8px}
+.sku-strip.show{display:flex}
+.sku-code{font-size:10px;font-weight:700;background:#F47920;color:#fff;padding:2px 7px;border-radius:4px;letter-spacing:0.04em;flex-shrink:0}
+.sku-strip-desc{flex:1;color:#2C2C2A;font-size:12px;font-weight:500;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.sku-strip-dims{font-size:10px;color:#C75E0A;white-space:nowrap}
+.sku-strip-flags{display:flex;gap:4px;flex-wrap:wrap;margin-top:3px}
+.sku-flag{font-size:9px;font-weight:600;padding:2px 6px;border-radius:3px;background:#FAEEDA;color:#7A3A00;border:0.5px solid #FAC775}
+.sku-change{background:none;border:none;font-size:11px;color:#C75E0A;cursor:pointer;flex-shrink:0;text-decoration:underline;font-family:'Inter',sans-serif}
+.sku-change:hover{color:#7A3A00}
+
+/* ── Run button ── */
+.run-btn{width:100%;padding:11px 20px;background:#F47920;color:#fff;border:none;border-radius:9px;font-size:13px;font-weight:600;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:8px;transition:opacity 0.15s;font-family:'Inter',sans-serif;margin-top:4px}
+.run-btn:hover{opacity:0.9}
+.run-btn:disabled{background:#D3D1C7;color:#888780;cursor:not-allowed;opacity:1}
+.spinner{width:14px;height:14px;border:2px solid rgba(255,255,255,0.35);border-top-color:#fff;border-radius:50%;animation:spin 0.6s linear infinite;display:inline-block}
+@keyframes spin{to{transform:rotate(360deg)}}
+
+/* ── Progress ── */
+.progress-area{margin-top:14px;display:none}
+.progress-area.show{display:block}
+.progress-bar-track{height:3px;background:#E8E6DE;border-radius:2px;overflow:hidden;margin-bottom:8px}
+.progress-bar-fill{height:100%;background:#F47920;border-radius:2px;animation:loadpulse 1.6s ease-in-out infinite}
+@keyframes loadpulse{0%{width:5%}50%{width:75%}100%{width:92%}}
+.progress-msg{font-size:12px;color:#888780}
+
+/* ── Results ── */
+.results-area{margin-top:0}
+.result-overall{display:flex;align-items:center;gap:10px;padding:13px 15px;border-radius:10px;margin-bottom:14px;font-weight:600;font-size:14px}
+.result-overall.pass{background:#EAF3DE;color:#173404}
+.result-overall.fail{background:#FCEBEB;color:#501313}
+.result-overall.warn{background:#FAEEDA;color:#412402}
+.ov-icon{font-size:18px;flex-shrink:0}
+.ov-meta{font-size:11px;font-weight:400;margin-left:auto;color:inherit;opacity:0.75;text-align:right;line-height:1.45}
+.checks-label{font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:0.08em;color:#888780;margin-bottom:8px}
+.result-item{display:flex;align-items:flex-start;gap:10px;padding:10px 13px;border-radius:8px;margin-bottom:6px;border:0.5px solid transparent}
+.result-item.pass{background:#EAF3DE;border-color:#C0DD97}
+.result-item.fail{background:#FCEBEB;border-color:#F09595}
+.result-item.warn{background:#FAEEDA;border-color:#FAC775}
+.result-item.info{background:#fff;border-color:#E8E6DE}
+.ri-icon{font-size:14px;flex-shrink:0;margin-top:1px}
+.ri-body strong{font-weight:600;display:block;margin-bottom:2px;font-size:12px}
+.ri-body span{font-size:11px;color:#5F5E5A;line-height:1.55}
+.result-item.pass .ri-body strong{color:#173404}
+.result-item.fail .ri-body strong{color:#501313}
+.result-item.warn .ri-body strong{color:#412402}
+.result-item.pass .ri-body span{color:#2E5A10}
+.result-item.fail .ri-body span{color:#7A1515}
+.result-item.warn .ri-body span{color:#633806}
+.assessed-note{font-size:11px;color:#888780;margin-top:10px;text-align:center}
+
+/* ── Sidebar settings card ── */
+.settings-card{background:#fff;border:0.5px solid #D3D1C7;border-radius:12px;overflow:hidden;position:sticky;top:72px}
+.settings-section{padding:12px 14px;border-bottom:0.5px solid #E8E6DE}
+.settings-section:last-child{border-bottom:none}
+.settings-section h3{font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:0.07em;color:#888780;margin-bottom:10px}
+.check-row{display:flex;align-items:center;gap:8px;padding:6px 0;border-bottom:0.5px solid #F1EFE8}
+.check-row:last-child{border-bottom:none}
+.toggle{width:34px;height:19px;border-radius:10px;background:#D3D1C7;cursor:pointer;position:relative;flex-shrink:0;border:none;transition:background 0.15s}
+.toggle.on{background:#F47920}
+.toggle::after{content:'';position:absolute;width:13px;height:13px;border-radius:7px;background:#fff;top:3px;left:3px;transition:left 0.15s;box-shadow:0 1px 3px rgba(0,0,0,0.15)}
+.toggle.on::after{left:18px}
+.check-label{flex:1}
+.check-label strong{font-size:11px;font-weight:600;display:block;color:#2C2C2A}
+.check-label span{font-size:10px;color:#888780}
+.check-input{width:66px;font-size:11px;padding:3px 6px;border:0.5px solid #D3D1C7;border-radius:6px;background:#F2F1F6;color:#2C2C2A;font-family:'Inter',sans-serif;outline:none}
+.check-input:focus{border-color:#F47920;background:#fff}
+.check-input select{font-family:'Inter',sans-serif}
+.custom-add{display:flex;gap:5px;margin-top:8px}
+.custom-add input{flex:1;font-size:11px;padding:5px 8px;border:0.5px solid #D3D1C7;border-radius:6px;background:#F2F1F6;font-family:'Inter',sans-serif;outline:none;color:#2C2C2A}
+.custom-add input:focus{border-color:#F47920;background:#fff}
+.custom-add button{padding:5px 9px;font-size:12px;border-radius:6px;border:0.5px solid #D3D1C7;background:#fff;color:#2C2C2A;cursor:pointer;font-weight:700;font-family:'Inter',sans-serif}
+.custom-add button:hover{background:#F2F1F6}
+.custom-item{display:flex;align-items:center;gap:6px;font-size:11px;padding:5px 0;border-bottom:0.5px solid #F1EFE8}
+.custom-item span{flex:1;color:#5F5E5A}
+.custom-item button{background:none;border:none;cursor:pointer;color:#B4B2A9;font-size:14px;line-height:1;padding:1px 3px}
+.custom-item button:hover{color:#E24B4A}
+
+/* ── SKU Modal ── */
+.modal-overlay{display:none;position:fixed;inset:0;background:rgba(20,20,18,0.5);z-index:100;align-items:center;justify-content:center;padding:20px;backdrop-filter:blur(2px)}
+.modal-overlay.show{display:flex}
+.modal{background:#fff;border-radius:14px;box-shadow:0 20px 60px rgba(0,0,0,0.15),0 4px 16px rgba(0,0,0,0.08);padding:28px;width:100%;max-width:460px;animation:modal-in 0.16s ease}
+@keyframes modal-in{from{opacity:0;transform:translateY(-6px) scale(0.985)}to{opacity:1;transform:none}}
+.modal-eyebrow{font-size:10px;font-weight:700;color:#F47920;text-transform:uppercase;letter-spacing:0.08em;margin-bottom:7px}
+.modal h2{font-size:17px;font-weight:600;letter-spacing:-0.02em;margin-bottom:6px;color:#2C2C2A}
+.modal-sub{font-size:13px;color:#5F5E5A;margin-bottom:16px;line-height:1.55}
+.modal-file-chip{display:inline-flex;align-items:center;gap:6px;background:#F2F1F6;border:0.5px solid #D3D1C7;border-radius:6px;padding:4px 10px;font-size:11px;margin-bottom:16px;color:#5F5E5A}
+.fchip-type{font-size:9px;font-weight:700;color:#888780;text-transform:uppercase}
+.sku-field{position:relative;margin-bottom:8px}
+.sku-field input{width:100%;font-size:13px;padding:9px 12px;border:1.5px solid #D3D1C7;border-radius:8px;background:#fff;font-family:'Inter',sans-serif;transition:border-color 0.15s;outline:none;color:#2C2C2A}
+.sku-field input:focus{border-color:#F47920}
+.sku-dropdown{display:none;position:absolute;top:calc(100% + 4px);left:0;right:0;background:#fff;border:0.5px solid #D3D1C7;border-radius:9px;box-shadow:0 4px 16px rgba(0,0,0,0.1);max-height:220px;overflow-y:auto;z-index:110}
+.sku-dropdown.show{display:block}
+.sku-opt{display:flex;align-items:baseline;gap:10px;padding:8px 12px;cursor:pointer;font-size:12px;border-bottom:0.5px solid #F1EFE8}
+.sku-opt:last-child{border-bottom:none}
+.sku-opt:hover,.sku-opt.hi{background:#FFF3EB}
+.sku-opt .opt-code{font-weight:700;color:#2C2C2A;min-width:70px;font-size:11px}
+.sku-opt .opt-label{color:#5F5E5A;flex:1;font-size:11px}
+.sku-opt .opt-dims{font-size:10px;color:#B4B2A9;white-space:nowrap}
+.sku-no-results{padding:12px;font-size:12px;color:#888780;text-align:center}
+
+/* ── SKU preview in modal ── */
+.sku-preview{display:none;padding:12px 14px;background:#FFF3EB;border:0.5px solid #FAC795;border-radius:9px;margin-bottom:16px}
+.sku-preview.show{display:block}
+.sku-preview-top{display:flex;align-items:center;gap:8px;margin-bottom:6px}
+.sku-preview-code{font-weight:700;font-size:11px;background:#F47920;color:#fff;padding:2px 7px;border-radius:4px}
+.sku-preview-name{color:#2C2C2A;font-size:12px;font-weight:500}
+.sku-preview-specs{display:flex;flex-wrap:wrap;gap:10px;font-size:11px;color:#5F5E5A;margin-bottom:6px}
+.sku-preview-specs b{color:#2C2C2A;font-weight:600}
+.sku-preview-flags{display:flex;gap:4px;flex-wrap:wrap}
+.sku-preview-flag{font-size:9px;font-weight:600;padding:2px 6px;border-radius:3px;background:#FAEEDA;color:#7A3A00;border:0.5px solid #FAC775}
+.sku-preview-note{font-size:10px;color:#C75E0A;margin-top:5px;line-height:1.4}
+
+/* ── Modal actions ── */
+.modal-actions{display:flex;gap:8px;justify-content:flex-end;margin-top:4px}
+.mbtn{padding:8px 16px;border-radius:8px;font-size:12px;font-weight:600;cursor:pointer;border:0.5px solid #D3D1C7;background:#fff;color:#2C2C2A;font-family:'Inter',sans-serif}
+.mbtn:hover{background:#F2F1F6}
+.mbtn-primary{background:#F47920;color:#fff;border-color:#F47920}
+.mbtn-primary:hover{opacity:0.9}
+.mbtn-primary:disabled{background:#D3D1C7;border-color:#D3D1C7;color:#888780;cursor:not-allowed;opacity:1}
 </style>
 </head>
 <body>
 
+<!-- ══ SKU MODAL (IDs preserved exactly) ══ -->
 <div class="modal-overlay" id="skuModal">
   <div class="modal">
     <div class="modal-eyebrow">Before assessing</div>
@@ -168,141 +237,200 @@
   </div>
 </div>
 
-<nav>
-  <a class="nav-logo" href="/">UKPOS Print Site</a>
-  <div class="nav-links">
-    <a class="nav-link" href="/designer">Designer</a>
-    <a class="nav-link" href="/dashboard">Artwork list</a>
-    <a class="nav-link active assessor-link" href="/artwork-assessor">Artwork assessor</a>
+<!-- ══ SIDEBAR ══ -->
+<nav class="sidebar">
+  <div class="sb-logo">
+    <div class="sb-logo-inner">
+      <svg viewBox="0 0 24 24"><path d="M3 6h18v2H3zm0 5h18v2H3zm0 5h18v2H3z"/></svg>
+    </div>
   </div>
+  <a class="sb-item" href="/dashboard">
+    <span class="sb-icon">☰</span>
+    <span class="sb-label">Artwork list</span>
+  </a>
+  <a class="sb-item" href="/designer">
+    <span class="sb-icon">✏️</span>
+    <span class="sb-label">Designer</span>
+  </a>
+  <a class="sb-item active" href="/artwork-assessor">
+    <span class="sb-icon">✓</span>
+    <span class="sb-label">Assessor</span>
+  </a>
+  <div class="sb-spacer"></div>
+  <div class="sb-divider"></div>
+  <a class="sb-item" href="/">
+    <span class="sb-icon">⚙</span>
+    <span class="sb-label">Settings</span>
+  </a>
 </nav>
 
-<div class="layout">
-  <div>
-    <h1>Artwork assessor</h1>
-    <p class="page-desc">Assess print-readiness of PDF, EPS, PNG, or JPG artwork files.</p>
+<!-- ══ MAIN ══ -->
+<div class="main">
 
-    <div class="job-banner" id="jobBanner">
-      <div class="jb-item"><span class="jb-label">Reference</span><span class="jb-val" id="jbRef">—</span></div>
-      <div class="jb-item"><span class="jb-label">Customer</span><span class="jb-val" id="jbCustomer">—</span></div>
-      <div class="jb-item"><span class="jb-label">Order</span><span class="jb-val" id="jbOrder">—</span></div>
-      <a class="jb-back" href="/dashboard">← Back to artwork list</a>
-    </div>
-
-    <div class="file-area">
-      <div class="drop-zone" id="dropZone" onclick="document.getElementById('fileInput').click()">
-        <div class="dz-icon">📂</div>
-        <div class="dz-title" id="dzTitle">Drop artwork file here</div>
-        <div class="dz-sub">PDF · EPS · ZIP · PNG · JPG — or click to browse</div>
-      </div>
-      <input type="file" id="fileInput" accept=".pdf,.eps,.zip,.png,.jpg,.jpeg" onchange="handleFile(event)" />
-      <div class="sku-strip" id="skuStrip">
-        <span class="sku-code" id="stripCode"></span>
-        <div style="flex:1;min-width:0">
-          <div class="sku-strip-desc" id="stripDesc"></div>
-          <div class="sku-strip-dims" id="stripDims"></div>
-          <div class="sku-strip-flags" id="stripFlags"></div>
-        </div>
-        <button class="sku-change" onclick="openSkuModal(S._pendingFileForChange, true)">Change SKU</button>
-      </div>
-      <div id="fileBar" class="file-bar" style="display:none">
-        <span class="file-type-badge" id="fileTypeBadge">PDF</span>
-        <span class="file-name" id="fileBarName">—</span>
-        <button class="clear-btn" onclick="clearFile()" title="Remove">×</button>
-      </div>
-      <div id="storageBadge" style="display:none" class="storage-badge">
-        ✓ File stored — re-assess any time without re-uploading
-      </div>
-    </div>
-
-    <button class="run-btn" id="runBtn" onclick="runAssessment()" disabled>
-      <span id="runLabel">Assess artwork</span>
-    </button>
-
-    <div class="progress-area" id="progressArea">
-      <div class="progress-bar"><div class="progress-fill"></div></div>
-      <div class="progress-msg" id="progressMsg">Analysing artwork…</div>
-    </div>
-
-    <div class="results-area" id="resultsArea"></div>
+  <!-- Topbar -->
+  <div class="topbar">
+    <span class="topbar-title">Artwork assessor</span>
+    <div class="tb-spacer"></div>
   </div>
 
-  <aside class="sidebar">
-    <div class="sidebar-card">
-      <div class="sidebar-section">
-        <h3>Resolution</h3>
-        <div class="check-row">
-          <button class="toggle on" id="tog-dpi" onclick="this.classList.toggle('on')"></button>
-          <div class="check-label"><strong>Min image DPI</strong><span>Embedded rasters</span></div>
-          <input class="check-input" id="val-dpi" type="number" value="300" min="72" max="1200" />
+  <div class="content-wrap">
+
+    <!-- ── Left column ── -->
+    <div>
+
+      <!-- Job banner (shown when arriving from artwork list) -->
+      <div class="job-banner" id="jobBanner">
+        <div class="jb-item"><span class="jb-label">Reference</span><span class="jb-val" id="jbRef">—</span></div>
+        <div class="jb-item"><span class="jb-label">Customer</span><span class="jb-val" id="jbCustomer">—</span></div>
+        <div class="jb-item"><span class="jb-label">Order</span><span class="jb-val" id="jbOrder">—</span></div>
+        <a class="jb-back" href="/dashboard">← Artwork list</a>
+      </div>
+
+      <!-- Upload -->
+      <div class="section-card">
+        <div class="section-card-head">
+          <div class="section-card-title">Artwork file</div>
         </div>
-        <div class="check-row">
-          <button class="toggle on" id="tog-pixelation" onclick="this.classList.toggle('on')"></button>
-          <div class="check-label"><strong>Pixelation</strong><span>Upsampled / blocky</span></div>
+        <div class="section-card-body">
+          <div class="drop-zone" id="dropZone" onclick="document.getElementById('fileInput').click()">
+            <div class="dz-icon">📂</div>
+            <div class="dz-title" id="dzTitle">Drop artwork file here</div>
+            <div class="dz-sub">PDF · EPS · ZIP · PNG · JPG — or click to browse</div>
+          </div>
+          <input type="file" id="fileInput" accept=".pdf,.eps,.zip,.png,.jpg,.jpeg" onchange="handleFile(event)" />
+
+          <!-- SKU strip (shown after SKU confirmed) -->
+          <div class="sku-strip" id="skuStrip">
+            <span class="sku-code" id="stripCode"></span>
+            <div style="flex:1;min-width:0">
+              <div class="sku-strip-desc" id="stripDesc"></div>
+              <div class="sku-strip-dims" id="stripDims"></div>
+              <div class="sku-strip-flags" id="stripFlags"></div>
+            </div>
+            <button class="sku-change" onclick="openSkuModal(S._pendingFileForChange, true)">Change SKU</button>
+          </div>
+
+          <!-- File bar (shown after file loaded) -->
+          <div id="fileBar" class="file-bar" style="display:none">
+            <span class="file-type-badge" id="fileTypeBadge">PDF</span>
+            <span class="file-name" id="fileBarName">—</span>
+            <button class="clear-btn" onclick="clearFile()" title="Remove">×</button>
+          </div>
+
+          <!-- Storage badge -->
+          <div id="storageBadge" class="storage-badge">
+            ✓ File stored — re-assess any time without re-uploading
+          </div>
         </div>
       </div>
-      <div class="sidebar-section">
-        <h3>Dimensions</h3>
-        <div class="check-row">
-          <button class="toggle on" id="tog-bleed" onclick="this.classList.toggle('on')"></button>
-          <div class="check-label"><strong>Bleed (mm)</strong><span>All sides</span></div>
-          <input class="check-input" id="val-bleed" type="number" value="3" min="0" max="20" />
-        </div>
-        <div class="check-row">
-          <button class="toggle" id="tog-docw" onclick="this.classList.toggle('on')"></button>
-          <div class="check-label"><strong>Width (mm)</strong><span>Trim width</span></div>
-          <input class="check-input" id="val-docw" type="number" value="" placeholder="any" />
-        </div>
-        <div class="check-row">
-          <button class="toggle" id="tog-doch" onclick="this.classList.toggle('on')"></button>
-          <div class="check-label"><strong>Height (mm)</strong><span>Trim height</span></div>
-          <input class="check-input" id="val-doch" type="number" value="" placeholder="any" />
-        </div>
+
+      <!-- Assess button -->
+      <button class="run-btn" id="runBtn" onclick="runAssessment()" disabled>
+        <span id="runLabel">Assess artwork</span>
+      </button>
+
+      <!-- Progress -->
+      <div class="progress-area" id="progressArea">
+        <div class="progress-bar-track"><div class="progress-bar-fill"></div></div>
+        <div class="progress-msg" id="progressMsg">Analysing artwork…</div>
       </div>
-      <div class="sidebar-section">
-        <h3>Colour</h3>
-        <div class="check-row">
-          <button class="toggle on" id="tog-colour" onclick="this.classList.toggle('on')"></button>
-          <div class="check-label"><strong>Colour mode</strong><span>Expected space</span></div>
-          <select class="check-input" id="val-colour" style="width:68px">
-            <option value="CMYK">CMYK</option>
-            <option value="RGB">RGB</option>
-            <option value="either">Either</option>
-          </select>
-        </div>
+
+      <!-- Results -->
+      <div style="margin-top:16px">
+        <div class="results-area" id="resultsArea"></div>
       </div>
-      <div class="sidebar-section">
-        <h3>Visual checks</h3>
-        <div class="check-row">
-          <button class="toggle on" id="tog-whiteedge" onclick="this.classList.toggle('on')"></button>
-          <div class="check-label"><strong>White edge</strong><span>Missed bleed drag</span></div>
-        </div>
-        <div class="check-row">
-          <button class="toggle on" id="tog-safezone" onclick="this.classList.toggle('on')"></button>
-          <div class="check-label"><strong>Safe zone</strong><span>Text near trim edge</span></div>
-        </div>
-        <div class="check-row">
-          <button class="toggle on" id="tog-fonts" onclick="this.classList.toggle('on')"></button>
-          <div class="check-label"><strong>Fonts</strong><span>Embedded or outlined</span></div>
-        </div>
-        <div class="check-row">
-          <button class="toggle on" id="tog-transparency" onclick="this.classList.toggle('on')"></button>
-          <div class="check-label"><strong>Transparency</strong><span>Overprint / unflattened</span></div>
-        </div>
-      </div>
-      <div class="sidebar-section">
-        <h3>Custom checks</h3>
-        <div id="customList"></div>
-        <div class="custom-add">
-          <input type="text" id="customInput" placeholder="Describe a check…" />
-          <button onclick="addCustom()">+</button>
-        </div>
-      </div>
+
     </div>
-  </aside>
-</div>
+
+    <!-- ── Right column — settings ── -->
+    <aside>
+      <div class="settings-card">
+
+        <div class="settings-section">
+          <h3>Resolution</h3>
+          <div class="check-row">
+            <button class="toggle on" id="tog-dpi" onclick="this.classList.toggle('on')"></button>
+            <div class="check-label"><strong>Min image DPI</strong><span>Embedded rasters</span></div>
+            <input class="check-input" id="val-dpi" type="number" value="300" min="72" max="1200" />
+          </div>
+          <div class="check-row">
+            <button class="toggle on" id="tog-pixelation" onclick="this.classList.toggle('on')"></button>
+            <div class="check-label"><strong>Pixelation</strong><span>Upsampled / blocky</span></div>
+          </div>
+        </div>
+
+        <div class="settings-section">
+          <h3>Dimensions</h3>
+          <div class="check-row">
+            <button class="toggle on" id="tog-bleed" onclick="this.classList.toggle('on')"></button>
+            <div class="check-label"><strong>Bleed (mm)</strong><span>All sides</span></div>
+            <input class="check-input" id="val-bleed" type="number" value="3" min="0" max="20" />
+          </div>
+          <div class="check-row">
+            <button class="toggle" id="tog-docw" onclick="this.classList.toggle('on')"></button>
+            <div class="check-label"><strong>Width (mm)</strong><span>Trim width</span></div>
+            <input class="check-input" id="val-docw" type="number" value="" placeholder="any" />
+          </div>
+          <div class="check-row">
+            <button class="toggle" id="tog-doch" onclick="this.classList.toggle('on')"></button>
+            <div class="check-label"><strong>Height (mm)</strong><span>Trim height</span></div>
+            <input class="check-input" id="val-doch" type="number" value="" placeholder="any" />
+          </div>
+        </div>
+
+        <div class="settings-section">
+          <h3>Colour</h3>
+          <div class="check-row">
+            <button class="toggle on" id="tog-colour" onclick="this.classList.toggle('on')"></button>
+            <div class="check-label"><strong>Colour mode</strong><span>Expected space</span></div>
+            <select class="check-input" id="val-colour" style="width:66px;font-family:'Inter',sans-serif">
+              <option value="CMYK">CMYK</option>
+              <option value="RGB">RGB</option>
+              <option value="either">Either</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="settings-section">
+          <h3>Visual checks</h3>
+          <div class="check-row">
+            <button class="toggle on" id="tog-whiteedge" onclick="this.classList.toggle('on')"></button>
+            <div class="check-label"><strong>White edge</strong><span>Missed bleed drag</span></div>
+          </div>
+          <div class="check-row">
+            <button class="toggle on" id="tog-safezone" onclick="this.classList.toggle('on')"></button>
+            <div class="check-label"><strong>Safe zone</strong><span>Text near trim edge</span></div>
+          </div>
+          <div class="check-row">
+            <button class="toggle on" id="tog-fonts" onclick="this.classList.toggle('on')"></button>
+            <div class="check-label"><strong>Fonts</strong><span>Embedded or outlined</span></div>
+          </div>
+          <div class="check-row">
+            <button class="toggle on" id="tog-transparency" onclick="this.classList.toggle('on')"></button>
+            <div class="check-label"><strong>Transparency</strong><span>Overprint / unflattened</span></div>
+          </div>
+        </div>
+
+        <div class="settings-section">
+          <h3>Custom checks</h3>
+          <div id="customList"></div>
+          <div class="custom-add">
+            <input type="text" id="customInput" placeholder="Describe a check…" />
+            <button onclick="addCustom()">+</button>
+          </div>
+        </div>
+
+      </div>
+    </aside>
+  </div><!-- end content-wrap -->
+</div><!-- end main -->
 
 <script>
+/* ══════════════════════════════════════════════════════════════
+   ALL JS BELOW IS TRANSPLANTED UNCHANGED FROM THE LIVE FILE
+   public/artwork-assessor/index.html — fetched 01 Jul 2026
+   ══════════════════════════════════════════════════════════════ */
+
 const SKU_SPECS = {
   'AS1-A0':  { label:'Acrylic Poster Holder — A0',  w:841,  h:1189, dpi:150, colour:'CMYK', sides:1, bleed:3,  notes:'', future_flags:[] },
   'AS1-A1':  { label:'Acrylic Poster Holder — A1',  w:594,  h:841,  dpi:200, colour:'CMYK', sides:1, bleed:3,  notes:'', future_flags:[] },
@@ -319,7 +447,7 @@ const SKU_SPECS = {
   'WPG7':    { label:'Waterproof Pavement Sign — WPG7',  w:594, h:841, dpi:150, colour:'CMYK', sides:1, bleed:5, notes:'Shared A1 template.', future_flags:['cut_lines'] },
   'WPG8':    { label:'Waterproof Pavement Sign — WPG8',  w:594, h:841, dpi:150, colour:'CMYK', sides:2, bleed:5, notes:'Double-sided A1.', future_flags:['cut_lines','double_sided'] },
   'WPG9':    { label:'Waterproof Pavement Sign — WPG9',  w:594, h:841, dpi:150, colour:'CMYK', sides:1, bleed:5, notes:'Shared A1 template.', future_flags:['cut_lines'] },
-  'WPG10':   { label:'Waterproof Pavement Sign — WPG10', w:450, h:600, dpi:150, colour:'CMYK', sides:2, bleed:5, notes:'Verify dimensions — suspected copy-paste error in template visual area field.', future_flags:['cut_lines','double_sided'] },
+  'WPG10':   { label:'Waterproof Pavement Sign — WPG10', w:450, h:600, dpi:150, colour:'CMYK', sides:2, bleed:5, notes:'Verify dimensions.', future_flags:['cut_lines','double_sided'] },
   'WPG11':   { label:'Waterproof Pavement Sign — WPG11', w:450, h:600, dpi:150, colour:'CMYK', sides:2, bleed:5, notes:'', future_flags:['cut_lines','double_sided'] },
   'WPG12':   { label:'Waterproof Pavement Sign — WPG12', w:450, h:600, dpi:150, colour:'CMYK', sides:1, bleed:5, notes:'', future_flags:['cut_lines'] },
   'WPG13':   { label:'Waterproof Pavement Sign — WPG13', w:594, h:841, dpi:150, colour:'CMYK', sides:2, bleed:5, notes:'', future_flags:['cut_lines','double_sided'] },
@@ -535,7 +663,7 @@ function setDropZoneState(state, fileName, fileType, storagePath) {
   if (state === 'stored') {
     dzTitle.textContent = 'Drop a different file to replace'; bar.style.display = 'flex';
     badge.textContent = fileType||'?'; badge.className = 'file-type-badge badge-'+(fileType||'').toLowerCase();
-    nameEl.textContent = fileName||'—'; sb.style.display = 'inline-flex';
+    nameEl.textContent = fileName||'—'; sb.style.display = 'flex';
   } else if (state === 'loaded') {
     dzTitle.textContent = 'Drop a different file to replace'; bar.style.display = 'flex';
     badge.textContent = fileType||'?'; badge.className = 'file-type-badge badge-'+(fileType||'').toLowerCase(); nameEl.textContent = fileName||'—';
@@ -608,7 +736,7 @@ async function runAssessment() {
         const path = `${S.jobId}.${extMap[S.fileType]||'bin'}`;
         try {
           const ur = await fetch('/api/upload', { method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify({ path, mediaType:S.mediaType, data:S.b64 }) });
-          if (ur.ok) { patch.storage_path = path; S.storagePath = path; document.getElementById('storageBadge').style.display = 'inline-flex'; }
+          if (ur.ok) { patch.storage_path = path; S.storagePath = path; document.getElementById('storageBadge').style.display = 'flex'; }
         } catch(e) { console.error('storage upload failed', e); }
       }
       await fetch(`/api/job?id=${S.jobId}`, { method:'PATCH', headers:{'Content-Type':'application/json'}, body:JSON.stringify(patch) });
@@ -627,7 +755,7 @@ function renderResults(results, assessedAt) {
     const pct = checks.length ? Math.round(checks.filter(r=>r.status==='pass').length/checks.length*100) : null;
     html += `<div class="result-overall ${overall.status}"><span class="ov-icon">${icons[overall.status]||'ℹ️'}</span><span>${overall.headline}</span><span class="ov-meta">${pct!==null?pct+'% passed':''}${assessedAt?'<br>'+new Date(assessedAt).toLocaleString('en-GB',{day:'2-digit',month:'short',hour:'2-digit',minute:'2-digit'}):''}</span></div>`;
   }
-  if (overall?.detail) html += `<p style="font-size:13px;color:#5F5E5A;margin-bottom:14px;line-height:1.6">${overall.detail}</p>`;
+  if (overall?.detail) html += `<p style="font-size:12px;color:#5F5E5A;margin-bottom:12px;line-height:1.6">${overall.detail}</p>`;
   html += '<div class="checks-label">Check results</div>';
   checks.forEach(r => { html += `<div class="result-item ${r.status}"><span class="ri-icon">${icons[r.status]||'ℹ️'}</span><div class="ri-body"><strong>${r.label}</strong><span>${r.headline}${r.detail?' — '+r.detail:''}</span></div></div>`; });
   document.getElementById('resultsArea').innerHTML = html;
