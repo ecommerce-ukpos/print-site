@@ -117,7 +117,7 @@ input[type=range]{width:100%;cursor:pointer;accent-color:#F47920}
 .step-spacer{flex:1;min-height:8px}
 
 /* ── CANVAS AREA ── */
-.canvas-area{flex:1;background:#C4C4C0;display:flex;flex-direction:column;overflow:hidden;min-width:0;position:relative}
+.canvas-area{flex:1;background:#EEEDEA;display:flex;flex-direction:column;overflow:hidden;min-width:0;position:relative}
 .canvas-toolbar{display:flex;align-items:center;gap:8px;padding:6px 14px;background:#fff;border-bottom:1px solid #E8E6DE;flex-shrink:0;z-index:5}
 .size-toggle{display:flex;border:1.5px solid #D3D1C7;border-radius:7px;overflow:hidden}
 .st-btn{padding:4px 12px;font-size:18px;font-weight:500;cursor:pointer;background:#FAFAF8;color:#888780;border:none;transition:all 0.12s}
@@ -1153,7 +1153,7 @@ function drawToContext(ctx, layers, bgColor, drawHandlesFlag, tmplA){
   tmplA = tmplA!==undefined ? tmplA : (parseInt(document.getElementById('tmplOpacity').value)/100);
 
   ctx.clearRect(0,0,CW,CH);
-  ctx.fillStyle='#C4C4C0';ctx.fillRect(0,0,CW,CH);
+  ctx.fillStyle='#EEEDEA';ctx.fillRect(0,0,CW,CH);
 
   if(!currentSku){return;}
   const spec=SKU_SPECS[currentSku];
