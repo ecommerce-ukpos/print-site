@@ -72,10 +72,10 @@ body{font-family:'Inter',-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;
 .drop-banner:hover,.drop-banner.drag-over{border-color:#F47920;background:#FFF8F3}
 .drop-icon-wrap{width:40px;height:40px;border-radius:10px;background:#F2F1F6;display:flex;align-items:center;justify-content:center;flex-shrink:0;font-size:18px}
 .drop-banner.drag-over .drop-icon-wrap{background:#FFF0E6}
-.db-info{flex:1}
+.db-info{flex:1;text-align:center}
 .db-title{font-size:12px;font-weight:600;color:#2C2C2A;margin-bottom:3px}
 .db-sub{font-size:10px;color:#888780;margin-bottom:5px}
-.db-formats{display:flex;gap:4px;flex-wrap:wrap}
+.db-formats{display:flex;gap:4px;flex-wrap:wrap;justify-content:center}
 .fmt-pill{font-size:9px;font-weight:600;padding:2px 6px;border-radius:4px;background:#F2F1F6;color:#5F5E5A;border:0.5px solid #D3D1C7}
 .db-or{font-size:11px;color:#B4B2A9;flex-shrink:0}
 .db-browse{height:30px;padding:0 14px;border-radius:7px;border:0.5px solid #D3D1C7;background:#fff;font-size:11px;font-weight:600;color:#5F5E5A;cursor:pointer;font-family:'Inter',sans-serif;flex-shrink:0;white-space:nowrap}
@@ -88,6 +88,26 @@ body{font-family:'Inter',-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;
 .col-pill.on{background:#FFF0E6;color:#C75E0A;border-color:#FAC795}
 .col-pill:hover{background:#F2F1F6}
 .col-pill.on:hover{background:#FFE8D4}
+
+/* ── Date + score filter bar ── */
+.filter-bar{display:flex;align-items:center;gap:8px;flex-wrap:wrap;padding:10px 14px;background:#fff;border-radius:10px;border:0.5px solid #D3D1C7}
+.filter-group{display:flex;align-items:center;gap:5px;flex-shrink:0}
+.filter-group-label{font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:0.05em;color:#888780;white-space:nowrap}
+.filter-sep{width:1px;height:18px;background:#E8E6DE;flex-shrink:0}
+.date-preset{height:26px;padding:0 10px;border-radius:20px;border:0.5px solid #D3D1C7;background:#fff;font-size:11px;font-weight:500;color:#5F5E5A;cursor:pointer;font-family:'Inter',sans-serif;white-space:nowrap;transition:all 0.1s}
+.date-preset:hover{background:#F2F1F6}
+.date-preset.active{background:#F47920;color:#fff;border-color:#F47920;font-weight:600}
+.date-range-inputs{display:flex;align-items:center;gap:5px}
+.date-input{height:26px;padding:0 8px;border-radius:6px;border:0.5px solid #D3D1C7;background:#F2F1F6;font-size:11px;font-family:'Inter',sans-serif;color:#2C2C2A;outline:none;cursor:pointer}
+.date-input:focus{border-color:#F47920;background:#fff}
+.date-range-sep{font-size:10px;color:#888780}
+.score-filter{display:flex;align-items:center;gap:4px}
+.score-range-input{width:52px;height:26px;padding:0 7px;border-radius:6px;border:0.5px solid #D3D1C7;background:#F2F1F6;font-size:11px;font-family:'Inter',sans-serif;color:#2C2C2A;outline:none}
+.score-range-input:focus{border-color:#F47920;background:#fff}
+.filter-clear{height:26px;padding:0 10px;border-radius:20px;border:0.5px solid #F09595;background:#FCEBEB;font-size:11px;font-weight:600;color:#501313;cursor:pointer;font-family:'Inter',sans-serif;margin-left:auto;white-space:nowrap}
+.filter-clear:hover{background:#F7D0D0}
+.filter-clear.hidden{display:none}
+.filter-results{font-size:11px;color:#888780;flex-shrink:0;white-space:nowrap}
 
 /* ── Table ── */
 .table-card{background:#fff;border-radius:12px;border:0.5px solid #D3D1C7;overflow:hidden}
@@ -290,7 +310,34 @@ input[type=file]{display:none}
       <button class="db-browse" onclick="event.stopPropagation();document.getElementById('fileInput').click()">Browse files</button>
     </div>
 
-    <!-- Controls / column toggles -->
+    <!-- Date + score filter bar -->
+    <div class="filter-bar" id="filterBar">
+      <div class="filter-group">
+        <span class="filter-group-label">Date</span>
+        <button class="date-preset active" data-preset="all" onclick="setDatePreset(this,'all')">All</button>
+        <button class="date-preset" data-preset="today" onclick="setDatePreset(this,'today')">Today</button>
+        <button class="date-preset" data-preset="yesterday" onclick="setDatePreset(this,'yesterday')">Yesterday</button>
+        <button class="date-preset" data-preset="7d" onclick="setDatePreset(this,'7d')">Last 7 days</button>
+        <button class="date-preset" data-preset="30d" onclick="setDatePreset(this,'30d')">Last 30 days</button>
+        <div class="date-range-inputs">
+          <input type="date" class="date-input" id="filterDateFrom" title="From date" onchange="onDateRangeChange()">
+          <span class="date-range-sep">→</span>
+          <input type="date" class="date-input" id="filterDateTo" title="To date" onchange="onDateRangeChange()">
+        </div>
+      </div>
+      <div class="filter-sep"></div>
+      <div class="filter-group">
+        <span class="filter-group-label">Score</span>
+        <input type="number" class="score-range-input" id="filterScoreMin" placeholder="0" min="0" max="100" title="Min score %" oninput="applyFilters()">
+        <span class="date-range-sep">–</span>
+        <input type="number" class="score-range-input" id="filterScoreMax" placeholder="100" min="0" max="100" title="Max score %" oninput="applyFilters()">
+        <span style="font-size:10px;color:#888780">%</span>
+      </div>
+      <span class="filter-results" id="filterResults"></span>
+      <button class="filter-clear hidden" id="filterClearBtn" onclick="clearFilters()">✕ Clear filters</button>
+    </div>
+
+    <!-- Column toggle pills -->
     <div class="controls-bar">
       <span class="controls-label">Checks:</span>
       <button class="col-pill on" data-col="dpi"          onclick="toggleCol(this)">DPI</button>
@@ -465,29 +512,11 @@ function updateStats() {
 }
 
 function renderTable() {
-  const tbody = document.getElementById('jobBody');
-  const total = allJobs.length;
-  const totalPages = Math.max(1, Math.ceil(total / pageSize));
-  if (currentPage > totalPages) currentPage = totalPages;
-  const start = (currentPage - 1) * pageSize;
-  const pageJobs = allJobs.slice(start, start + pageSize);
-
-  if (!total) {
-    tbody.innerHTML = `<tr><td colspan="19"><div class="empty-state"><div class="es-icon">📭</div><p>No jobs yet — drop files above to get started</p></div></td></tr>`;
-  } else {
-    tbody.innerHTML = pageJobs.map(renderRow).join('');
-  }
-  applyColVisibility();
-  updateStats();
-
-  const showing = total ? `${start + 1}–${Math.min(start + pageSize, total)} of ${total} jobs` : '0 jobs';
-  document.getElementById('pgInfo').textContent = showing;
-  document.getElementById('pgPages').textContent = `Page ${currentPage} of ${totalPages}`;
-  document.getElementById('pgPrev').disabled = currentPage <= 1;
-  document.getElementById('pgNext').disabled = currentPage >= totalPages;
+  // Reapply current filters, then delegate
+  applyFilters();
 }
 
-function changePage(dir) { currentPage += dir; renderTable(); window.scrollTo(0,0); }
+function changePage(dir) { currentPage += dir; renderTableFromSource(filteredJobs.length && filteredJobs.length < allJobs.length ? filteredJobs : allJobs); window.scrollTo(0,0); }
 function changePageSize(val) { pageSize = parseInt(val); currentPage = 1; renderTable(); }
 
 async function loadJobs() {
@@ -697,6 +726,131 @@ banner.addEventListener('dragover', e => { e.preventDefault(); banner.classList.
 banner.addEventListener('dragleave', () => banner.classList.remove('drag-over'));
 banner.addEventListener('drop', e => { e.preventDefault(); banner.classList.remove('drag-over'); addFilesToQueue(Array.from(e.dataTransfer.files)); });
 banner.addEventListener('click', e => { if (!e.target.closest('.db-browse')) document.getElementById('fileInput').click(); });
+
+// ── Date + score filter ────────────────────────────────────
+let activePreset = 'all';
+let filteredJobs = [];
+
+function localDateStr(date) {
+  // Returns YYYY-MM-DD in local time
+  const y = date.getFullYear();
+  const m = String(date.getMonth()+1).padStart(2,'0');
+  const d = String(date.getDate()).padStart(2,'0');
+  return `${y}-${m}-${d}`;
+}
+
+function setDatePreset(btn, preset) {
+  activePreset = preset;
+  document.querySelectorAll('.date-preset').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+  // Clear custom date inputs when preset chosen
+  document.getElementById('filterDateFrom').value = '';
+  document.getElementById('filterDateTo').value = '';
+  applyFilters();
+}
+
+function onDateRangeChange() {
+  // Deactivate presets when custom range is entered
+  activePreset = 'custom';
+  document.querySelectorAll('.date-preset').forEach(b => b.classList.remove('active'));
+  applyFilters();
+}
+
+function clearFilters() {
+  activePreset = 'all';
+  document.querySelectorAll('.date-preset').forEach(b => b.classList.remove('active'));
+  document.querySelector('.date-preset[data-preset="all"]').classList.add('active');
+  document.getElementById('filterDateFrom').value = '';
+  document.getElementById('filterDateTo').value = '';
+  document.getElementById('filterScoreMin').value = '';
+  document.getElementById('filterScoreMax').value = '';
+  applyFilters();
+}
+
+function applyFilters() {
+  const now = new Date();
+  const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+
+  let fromDate = null, toDate = null;
+
+  if (activePreset === 'today') {
+    fromDate = today;
+    toDate = new Date(today.getTime() + 86400000); // end of today
+  } else if (activePreset === 'yesterday') {
+    fromDate = new Date(today.getTime() - 86400000);
+    toDate = today;
+  } else if (activePreset === '7d') {
+    fromDate = new Date(today.getTime() - 7*86400000);
+    toDate = new Date(today.getTime() + 86400000);
+  } else if (activePreset === '30d') {
+    fromDate = new Date(today.getTime() - 30*86400000);
+    toDate = new Date(today.getTime() + 86400000);
+  } else if (activePreset === 'custom' || activePreset === 'all') {
+    const fromVal = document.getElementById('filterDateFrom').value;
+    const toVal   = document.getElementById('filterDateTo').value;
+    if (fromVal) fromDate = new Date(fromVal + 'T00:00:00');
+    if (toVal)   toDate   = new Date(toVal   + 'T23:59:59');
+  }
+
+  const scoreMinStr = document.getElementById('filterScoreMin').value;
+  const scoreMaxStr = document.getElementById('filterScoreMax').value;
+  const scoreMin = scoreMinStr !== '' ? parseInt(scoreMinStr) : null;
+  const scoreMax = scoreMaxStr !== '' ? parseInt(scoreMaxStr) : null;
+
+  const isFiltered = activePreset !== 'all' || fromDate || toDate || scoreMin !== null || scoreMax !== null;
+
+  filteredJobs = allJobs.filter(job => {
+    // Date filter — use uploaded_at
+    if (fromDate || toDate) {
+      const uploaded = job.uploaded_at ? new Date(job.uploaded_at) : null;
+      if (!uploaded) return false;
+      if (fromDate && uploaded < fromDate) return false;
+      if (toDate   && uploaded > toDate)   return false;
+    }
+    // Score filter
+    if (scoreMin !== null && (job.score_pct === null || job.score_pct === undefined || job.score_pct < scoreMin)) return false;
+    if (scoreMax !== null && (job.score_pct === null || job.score_pct === undefined || job.score_pct > scoreMax)) return false;
+    return true;
+  });
+
+  // Update clear button
+  document.getElementById('filterClearBtn').classList.toggle('hidden', !isFiltered);
+
+  // Show result count when filtered
+  const resultsEl = document.getElementById('filterResults');
+  if (isFiltered && filteredJobs.length !== allJobs.length) {
+    resultsEl.textContent = `${filteredJobs.length} of ${allJobs.length} jobs`;
+  } else {
+    resultsEl.textContent = '';
+  }
+
+  currentPage = 1;
+  renderTableFromSource(filteredJobs.length < allJobs.length ? filteredJobs : allJobs);
+}
+
+// Override renderTable to accept a jobs source
+function renderTableFromSource(jobs) {
+  const tbody = document.getElementById('jobBody');
+  const total = jobs.length;
+  const totalPages = Math.max(1, Math.ceil(total / pageSize));
+  if (currentPage > totalPages) currentPage = totalPages;
+  const start = (currentPage - 1) * pageSize;
+  const pageJobs = jobs.slice(start, start + pageSize);
+
+  if (!total) {
+    tbody.innerHTML = `<tr><td colspan="19"><div class="empty-state"><div class="es-icon">🔍</div><p>No jobs match the current filters</p></div></td></tr>`;
+  } else {
+    tbody.innerHTML = pageJobs.map(renderRow).join('');
+  }
+  applyColVisibility();
+  updateStats();
+
+  const showing = total ? `${start + 1}–${Math.min(start + pageSize, total)} of ${total} jobs` : '0 jobs';
+  document.getElementById('pgInfo').textContent = showing;
+  document.getElementById('pgPages').textContent = `Page ${currentPage} of ${totalPages}`;
+  document.getElementById('pgPrev').disabled = currentPage <= 1;
+  document.getElementById('pgNext').disabled = currentPage >= totalPages;
+}
 
 loadJobs();
 </script>
