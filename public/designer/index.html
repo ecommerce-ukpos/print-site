@@ -231,9 +231,7 @@ canvas{display:block}
 .canvas-spinner svg{width:36px;height:36px;animation:spin 0.7s linear infinite}
 @keyframes spin{to{transform:rotate(360deg)}}
 
-/* Template iframe */
-.tmpl-iframe-wrap{position:absolute;top:0;left:0;pointer-events:none;overflow:hidden;z-index:0;mix-blend-mode:multiply}
-.tmpl-iframe-wrap iframe{width:100%;height:100%;border:none;display:block}
+/* Template image drawn directly on canvas - no iframe needed */
 
 /* Panel side tag */
 .panel-side-tag{display:inline-block;margin-left:6px;font-size:9px;font-weight:700;padding:1px 6px;border-radius:3px;background:#185FA5;color:#fff;letter-spacing:0.03em;vertical-align:middle}
@@ -682,6 +680,8 @@ canvas{display:block}
   <div class="rp-actions">
     <button class="rp-btn rp-btn-green" id="btnSubmit" disabled onclick="submitToArtworkList()">Submit to artwork list →</button>
     <button class="rp-btn rp-btn-blue"  id="btnAssessor" disabled onclick="goToAssessor()">Run checks in assessor</button>
+    <button class="rp-btn" id="btnExportCustomer" disabled onclick="exportCustomerPNG()" style="background:#F2F1F6;color:#2C2C2A;border-color:#D3D1C7">↓ Customer PNG (flat)</button>
+    <button class="rp-btn" id="btnExportPrint"    disabled onclick="exportPrintPNG()"    style="background:#F2F1F6;color:#2C2C2A;border-color:#D3D1C7">↓ Print PNG (with guides)</button>
     <a class="rp-btn" href="/dashboard">← Artwork list</a>
   </div>
 </div><!-- end right-panel -->
@@ -919,10 +919,7 @@ function initSingleSidedCanvas(){
   scroll.innerHTML=`
     <div class="canvas-outer" id="canvasOuter" style="position:relative">
       <div class="canvas-transform" id="canvasTransform" style="position:relative;z-index:1">
-        <div class="tmpl-iframe-wrap" id="tmplIframe0" style="position:absolute;top:0;left:0;width:100%;height:100%;display:none;z-index:1;pointer-events:none;overflow:hidden;mix-blend-mode:multiply">
-          <iframe id="tmplFrame0" src="" title="Print template" style="width:100%;height:100%;border:none;display:block"></iframe>
-        </div>
-        <canvas id="mainCanvas" class="main-canvas" style="position:relative;z-index:2" width="${CW}" height="${CH}"></canvas>
+        <canvas id="mainCanvas" class="main-canvas" width="${CW}" height="${CH}"></canvas>
         <canvas id="snapCanvas" class="snap-canvas" width="${CW}" height="${CH}"></canvas>
       </div>
     </div>`;
@@ -941,10 +938,7 @@ function initDualSidedCanvas(){
     <div class="dual-side side-active" id="dualSide0" style="position:relative;display:flex;flex-direction:column;align-items:center;min-width:0;flex:1">
       <div class="canvas-outer" id="canvasOuter0" style="position:relative">
         <div class="canvas-transform" id="canvasTransform0" style="position:relative;z-index:1">
-          <div class="tmpl-iframe-wrap" id="tmplIframe0" style="position:absolute;top:0;left:0;width:100%;height:100%;display:none;z-index:1;pointer-events:none;overflow:hidden;mix-blend-mode:multiply">
-            <iframe id="tmplFrame0" src="" title="Print template side 1" style="width:100%;height:100%;border:none;display:block"></iframe>
-          </div>
-          <canvas id="mainCanvas0" class="main-canvas" style="position:relative;z-index:2" width="${CW}" height="${CH}"></canvas>
+          <canvas id="mainCanvas0" class="main-canvas" width="${CW}" height="${CH}"></canvas>
           <canvas id="snapCanvas0" class="snap-canvas" width="${CW}" height="${CH}"></canvas>
         </div>
       </div>
@@ -954,10 +948,7 @@ function initDualSidedCanvas(){
     <div class="dual-side side-inactive" id="dualSide1" style="position:relative;display:flex;flex-direction:column;align-items:center;min-width:0;flex:1">
       <div class="canvas-outer" id="canvasOuter1" style="position:relative">
         <div class="canvas-transform" id="canvasTransform1" style="position:relative;z-index:1">
-          <div class="tmpl-iframe-wrap" id="tmplIframe1" style="position:absolute;top:0;left:0;width:100%;height:100%;display:none;z-index:1;pointer-events:none;overflow:hidden;mix-blend-mode:multiply">
-            <iframe id="tmplFrame1" src="" title="Print template side 2" style="width:100%;height:100%;border:none;display:block"></iframe>
-          </div>
-          <canvas id="mainCanvas1" class="main-canvas" style="position:relative;z-index:2" width="${CW}" height="${CH}"></canvas>
+          <canvas id="mainCanvas1" class="main-canvas" width="${CW}" height="${CH}"></canvas>
           <canvas id="snapCanvas1" class="snap-canvas" width="${CW}" height="${CH}"></canvas>
         </div>
       </div>
@@ -1030,7 +1021,8 @@ function drawInactiveSide(){
   if(!inactiveCanvas) return;
   const ictx=inactiveCanvas.getContext('2d');
   const inactiveSide=sides[inactiveIdx];
-  drawToContext(ictx, inactiveSide.layers, inactiveSide.bgColor, false);
+  const tmplA=parseInt(document.getElementById('tmplOpacity').value)/100;
+  drawToContext(ictx, inactiveSide.layers, inactiveSide.bgColor, false, tmplA, inactiveIdx);
 }
 
 // ── Undo/Redo ──────────────────────────────────────────────
@@ -1195,67 +1187,96 @@ function draw(){
   drawInactiveSide();
 }
 
-function drawToContext(ctx, layers, bgColor, drawHandlesFlag, tmplA){
+function drawToContext(ctx, layers, bgColor, drawHandlesFlag, tmplA, sideIdx){
   if(!ctx) return;
-  tmplA=tmplA!==undefined?tmplA:(parseInt(document.getElementById('tmplOpacity').value)/100);
+  sideIdx = sideIdx !== undefined ? sideIdx : activeSide;
+  tmplA = tmplA !== undefined ? tmplA : (parseInt(document.getElementById('tmplOpacity').value)/100);
+  const spec = SKU_SPECS[currentSku];
+  const bx = TX-BLEEDPX, by = TY-BLEEDPX, bw = TW+BLEEDPX*2, bh = TH+BLEEDPX*2;
+
+  // ── 1. Canvas background (outside bleed = grey surround) ──
   ctx.clearRect(0,0,CW,CH);
-  ctx.fillStyle='#EEEDEA';ctx.fillRect(0,0,CW,CH);
-  if(!currentSku){return;}
-  const spec=SKU_SPECS[currentSku];
-  const bx=TX-BLEEDPX,by=TY-BLEEDPX,bw=TW+BLEEDPX*2,bh=TH+BLEEDPX*2;
+  ctx.fillStyle='#EEEDEA'; ctx.fillRect(0,0,CW,CH);
+  if(!currentSku) return;
+
+  // ── 2. Template image at tmplA opacity, scaled to fill bleed area ──
+  const tmplImg = currentTemplateImg[sideIdx] || currentTemplateImg[0] || null;
+  if(tmplImg && tmplA > 0){
+    ctx.save();
+    ctx.globalAlpha = tmplA;
+    // Scale template to cover the bleed area exactly
+    ctx.drawImage(tmplImg, bx, by, bw, bh);
+    ctx.restore();
+    ctx.globalAlpha = 1;
+  }
+
+  // ── 3. Background fill colour (clipped to bleed area) ──
   if(bgColor){
-    ctx.save();ctx.beginPath();ctx.rect(bx,by,bw,bh);ctx.clip();
-    ctx.fillStyle=bgColor;ctx.fillRect(bx,by,bw,bh);ctx.restore();
+    ctx.save(); ctx.beginPath(); ctx.rect(bx,by,bw,bh); ctx.clip();
+    ctx.fillStyle = bgColor; ctx.fillRect(bx,by,bw,bh);
+    ctx.restore();
   }
-  for(let i=layers.length-1;i>=0;i--){
-    const l=layers[i];if(!l.visible||!l.img)continue;
-    const aw=l.img.width*l.scale,ah=l.img.height*l.scale;
-    ctx.save();ctx.globalAlpha=l.opacity;
-    ctx.translate(l.offsetX,l.offsetY);ctx.rotate(l.rotation||0);
-    if(l.flipX||l.flipY)ctx.scale(l.flipX?-1:1,l.flipY?-1:1);
-    ctx.drawImage(l.img,-aw/2,-ah/2,aw,ah);
-    ctx.restore();ctx.globalAlpha=1;
+
+  // ── 4. Artwork layers (bottom of stack = last in array, drawn first) ──
+  for(let i = layers.length-1; i >= 0; i--){
+    const l = layers[i]; if(!l.visible || !l.img) continue;
+    const aw = l.img.width*l.scale, ah = l.img.height*l.scale;
+    ctx.save(); ctx.globalAlpha = l.opacity;
+    ctx.translate(l.offsetX, l.offsetY); ctx.rotate(l.rotation||0);
+    if(l.flipX||l.flipY) ctx.scale(l.flipX?-1:1, l.flipY?-1:1);
+    ctx.drawImage(l.img, -aw/2, -ah/2, aw, ah);
+    ctx.restore(); ctx.globalAlpha = 1;
   }
-  const svgTrim=spec.svg_trim||null;
-  const svgBleed=spec.svg_bleed||null;
-  const svgSafe=spec.svg_safe||null;
-  const svgVB=spec.svg_viewbox||'0 0 1000 1000';
-  const vbH=parseFloat(svgVB.split(' ')[3])||1000;
-  const svgScaleX=TW/1000;
-  const svgScaleY=TH/vbH;
+
+  // ── 5. Bleed/trim/safe guide lines (always on top of artwork) ──
+  const svgTrim  = spec.svg_trim  || null;
+  const svgBleed = spec.svg_bleed || null;
+  const svgSafe  = spec.svg_safe  || null;
+  const svgVB    = spec.svg_viewbox || '0 0 1000 1000';
+  const vbH      = parseFloat(svgVB.split(' ')[3]) || 1000;
+  const svgScaleX = TW/1000, svgScaleY = TH/vbH;
   function svgPathToCanvas(d){
-    if(!d)return null;
+    if(!d) return null;
     return new Path2D(d.replace(/(-?\d+\.?\d*)\s+(-?\d+\.?\d*)/g,(m,x,y)=>`${(parseFloat(x)*svgScaleX+TX).toFixed(2)} ${(parseFloat(y)*svgScaleY+TY).toFixed(2)}`));
   }
   function rectPath(x,y,w,h){const p=new Path2D();p.rect(x,y,w,h);return p;}
-  const trimPath=svgTrim?svgPathToCanvas(svgTrim):rectPath(TX,TY,TW,TH);
-  const bleedPath=svgBleed?svgPathToCanvas(svgBleed):rectPath(bx,by,bw,bh);
-  const safePath=svgSafe?svgPathToCanvas(svgSafe):(SAFEPX>0?rectPath(TX+SAFEPX,TY+SAFEPX,TW-SAFEPX*2,TH-SAFEPX*2):null);
-  ctx.save();ctx.globalAlpha=0.12;ctx.fillStyle='#fff';ctx.fill(bleedPath);ctx.restore();ctx.globalAlpha=1;
-  ctx.save();ctx.globalAlpha=tmplA;
-  ctx.fillStyle='rgba(30,100,220,0.10)';ctx.fill(trimPath);
-  ctx.strokeStyle='rgba(30,100,220,0.75)';ctx.lineWidth=1.5;ctx.stroke(trimPath);
-  ctx.restore();ctx.globalAlpha=1;
+  const trimPath  = svgTrim  ? svgPathToCanvas(svgTrim)  : rectPath(TX,TY,TW,TH);
+  const bleedPath = svgBleed ? svgPathToCanvas(svgBleed) : rectPath(bx,by,bw,bh);
+  const safePath  = svgSafe  ? svgPathToCanvas(svgSafe)  : (SAFEPX>0 ? rectPath(TX+SAFEPX,TY+SAFEPX,TW-SAFEPX*2,TH-SAFEPX*2) : null);
+
+  // Bleed area highlight
+  ctx.save(); ctx.globalAlpha=0.06; ctx.fillStyle='#fff'; ctx.fill(bleedPath); ctx.restore(); ctx.globalAlpha=1;
+
+  // Trim line
+  ctx.save(); ctx.strokeStyle='rgba(30,100,220,0.85)'; ctx.lineWidth=1.5; ctx.stroke(trimPath); ctx.restore();
+
+  // Safe zone
   if(safePath){
-    ctx.save();ctx.strokeStyle='rgba(34,170,102,0.85)';ctx.lineWidth=1.5;
-    ctx.setLineDash([4,3]);ctx.stroke(safePath);ctx.setLineDash([]);ctx.restore();
-    ctx.globalAlpha=0.85;ctx.fillStyle='#1A8855';
-    ctx.font='bold 8px Inter,-apple-system,sans-serif';ctx.textAlign='left';
-    ctx.fillText(`Safe ${spec.safe_zone||5}mm`,TX+SAFEPX+3,TY+TH-SAFEPX-4);
+    ctx.save(); ctx.strokeStyle='rgba(34,170,102,0.9)'; ctx.lineWidth=1.5;
+    ctx.setLineDash([4,3]); ctx.stroke(safePath); ctx.setLineDash([]); ctx.restore();
+    ctx.globalAlpha=0.85; ctx.fillStyle='#1A8855';
+    ctx.font='bold 8px Inter,-apple-system,sans-serif'; ctx.textAlign='left';
+    ctx.fillText(`Safe ${spec.safe_zone||5}mm`, TX+SAFEPX+3, TY+TH-SAFEPX-4);
     ctx.globalAlpha=1;
   }
+
+  // Bleed line
   if(spec.bleed>0){
-    ctx.save();ctx.strokeStyle='#F47920';ctx.lineWidth=2.5;
-    ctx.setLineDash([7,4]);ctx.stroke(bleedPath);ctx.setLineDash([]);ctx.restore();
-    ctx.globalAlpha=0.8;ctx.fillStyle='#C75E0A';
-    ctx.font='bold 8px Inter,-apple-system,sans-serif';ctx.textAlign='left';
-    ctx.fillText(`Bleed ${spec.bleed}mm`,bx+3,by+10);
+    ctx.save(); ctx.strokeStyle='#F47920'; ctx.lineWidth=2;
+    ctx.setLineDash([7,4]); ctx.stroke(bleedPath); ctx.setLineDash([]); ctx.restore();
+    ctx.globalAlpha=0.8; ctx.fillStyle='#C75E0A';
+    ctx.font='bold 8px Inter,-apple-system,sans-serif'; ctx.textAlign='left';
+    ctx.fillText(`Bleed ${spec.bleed}mm`, bx+3, by+10);
     ctx.globalAlpha=1;
   }
-  ctx.globalAlpha=0.75;ctx.fillStyle='rgba(30,100,220,0.9)';
-  ctx.font='bold 8px Inter,-apple-system,sans-serif';ctx.textAlign='right';
-  ctx.fillText(`${spec.w||'?'}×${spec.h||'?'}mm`,TX+TW-3,TY+10);
-  ctx.globalAlpha=1;ctx.textAlign='start';
+
+  // Dimension label
+  ctx.globalAlpha=0.75; ctx.fillStyle='rgba(30,100,220,0.9)';
+  ctx.font='bold 8px Inter,-apple-system,sans-serif'; ctx.textAlign='right';
+  ctx.fillText(`${spec.w||'?'}×${spec.h||'?'}mm`, TX+TW-3, TY+10);
+  ctx.globalAlpha=1; ctx.textAlign='start';
+
+  // ── 6. Transform handles (topmost) ──
   if(drawHandlesFlag) drawHandles(ctx);
 }
 
@@ -1604,10 +1625,14 @@ function updateStatusUI(){
     const enbl=v=>{
       document.getElementById('btnSubmit').disabled=!v;
       document.getElementById('btnAssessor').disabled=layers.length===0;
+      document.getElementById('btnExportCustomer').disabled=layers.length===0;
+      document.getElementById('btnExportPrint').disabled=layers.length===0;
     };
     if(isDoubleSided){
       document.getElementById('btnSubmit').disabled=true;
       document.getElementById('btnAssessor').disabled=layers.length===0;
+      document.getElementById('btnExportCustomer').disabled=layers.length===0;
+      document.getElementById('btnExportPrint').disabled=layers.length===0;
       return;
     }
     const statusEl=document.getElementById('canvasStatus');
@@ -1819,6 +1844,63 @@ async function submitToArtworkList(){
   setTimeout(()=>window.location.href='/dashboard',1200);
 }
 function goToAssessor(){const p=new URLSearchParams();if(jobId)p.set('job',jobId);if(currentSku)p.set('sku',currentSku);window.location.href='/artwork-assessor'+(p.toString()?'?'+p.toString():'');}
+// ── Export functions ────────────────────────────────────────
+// Customer PNG: artwork + background only, no guides, no template
+function exportCustomerPNG(){
+  const layers=getLayers();
+  if(!layers.length){showToast('No artwork to export');return;}
+  const offscreen=document.createElement('canvas');
+  offscreen.width=CW; offscreen.height=CH;
+  const ctx=offscreen.getContext('2d');
+  // Draw background + layers only — no template, no guides
+  const spec=SKU_SPECS[currentSku];
+  const bx=TX-BLEEDPX,by=TY-BLEEDPX,bw=TW+BLEEDPX*2,bh=TH+BLEEDPX*2;
+  ctx.clearRect(0,0,CW,CH);
+  if(S().bgColor){
+    ctx.save();ctx.beginPath();ctx.rect(bx,by,bw,bh);ctx.clip();
+    ctx.fillStyle=S().bgColor;ctx.fillRect(bx,by,bw,bh);ctx.restore();
+  }
+  for(let i=layers.length-1;i>=0;i--){
+    const l=layers[i];if(!l.visible||!l.img)continue;
+    const aw=l.img.width*l.scale,ah=l.img.height*l.scale;
+    ctx.save();ctx.globalAlpha=l.opacity;
+    ctx.translate(l.offsetX,l.offsetY);ctx.rotate(l.rotation||0);
+    if(l.flipX||l.flipY)ctx.scale(l.flipX?-1:1,l.flipY?-1:1);
+    ctx.drawImage(l.img,-aw/2,-ah/2,aw,ah);
+    ctx.restore();ctx.globalAlpha=1;
+  }
+  // Crop to bleed area only
+  const cropCanvas=document.createElement('canvas');
+  cropCanvas.width=bw; cropCanvas.height=bh;
+  cropCanvas.getContext('2d').drawImage(offscreen,bx,by,bw,bh,0,0,bw,bh);
+  const link=document.createElement('a');
+  link.download=(jobId||'artwork')+'_customer.png';
+  link.href=cropCanvas.toDataURL('image/png');
+  link.click();
+  showToast('Customer PNG downloaded');
+}
+
+// Print PNG: artwork + background + trim/bleed/safe guide lines, no template
+function exportPrintPNG(){
+  const layers=getLayers();
+  if(!layers.length){showToast('No artwork to export');return;}
+  const offscreen=document.createElement('canvas');
+  offscreen.width=CW; offscreen.height=CH;
+  const ctx=offscreen.getContext('2d');
+  // Draw everything except template — guides will be on top
+  drawToContext(ctx, layers, S().bgColor, false, 0, activeSide);
+  // Crop to bleed area
+  const bx=TX-BLEEDPX,by=TY-BLEEDPX,bw=TW+BLEEDPX*2,bh=TH+BLEEDPX*2;
+  const cropCanvas=document.createElement('canvas');
+  cropCanvas.width=bw; cropCanvas.height=bh;
+  cropCanvas.getContext('2d').drawImage(offscreen,bx,by,bw,bh,0,0,bw,bh);
+  const link=document.createElement('a');
+  link.download=(jobId||'artwork')+'_print.png';
+  link.href=cropCanvas.toDataURL('image/png');
+  link.click();
+  showToast('Print PNG downloaded');
+}
+
 function showToast(msg){const t=document.getElementById('toast');t.textContent=msg;t.classList.add('show');setTimeout(()=>t.classList.remove('show'),2200);}
 
 // ── Init ───────────────────────────────────────────────────
@@ -2017,44 +2099,42 @@ function applySkuRow(row){
   updateStepStyles();
 }
 
-// ── Template PDF overlay ───────────────────────────────────
+// ── Template image (drawn on canvas, not iframe) ───────────
+// currentTemplateImg[0] and [1] hold loaded Image objects for side 1 and 2
+let currentTemplateImg = [null, null];
+
 function loadTemplateOverlay(){
-  const spec=currentSku?SKU_SPECS[currentSku]:null;
-  clearTemplateOverlay();
-  // Prefer spec (populated by applySkuRow), fall back to currentSkuRow directly
-  const pdfPath=(spec&&spec.template_pdf_path)||(currentSkuRow&&currentSkuRow.template_pdf_path)||null;
-  if(!pdfPath)return;
-  // Build a correctly-encoded Supabase Storage URL.
-  // encodeURIComponent encodes "/" which breaks paths — encode each segment separately.
+  const spec = currentSku ? SKU_SPECS[currentSku] : null;
+  currentTemplateImg = [null, null];
+  const pdfPath = (spec && spec.template_pdf_path) || (currentSkuRow && currentSkuRow.template_pdf_path) || null;
+  if(!pdfPath) { draw(); return; }
   function buildStorageUrl(rawPath){
-    const stripped=rawPath.replace(/^templates\//,'');
-    const encoded=stripped.split('/').map(s=>encodeURIComponent(s)).join('/');
-    return SUPABASE_STORAGE+encoded;
+    const stripped = rawPath.replace(/^templates\//,'');
+    const encoded = stripped.split('/').map(s=>encodeURIComponent(s)).join('/');
+    return SUPABASE_STORAGE + encoded;
   }
-  setTemplateIframe('tmplIframe0','tmplFrame0',buildStorageUrl(pdfPath));
-  const pdf2Path=(spec&&spec.template_pdf_path_side2)||(currentSkuRow&&currentSkuRow.template_pdf_path_side2)||null;
-  if(isDoubleSided&&pdf2Path){
-    setTemplateIframe('tmplIframe1','tmplFrame1',buildStorageUrl(pdf2Path));
+  // Load side 1 template
+  const img0 = new Image();
+  img0.crossOrigin = 'anonymous';
+  img0.onload = () => { currentTemplateImg[0] = img0; draw(); };
+  img0.onerror = () => { console.warn('Template image failed to load:', buildStorageUrl(pdfPath)); draw(); };
+  img0.src = buildStorageUrl(pdfPath);
+  // Load side 2 template if double-sided
+  const pdf2Path = (spec && spec.template_pdf_path_side2) || (currentSkuRow && currentSkuRow.template_pdf_path_side2) || null;
+  if(isDoubleSided && pdf2Path){
+    const img1 = new Image();
+    img1.crossOrigin = 'anonymous';
+    img1.onload = () => { currentTemplateImg[1] = img1; draw(); };
+    img1.onerror = () => { draw(); };
+    img1.src = buildStorageUrl(pdf2Path);
   }
-  onTmplOpacity();
-}
-function setTemplateIframe(wrapId,frameId,pdfUrl){
-  const wrap=document.getElementById(wrapId);
-  const frame=document.getElementById(frameId);
-  if(!wrap||!frame)return;
-  wrap.style.display='block';
-  wrap.style.width=CW+'px';
-  wrap.style.height=CH+'px';
-  frame.src=pdfUrl;
 }
 function clearTemplateOverlay(){
-  ['tmplIframe0','tmplIframe1'].forEach(id=>{const el=document.getElementById(id);if(el)el.style.display='none';});
-  ['tmplFrame0','tmplFrame1'].forEach(id=>{const el=document.getElementById(id);if(el)el.src='';});
+  currentTemplateImg = [null, null];
 }
 function onTmplOpacity(){
-  const v=parseInt(document.getElementById('tmplOpacity').value)/100;
-  document.getElementById('tmplOpVal').textContent=Math.round(v*100)+'%';
-  ['tmplIframe0','tmplIframe1'].forEach(id=>{const el=document.getElementById(id);if(el&&el.style.display!=='none')el.style.opacity=v;});
+  const v = parseInt(document.getElementById('tmplOpacity').value) / 100;
+  document.getElementById('tmplOpVal').textContent = Math.round(v * 100) + '%';
   draw();
 }
 
