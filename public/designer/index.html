@@ -1078,17 +1078,15 @@ document.addEventListener('keydown',e=>{
 
 // ── Step nav ───────────────────────────────────────────────
 function toggleStep(n){
+  // Just open step n. Never auto-mark anything done — that's markStepDone's job.
   if(openStep===n)return;
   const prev=openStep;
-  // Just close the current step — never auto-mark as done on manual click.
-  // Only markStepDone() called from app logic marks a step complete.
   document.getElementById('sb'+prev).classList.remove('active');
+  // Moving backward: clear done/active from steps between n and prev so they return to pending
   if(n<prev){
-    // Moving backward: un-done steps from n through prev so they return to pending
     for(let i=n;i<=prev;i++){
       const b=document.getElementById('sb'+i);
-      b.classList.remove('done');
-      b.classList.remove('active');
+      b.classList.remove('done','active');
     }
   }
   openStep=n;
@@ -1096,10 +1094,11 @@ function toggleStep(n){
   document.getElementById('sb'+n).classList.remove('done');
   updateStepStyles();
 }
-// Call this from application logic when a step is genuinely completed
+// Only call this from real app events: applySkuRow (step 1), addLayer (step 2)
 function markStepDone(n){
   const b=document.getElementById('sb'+n);
-  if(b){b.classList.remove('active');b.classList.add('done');}
+  if(b){b.classList.add('done');b.classList.remove('active');}
+  // Don't update openStep here — that's toggleStep's job
   updateStepStyles();
 }
 
