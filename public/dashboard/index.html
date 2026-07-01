@@ -1,211 +1,368 @@
 <!DOCTYPE html>
+<!--
+  ╔══════════════════════════════════════════════════════╗
+  ║  FILE 1 OF 3 — public/dashboard/index.html          ║
+  ║  UKPOS PrintSite — Artwork List                      ║
+  ║  Redesigned shell; all JS transplanted unchanged.    ║
+  ╚══════════════════════════════════════════════════════╝
+-->
 <html lang="en">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Artwork List — UKPOS Print Site</title>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
 <style>
-  *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
-  body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",system-ui,sans-serif;background:#FAFAF8;color:#2C2C2A;min-height:100vh;font-size:14px}
+/* ── Reset & base ── */
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+body{font-family:'Inter',-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;background:#F2F1F6;color:#2C2C2A;min-height:100vh;font-size:13px;display:flex}
 
-  nav{border-bottom:1px solid #E8E6DE;padding:0 32px;background:#fff;display:flex;align-items:center;gap:0;height:48px}
-  .nav-logo{font-size:14px;font-weight:500;color:#2C2C2A;text-decoration:none;margin-right:24px;white-space:nowrap}
-  .nav-links{display:flex;align-items:stretch;gap:0;height:100%}
-  .nav-link{display:flex;align-items:center;padding:0 14px;font-size:13px;color:#5F5E5A;text-decoration:none;border-bottom:2px solid transparent;white-space:nowrap;transition:color 0.12s}
-  .nav-link:hover{color:#2C2C2A}
-  .nav-link.active{color:#534AB7;border-bottom-color:#534AB7;font-weight:500}
-  .nav-link.assessor-link.active{color:#534AB7;border-bottom-color:#534AB7}
-  .nav-link.designer{color:#185FA5}
-  .nav-link.designer:hover{color:#0C447C}
-  .nav-link.designer.active{color:#185FA5;border-bottom-color:#185FA5}
-  .nav-spacer{flex:1}
-  .nav-actions{display:flex;align-items:center;gap:8px}
+/* ── Sidebar ── */
+.sidebar{width:52px;background:#fff;border-right:0.5px solid #D3D1C7;display:flex;flex-direction:column;align-items:flex-start;padding:12px 0;gap:2px;flex-shrink:0;overflow:hidden;transition:width 0.2s ease;position:fixed;top:0;left:0;bottom:0;z-index:50}
+.sidebar:hover{width:184px}
+.sb-logo{width:52px;height:40px;display:flex;align-items:center;justify-content:center;flex-shrink:0;margin-bottom:8px}
+.sb-logo-inner{width:28px;height:28px;background:#F47920;border-radius:7px;display:flex;align-items:center;justify-content:center;flex-shrink:0}
+.sb-logo-inner svg{width:16px;height:16px;fill:#fff}
+.sb-item{height:36px;display:flex;align-items:center;gap:10px;padding:0 14px;cursor:pointer;width:100%;white-space:nowrap;overflow:hidden;border-left:3px solid transparent;text-decoration:none}
+.sb-item:hover{background:#F2F1F6}
+.sb-item.active{background:#FFF0E6;border-left-color:#F47920}
+.sb-item svg,.sb-item i{font-size:17px;flex-shrink:0;width:20px;text-align:center;display:flex;align-items:center;justify-content:center}
+.sb-item.active .sb-icon{color:#F47920}
+.sb-item:not(.active) .sb-icon{color:#888780}
+.sb-icon{font-size:17px;flex-shrink:0;width:20px;text-align:center;font-style:normal}
+.sb-label{font-size:12px;font-weight:500;color:#2C2C2A;opacity:0;white-space:nowrap;pointer-events:none}
+.sb-item.active .sb-label{color:#C75E0A}
+.sidebar:hover .sb-label{opacity:1;transition:opacity 0.15s ease 0.05s}
+.sb-spacer{flex:1}
+.sb-divider{height:0.5px;background:#E8E6DE;margin:6px 10px;flex-shrink:0;width:calc(100% - 20px)}
 
-  .btn{padding:7px 14px;font-size:13px;border-radius:7px;cursor:pointer;border:1px solid #E8E6DE;background:#fff;color:#2C2C2A;white-space:nowrap;transition:background 0.12s}
-  .btn:hover{background:#F1EFE8}
-  .btn-primary{background:#534AB7;color:#fff;border-color:#534AB7}
-  .btn-primary:hover{opacity:0.88;background:#534AB7}
-  .btn-danger{background:#FCEBEB;color:#A32D2D;border-color:#F09595}
-  .btn-danger:hover{background:#F7C1C1}
+/* ── Main content ── */
+.main{flex:1;margin-left:52px;display:flex;flex-direction:column;min-height:100vh;min-width:0}
 
-  .page-header{padding:20px 32px 0;display:flex;align-items:center;gap:12px;flex-wrap:wrap}
-  .page-header h1{font-size:20px;font-weight:500;letter-spacing:-0.01em;margin-right:auto}
+/* ── Topbar ── */
+.topbar{height:52px;background:#fff;border-bottom:0.5px solid #D3D1C7;display:flex;align-items:center;padding:0 20px;gap:10px;position:sticky;top:0;z-index:40;flex-shrink:0}
+.topbar-title{font-size:15px;font-weight:600;color:#2C2C2A;letter-spacing:-0.01em;flex-shrink:0}
+.topbar-search{position:relative;flex:1;max-width:300px}
+.topbar-search input{width:100%;height:32px;border:0.5px solid #D3D1C7;border-radius:8px;background:#F2F1F6;padding:0 10px 0 32px;font-size:12px;font-family:'Inter',sans-serif;color:#2C2C2A;outline:none}
+.topbar-search input:focus{border-color:#F47920;background:#fff}
+.search-icon{position:absolute;left:10px;top:50%;transform:translateY(-50%);color:#888780;font-size:13px;pointer-events:none}
+.tb-spacer{flex:1}
+.btn-new{height:32px;padding:0 14px;border-radius:8px;border:none;background:#F47920;color:#fff;font-size:12px;font-weight:600;font-family:'Inter',sans-serif;cursor:pointer;display:flex;align-items:center;gap:6px;flex-shrink:0}
+.btn-new:hover{opacity:0.9}
+.btn-refresh{height:32px;padding:0 12px;border-radius:8px;border:0.5px solid #D3D1C7;background:#fff;color:#5F5E5A;font-size:12px;font-weight:500;font-family:'Inter',sans-serif;cursor:pointer;flex-shrink:0}
+.btn-refresh:hover{background:#F2F1F6}
+.btn-csv{height:32px;padding:0 12px;border-radius:8px;border:0.5px solid #D3D1C7;background:#fff;color:#5F5E5A;font-size:12px;font-weight:500;font-family:'Inter',sans-serif;cursor:pointer;flex-shrink:0}
+.btn-csv:hover{background:#F2F1F6}
 
-  .drop-banner{margin:16px 32px;border:1.5px dashed #C8C6BC;border-radius:10px;padding:36px 24px;text-align:center;cursor:pointer;background:#fff;transition:border-color 0.15s,background 0.15s;display:flex;align-items:center;justify-content:center;gap:12px}
-  .drop-banner:hover,.drop-banner.drag-over{border-color:#7F77DD;background:#FAFAFF}
-  .drop-banner .db-icon{font-size:18px}
-  .drop-banner .db-text{font-size:13px;color:#5F5E5A}
-  .drop-banner .db-text strong{color:#2C2C2A}
-  .drop-banner .db-formats{font-size:11px;color:#B4B2A9;margin-left:4px}
-  input[type=file]{display:none}
+/* ── Content padding ── */
+.content{padding:18px 20px;display:flex;flex-direction:column;gap:14px}
 
-  .controls-bar{margin:0 32px 0;display:flex;align-items:center;gap:8px;flex-wrap:wrap;padding:10px 0;border-bottom:1px solid #E8E6DE}
-  .controls-bar .label{font-size:11px;color:#888780;font-weight:500;text-transform:uppercase;letter-spacing:0.06em;margin-right:2px}
-  .col-pill{padding:3px 9px;font-size:11px;border-radius:20px;cursor:pointer;border:1px solid #E8E6DE;background:#F1EFE8;color:#5F5E5A;white-space:nowrap}
-  .col-pill.on{background:#EEEDFE;color:#534AB7;border-color:#AFA9EC}
+/* ── Stats ── */
+.stats{display:grid;grid-template-columns:repeat(4,1fr);gap:10px}
+.stat{background:#fff;border-radius:12px;padding:14px 16px;border:0.5px solid #D3D1C7}
+.stat-label{font-size:10px;color:#888780;font-weight:600;text-transform:uppercase;letter-spacing:0.05em;margin-bottom:6px}
+.stat-value{font-size:22px;font-weight:600;letter-spacing:-0.02em;line-height:1;margin-bottom:4px}
+.stat-sub{font-size:10px;color:#888780;display:flex;align-items:center;gap:4px}
+.stat-dot{width:5px;height:5px;border-radius:50%;flex-shrink:0}
 
-  .table-wrap{margin:0 32px;overflow-x:auto}
-  table{width:100%;border-collapse:collapse;background:#fff;border:1px solid #E8E6DE;border-radius:10px;overflow:hidden;min-width:900px}
-  thead tr{background:#F7F6F2;border-bottom:1px solid #E8E6DE}
-  th{padding:9px 12px;text-align:left;font-size:11px;font-weight:500;text-transform:uppercase;letter-spacing:0.06em;color:#888780;white-space:nowrap}
-  td{padding:9px 12px;border-bottom:1px solid #F1EFE8;vertical-align:middle;font-size:13px}
-  tr:last-child td{border-bottom:none}
-  tr:hover td{background:#FAFAF8}
+/* ── Drop zone ── */
+.drop-banner{border:1.5px dashed #B4B2A9;border-radius:10px;padding:14px 18px;display:flex;align-items:center;gap:16px;cursor:pointer;background:#fff;transition:border-color 0.15s,background 0.15s;flex-shrink:0}
+.drop-banner:hover,.drop-banner.drag-over{border-color:#F47920;background:#FFF8F3}
+.drop-icon-wrap{width:40px;height:40px;border-radius:10px;background:#F2F1F6;display:flex;align-items:center;justify-content:center;flex-shrink:0;font-size:18px}
+.drop-banner.drag-over .drop-icon-wrap{background:#FFF0E6}
+.db-info{flex:1}
+.db-title{font-size:12px;font-weight:600;color:#2C2C2A;margin-bottom:3px}
+.db-sub{font-size:10px;color:#888780;margin-bottom:5px}
+.db-formats{display:flex;gap:4px;flex-wrap:wrap}
+.fmt-pill{font-size:9px;font-weight:600;padding:2px 6px;border-radius:4px;background:#F2F1F6;color:#5F5E5A;border:0.5px solid #D3D1C7}
+.db-or{font-size:11px;color:#B4B2A9;flex-shrink:0}
+.db-browse{height:30px;padding:0 14px;border-radius:7px;border:0.5px solid #D3D1C7;background:#fff;font-size:11px;font-weight:600;color:#5F5E5A;cursor:pointer;font-family:'Inter',sans-serif;flex-shrink:0;white-space:nowrap}
+.db-browse:hover{background:#F2F1F6}
 
-  .badge{display:inline-block;font-size:10px;font-weight:600;padding:2px 7px;border-radius:4px;text-transform:uppercase;letter-spacing:0.03em}
-  .badge-pdf{background:#FCEBEB;color:#A32D2D}
-  .badge-eps{background:#EEEDFE;color:#534AB7}
-  .badge-png{background:#E1F5EE;color:#0F6E56}
-  .badge-jpg,.badge-jpeg{background:#FAEEDA;color:#854F0B}
-  .badge-manual{background:#F1EFE8;color:#5F5E5A}
-  .badge-csv{background:#E6F1FB;color:#185FA5}
-  .badge-api{background:#FBEAF0;color:#993556}
+/* ── Controls / filter bar ── */
+.controls-bar{display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+.controls-label{font-size:10px;color:#888780;font-weight:700;text-transform:uppercase;letter-spacing:0.06em;margin-right:2px;flex-shrink:0}
+.col-pill{padding:3px 10px;font-size:11px;border-radius:20px;cursor:pointer;border:0.5px solid #D3D1C7;background:#fff;color:#5F5E5A;white-space:nowrap;font-family:'Inter',sans-serif;font-weight:500}
+.col-pill.on{background:#FFF0E6;color:#C75E0A;border-color:#FAC795}
+.col-pill:hover{background:#F2F1F6}
+.col-pill.on:hover{background:#FFE8D4}
 
-  .score-cell{font-size:13px;font-weight:500}
-  .score-high{color:#27500A} .score-mid{color:#633806} .score-low{color:#791F1F}
-  .status-dot{display:inline-block;width:7px;height:7px;border-radius:50%;margin-right:5px;flex-shrink:0}
-  .dot-pass{background:#639922} .dot-warn{background:#EF9F27} .dot-fail{background:#E24B4A} .dot-pending{background:#B4B2A9}
-  .check-cell{text-align:center;font-size:13px}
-  .muted{color:#B4B2A9}
-  .progress-bar{height:3px;background:#E8E6DE;border-radius:2px;overflow:hidden;margin-top:3px;width:70px}
-  .progress-fill{height:100%;border-radius:2px}
-  .ref-cell{display:flex;align-items:center;font-weight:500;color:#2C2C2A;max-width:140px}
-  .ref-text{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
-  .filename-cell{color:#5F5E5A;max-width:160px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
-  .date-cell{color:#888780;white-space:nowrap;font-size:12px}
-  .spinner-sm{display:inline-block;width:12px;height:12px;border:2px solid #D3D1C7;border-top-color:#534AB7;border-radius:50%;animation:spin 0.6s linear infinite}
-  @keyframes spin{to{transform:rotate(360deg)}}
+/* ── Table ── */
+.table-card{background:#fff;border-radius:12px;border:0.5px solid #D3D1C7;overflow:hidden}
+.table-header{display:flex;align-items:center;justify-content:space-between;padding:12px 16px;border-bottom:0.5px solid #E8E6DE}
+.table-header-title{font-size:12px;font-weight:600;color:#2C2C2A}
+.table-wrap{overflow-x:auto}
+table{width:100%;border-collapse:collapse;min-width:900px}
+thead tr{border-bottom:0.5px solid #E8E6DE}
+th{padding:8px 10px;text-align:left;font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:0.06em;color:#888780;white-space:nowrap;background:#FAFAF8}
+td{padding:9px 10px;border-bottom:0.5px solid #F1EFE8;vertical-align:middle}
+tr:last-child td{border-bottom:none}
+tbody tr:hover td{background:#FAFAF8}
 
-  .actions-cell{display:flex;align-items:center;gap:6px;white-space:nowrap}
-  .view-btn{padding:4px 10px;font-size:12px;border-radius:6px;cursor:pointer;border:1px solid #E8E6DE;background:#fff;color:#534AB7;font-weight:500}
-  .view-btn:hover{background:#EEEDFE;border-color:#AFA9EC}
-  .design-btn{padding:4px 10px;font-size:12px;border-radius:6px;cursor:pointer;border:1px solid #B5D4F4;background:#fff;color:#185FA5;font-weight:500}
-  .design-btn:hover{background:#E6F1FB;border-color:#85B7EB}
-  .del-btn{padding:4px 8px;font-size:12px;border-radius:6px;cursor:pointer;border:1px solid #F09595;background:#fff;color:#A32D2D;font-weight:500}
-  .del-btn:hover{background:#FCEBEB}
+/* ── Badges ── */
+.badge{display:inline-block;font-size:9px;font-weight:700;padding:2px 6px;border-radius:4px;text-transform:uppercase;letter-spacing:0.03em}
+.badge-pdf{background:#FCEBEB;color:#791F1F}
+.badge-eps{background:#F0EEFF;color:#4B35B0}
+.badge-png{background:#E1F5EE;color:#0F6E56}
+.badge-jpg,.badge-jpeg{background:#FAEEDA;color:#633806}
+.badge-manual,.badge-csv,.badge-api{background:#F2F1F6;color:#5F5E5A}
+.badge-designer{background:#FFF0E6;color:#C75E0A}
+.sku-badge{display:inline-flex;align-items:center;height:18px;padding:0 7px;background:#FFF0E6;border-radius:4px;font-size:9px;font-weight:600;color:#C75E0A}
 
-  .pagination{margin:16px 32px 40px;display:flex;align-items:center;gap:8px;flex-wrap:wrap}
-  .pagination .pg-info{font-size:13px;color:#888780;margin-right:auto}
-  .pagination .pg-size{display:flex;align-items:center;gap:6px;font-size:13px;color:#5F5E5A}
-  .pagination .pg-size select{font-size:13px;padding:4px 8px;border:1px solid #E8E6DE;border-radius:6px;background:#fff;cursor:pointer}
-  .pg-btn{padding:5px 10px;font-size:13px;border-radius:6px;cursor:pointer;border:1px solid #E8E6DE;background:#fff;color:#2C2C2A}
-  .pg-btn:hover{background:#F1EFE8}
-  .pg-btn:disabled{opacity:0.4;cursor:not-allowed}
+/* ── Score ring ── */
+.score-wrap{display:inline-flex;position:relative;width:34px;height:34px;flex-shrink:0}
+.score-wrap svg{transform:rotate(-90deg);width:34px;height:34px}
+.score-num{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;font-size:8px;font-weight:700;font-family:'Inter',sans-serif}
 
-  .empty-state{padding:60px 32px;text-align:center;color:#888780}
-  .empty-state .es-icon{font-size:32px;margin-bottom:12px}
-  .empty-state p{font-size:14px}
+/* ── Check dots ── */
+.check-cell{text-align:center}
+.ck{width:8px;height:8px;border-radius:50%;display:inline-block}
+.ck-pass{background:#639922}
+.ck-warn{background:#EF9F27}
+.ck-fail{background:#E24B4A}
+.ck-none{background:#D3D1C7}
 
-  .modal-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,0.45);z-index:100;align-items:center;justify-content:center}
-  .modal-overlay.show{display:flex}
-  .modal{background:#fff;border-radius:12px;padding:28px;width:380px;max-width:90vw}
-  .modal h2{font-size:17px;font-weight:500;margin-bottom:8px}
-  .modal p{font-size:13px;color:#5F5E5A;margin-bottom:16px;line-height:1.5}
-  .modal .modal-ref{font-weight:500;color:#2C2C2A}
-  .modal input{width:100%;font-size:14px;padding:8px 10px;border:1px solid #E8E6DE;border-radius:7px;margin-bottom:16px;letter-spacing:0.05em}
-  .modal input.error{border-color:#E24B4A}
-  .modal-actions{display:flex;gap:8px;justify-content:flex-end}
+/* ── Status dot (reference column) ── */
+.status-dot{display:inline-block;width:7px;height:7px;border-radius:50%;margin-right:5px;flex-shrink:0}
+.dot-pass{background:#639922}
+.dot-warn{background:#EF9F27}
+.dot-fail{background:#E24B4A}
+.dot-pending{background:#B4B2A9}
 
-  .toast{position:fixed;bottom:24px;left:50%;transform:translateX(-50%);background:#2C2C2A;color:#fff;padding:10px 20px;border-radius:8px;font-size:13px;opacity:0;transition:opacity 0.2s;pointer-events:none;z-index:999;white-space:nowrap}
-  .toast.show{opacity:1}
+/* ── Ref / filename cells ── */
+.ref-cell{display:flex;align-items:center;max-width:150px}
+.ref-text{overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-weight:500;color:#2C2C2A;font-size:12px}
+.filename-cell{color:#5F5E5A;max-width:130px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-size:11px}
+.date-cell{color:#888780;white-space:nowrap;font-size:11px}
+.source-cell{font-size:10px;color:#888780}
+
+/* ── Score progress bar (legacy — kept for renderRow) ── */
+.score-cell{font-size:12px;font-weight:500}
+.score-high{color:#173404}.score-mid{color:#412402}.score-low{color:#501313}
+.progress-bar{height:3px;background:#E8E6DE;border-radius:2px;overflow:hidden;margin-top:3px;width:60px}
+.progress-fill{height:100%;border-radius:2px}
+.muted{color:#B4B2A9}
+.spinner-sm{display:inline-block;width:12px;height:12px;border:2px solid #D3D1C7;border-top-color:#F47920;border-radius:50%;animation:spin 0.6s linear infinite}
+@keyframes spin{to{transform:rotate(360deg)}}
+
+/* ── Action buttons ── */
+.actions-cell{display:flex;align-items:center;gap:4px;white-space:nowrap}
+.act-btn{width:26px;height:26px;border-radius:7px;display:inline-flex;align-items:center;justify-content:center;cursor:pointer;border:none;font-size:12px;flex-shrink:0;font-family:'Inter',sans-serif}
+/* keep legacy text button classes for renderRow compatibility */
+.view-btn{padding:4px 10px;font-size:11px;border-radius:6px;cursor:pointer;border:0.5px solid #D3D1C7;background:#F2F1F6;color:#2C2C2A;font-weight:500;font-family:'Inter',sans-serif}
+.view-btn:hover{background:#E8E6DE}
+.design-btn{padding:4px 10px;font-size:11px;border-radius:6px;cursor:pointer;border:none;background:#F47920;color:#fff;font-weight:600;font-family:'Inter',sans-serif}
+.design-btn:hover{opacity:0.9}
+.del-btn{padding:4px 8px;font-size:11px;border-radius:6px;cursor:pointer;border:0.5px solid #F09595;background:#FCEBEB;color:#501313;font-weight:500;font-family:'Inter',sans-serif}
+.del-btn:hover{background:#F7D0D0}
+
+/* ── Pagination ── */
+.pagination{display:flex;align-items:center;gap:8px;flex-wrap:wrap;padding:14px 16px;border-top:0.5px solid #E8E6DE}
+.pg-info{font-size:11px;color:#888780;margin-right:auto}
+.pg-size{display:flex;align-items:center;gap:6px;font-size:11px;color:#5F5E5A}
+.pg-size select{font-size:11px;padding:3px 7px;border:0.5px solid #D3D1C7;border-radius:6px;background:#fff;cursor:pointer;font-family:'Inter',sans-serif}
+.pg-btn{padding:4px 10px;font-size:11px;border-radius:6px;cursor:pointer;border:0.5px solid #D3D1C7;background:#fff;color:#2C2C2A;font-family:'Inter',sans-serif}
+.pg-btn:hover{background:#F2F1F6}
+.pg-btn:disabled{opacity:0.4;cursor:not-allowed}
+#pgPages{font-size:11px;color:#5F5E5A}
+
+/* ── Empty state ── */
+.empty-state{padding:48px 32px;text-align:center;color:#888780}
+.empty-state .es-icon{font-size:28px;margin-bottom:10px}
+.empty-state p{font-size:13px}
+
+/* ── Delete modal ── */
+.modal-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,0.45);z-index:100;align-items:center;justify-content:center}
+.modal-overlay.show{display:flex}
+.modal{background:#fff;border-radius:14px;padding:28px;width:380px;max-width:90vw;box-shadow:0 20px 60px rgba(0,0,0,0.15)}
+.modal h2{font-size:16px;font-weight:600;margin-bottom:8px;color:#2C2C2A}
+.modal p{font-size:13px;color:#5F5E5A;margin-bottom:16px;line-height:1.5}
+.modal-ref{font-weight:600;color:#2C2C2A}
+.modal input{width:100%;font-size:13px;padding:8px 10px;border:0.5px solid #D3D1C7;border-radius:8px;margin-bottom:16px;font-family:'Inter',sans-serif;outline:none}
+.modal input:focus{border-color:#F47920}
+.modal input.error{border-color:#E24B4A}
+.modal-actions{display:flex;gap:8px;justify-content:flex-end}
+.mbtn{padding:7px 14px;border-radius:8px;font-size:12px;font-weight:600;cursor:pointer;border:0.5px solid #D3D1C7;background:#fff;color:#2C2C2A;font-family:'Inter',sans-serif}
+.mbtn:hover{background:#F2F1F6}
+.mbtn-danger{background:#FCEBEB;color:#501313;border-color:#F09595}
+.mbtn-danger:hover{background:#F7D0D0}
+.mbtn-danger:disabled{background:#F2F1F6;color:#B4B2A9;border-color:#D3D1C7;cursor:not-allowed}
+
+/* ── Toast ── */
+.toast{position:fixed;bottom:24px;left:50%;transform:translateX(-50%);background:#2C2C2A;color:#fff;padding:9px 18px;border-radius:8px;font-size:12px;font-weight:500;opacity:0;transition:opacity 0.2s;pointer-events:none;z-index:999;white-space:nowrap}
+.toast.show{opacity:1}
+
+/* ── Hidden file inputs ── */
+input[type=file]{display:none}
 </style>
 </head>
 <body>
 
-<nav>
-  <a class="nav-logo" href="/">UKPOS Print Site</a>
-  <div class="nav-links">
-    <a class="nav-link" href="/designer">Designer</a>
-    <a class="nav-link active" href="/dashboard">Artwork list</a>
-    <a class="nav-link assessor-link" href="/artwork-assessor">Artwork assessor</a>
+<!-- ══ SIDEBAR ══ -->
+<nav class="sidebar" id="sidebar">
+  <div class="sb-logo">
+    <div class="sb-logo-inner">
+      <svg viewBox="0 0 24 24"><path d="M3 6h18v2H3zm0 5h18v2H3zm0 5h18v2H3z"/></svg>
+    </div>
   </div>
-  <span class="nav-spacer"></span>
-  <div class="nav-actions">
-    <button class="btn" onclick="document.getElementById('csvInput').click()">Upload CSV</button>
-    <input type="file" id="csvInput" accept=".csv" onchange="handleCSV(event)" />
-    <button class="btn btn-primary" onclick="document.getElementById('fileInput').click()">+ Add files</button>
-    <input type="file" id="fileInput" accept=".pdf,.eps,.zip,.png,.jpg,.jpeg" multiple onchange="handleFiles(event)" />
-  </div>
+  <a class="sb-item active" href="/dashboard">
+    <span class="sb-icon">☰</span>
+    <span class="sb-label">Artwork list</span>
+  </a>
+  <a class="sb-item" href="/designer">
+    <span class="sb-icon">✏️</span>
+    <span class="sb-label">Designer</span>
+  </a>
+  <a class="sb-item" href="/artwork-assessor">
+    <span class="sb-icon">✓</span>
+    <span class="sb-label">Assessor</span>
+  </a>
+  <div class="sb-spacer"></div>
+  <div class="sb-divider"></div>
+  <a class="sb-item" href="/">
+    <span class="sb-icon">⚙</span>
+    <span class="sb-label">Settings</span>
+  </a>
 </nav>
 
-<div class="page-header">
-  <h1>Artwork list</h1>
-  <button class="btn" onclick="loadJobs()">↻ Refresh</button>
-</div>
+<!-- ══ MAIN ══ -->
+<div class="main">
 
-<div class="drop-banner" id="dropBanner">
-  <span class="db-icon">📂</span>
-  <span class="db-text"><strong>Drop artwork files here</strong> to add to the queue</span>
-  <span class="db-formats">PDF · EPS · ZIP · PNG · JPG</span>
-</div>
-
-<div class="controls-bar">
-  <span class="label">Checks:</span>
-  <button class="col-pill on" data-col="dpi" onclick="toggleCol(this)">DPI</button>
-  <button class="col-pill on" data-col="pixelation" onclick="toggleCol(this)">Pixelation</button>
-  <button class="col-pill on" data-col="bleed" onclick="toggleCol(this)">Bleed</button>
-  <button class="col-pill on" data-col="colour" onclick="toggleCol(this)">Colour</button>
-  <button class="col-pill on" data-col="white_edge" onclick="toggleCol(this)">White edge</button>
-  <button class="col-pill on" data-col="safe_zone" onclick="toggleCol(this)">Safe zone</button>
-  <button class="col-pill on" data-col="fonts" onclick="toggleCol(this)">Fonts</button>
-  <button class="col-pill on" data-col="transparency" onclick="toggleCol(this)">Transparency</button>
-</div>
-
-<div class="table-wrap">
-  <table id="jobTable">
-    <thead>
-      <tr>
-        <th>Reference</th>
-        <th>Customer</th>
-        <th>Order</th>
-        <th>File</th>
-        <th>Type</th>
-        <th>Source</th>
-        <th>Uploaded</th>
-        <th>Assessed</th>
-        <th>Score</th>
-        <th class="check-col" data-col="dpi">DPI</th>
-        <th class="check-col" data-col="pixelation">Pixelation</th>
-        <th class="check-col" data-col="bleed">Bleed</th>
-        <th class="check-col" data-col="colour">Colour</th>
-        <th class="check-col" data-col="white_edge">White edge</th>
-        <th class="check-col" data-col="safe_zone">Safe zone</th>
-        <th class="check-col" data-col="fonts">Fonts</th>
-        <th class="check-col" data-col="transparency">Transparency</th>
-        <th></th>
-      </tr>
-    </thead>
-    <tbody id="jobBody">
-      <tr><td colspan="19"><div class="empty-state"><div class="es-icon">⏳</div><p>Loading…</p></div></td></tr>
-    </tbody>
-  </table>
-</div>
-
-<div class="pagination" id="paginationBar">
-  <span class="pg-info" id="pgInfo"></span>
-  <div class="pg-size">
-    <span>Show</span>
-    <select id="pgSize" onchange="changePageSize(this.value)">
-      <option value="50">50</option>
-      <option value="100">100</option>
-      <option value="250">250</option>
-    </select>
-    <span>per page</span>
+  <!-- Topbar -->
+  <div class="topbar">
+    <span class="topbar-title">Artwork list</span>
+    <div class="topbar-search">
+      <span class="search-icon">🔍</span>
+      <input type="text" placeholder="Search reference or SKU…" />
+    </div>
+    <div class="tb-spacer"></div>
+    <button class="btn-refresh" onclick="loadJobs()">↻ Refresh</button>
+    <button class="btn-csv" onclick="document.getElementById('csvInput').click()">Upload CSV</button>
+    <input type="file" id="csvInput" accept=".csv" onchange="handleCSV(event)" />
+    <button class="btn-new" onclick="document.getElementById('fileInput').click()">+ Add files</button>
+    <input type="file" id="fileInput" accept=".pdf,.eps,.zip,.png,.jpg,.jpeg" multiple onchange="handleFiles(event)" />
   </div>
-  <button class="pg-btn" id="pgPrev" onclick="changePage(-1)" disabled>← Prev</button>
-  <span id="pgPages" style="font-size:13px;color:#5F5E5A"></span>
-  <button class="pg-btn" id="pgNext" onclick="changePage(1)">Next →</button>
-</div>
 
+  <div class="content">
+
+    <!-- Stats -->
+    <div class="stats" id="statsRow">
+      <div class="stat">
+        <div class="stat-label">Total jobs</div>
+        <div class="stat-value" style="color:#2C2C2A" id="statTotal">—</div>
+        <div class="stat-sub">This session</div>
+      </div>
+      <div class="stat">
+        <div class="stat-label">Passed</div>
+        <div class="stat-value" style="color:#3B6D11" id="statPass">—</div>
+        <div class="stat-sub"><span class="stat-dot" style="background:#639922"></span>Ready to print</div>
+      </div>
+      <div class="stat">
+        <div class="stat-label">Warnings</div>
+        <div class="stat-value" style="color:#854F0B" id="statWarn">—</div>
+        <div class="stat-sub"><span class="stat-dot" style="background:#EF9F27"></span>Need review</div>
+      </div>
+      <div class="stat">
+        <div class="stat-label">Failed</div>
+        <div class="stat-value" style="color:#A32D2D" id="statFail">—</div>
+        <div class="stat-sub"><span class="stat-dot" style="background:#E24B4A"></span>Action required</div>
+      </div>
+    </div>
+
+    <!-- Drop zone -->
+    <div class="drop-banner" id="dropBanner">
+      <div class="drop-icon-wrap">📂</div>
+      <div class="db-info">
+        <div class="db-title">Drop artwork files here to add to the list</div>
+        <div class="db-sub">Files are assessed automatically on upload</div>
+        <div class="db-formats">
+          <span class="fmt-pill">PDF</span>
+          <span class="fmt-pill">EPS</span>
+          <span class="fmt-pill">PNG</span>
+          <span class="fmt-pill">JPG</span>
+          <span class="fmt-pill">TIFF</span>
+          <span class="fmt-pill">ZIP</span>
+        </div>
+      </div>
+      <span class="db-or">or</span>
+      <button class="db-browse" onclick="event.stopPropagation();document.getElementById('fileInput').click()">Browse files</button>
+    </div>
+
+    <!-- Controls / column toggles -->
+    <div class="controls-bar">
+      <span class="controls-label">Checks:</span>
+      <button class="col-pill on" data-col="dpi"          onclick="toggleCol(this)">DPI</button>
+      <button class="col-pill on" data-col="pixelation"   onclick="toggleCol(this)">Pixelation</button>
+      <button class="col-pill on" data-col="bleed"        onclick="toggleCol(this)">Bleed</button>
+      <button class="col-pill on" data-col="colour"       onclick="toggleCol(this)">Colour</button>
+      <button class="col-pill on" data-col="white_edge"   onclick="toggleCol(this)">White edge</button>
+      <button class="col-pill on" data-col="safe_zone"    onclick="toggleCol(this)">Safe zone</button>
+      <button class="col-pill on" data-col="fonts"        onclick="toggleCol(this)">Fonts</button>
+      <button class="col-pill on" data-col="transparency" onclick="toggleCol(this)">Transparency</button>
+    </div>
+
+    <!-- Table -->
+    <div class="table-card">
+      <div class="table-wrap">
+        <table id="jobTable">
+          <thead>
+            <tr>
+              <th>Reference</th>
+              <th>Customer</th>
+              <th>Order</th>
+              <th>File</th>
+              <th>Type</th>
+              <th>Source</th>
+              <th>Uploaded</th>
+              <th>Assessed</th>
+              <th>Score</th>
+              <th class="check-col check-cell" data-col="dpi">DPI</th>
+              <th class="check-col check-cell" data-col="pixelation">Pixelation</th>
+              <th class="check-col check-cell" data-col="bleed">Bleed</th>
+              <th class="check-col check-cell" data-col="colour">Colour</th>
+              <th class="check-col check-cell" data-col="white_edge">White edge</th>
+              <th class="check-col check-cell" data-col="safe_zone">Safe zone</th>
+              <th class="check-col check-cell" data-col="fonts">Fonts</th>
+              <th class="check-col check-cell" data-col="transparency">Transparency</th>
+              <th></th>
+            </tr>
+          </thead>
+          <tbody id="jobBody">
+            <tr><td colspan="19"><div class="empty-state"><div class="es-icon">⏳</div><p>Loading…</p></div></td></tr>
+          </tbody>
+        </table>
+      </div>
+      <div class="pagination" id="paginationBar">
+        <span class="pg-info" id="pgInfo"></span>
+        <div class="pg-size">
+          <span>Show</span>
+          <select id="pgSize" onchange="changePageSize(this.value)">
+            <option value="50">50</option>
+            <option value="100">100</option>
+            <option value="250">250</option>
+          </select>
+          <span>per page</span>
+        </div>
+        <button class="pg-btn" id="pgPrev" onclick="changePage(-1)" disabled>← Prev</button>
+        <span id="pgPages"></span>
+        <button class="pg-btn" id="pgNext" onclick="changePage(1)">Next →</button>
+      </div>
+    </div>
+
+  </div><!-- end .content -->
+</div><!-- end .main -->
+
+<!-- Delete modal -->
 <div class="modal-overlay" id="deleteModal">
   <div class="modal">
     <h2>Delete job</h2>
     <p>This will permanently remove <span class="modal-ref" id="deleteRef"></span> from the queue. Type <strong>DELETE</strong> to confirm.</p>
     <input type="text" id="deleteConfirmInput" placeholder="Type DELETE to confirm" oninput="validateDeleteInput(this)" />
     <div class="modal-actions">
-      <button class="btn" onclick="closeDeleteModal()">Cancel</button>
-      <button class="btn btn-danger" id="deleteConfirmBtn" onclick="confirmDelete()" disabled>Delete</button>
+      <button class="mbtn" onclick="closeDeleteModal()">Cancel</button>
+      <button class="mbtn mbtn-danger" id="deleteConfirmBtn" onclick="confirmDelete()" disabled>Delete</button>
     </div>
   </div>
 </div>
@@ -213,6 +370,11 @@
 <div class="toast" id="toast"></div>
 
 <script>
+/* ══════════════════════════════════════════════════
+   ALL JS BELOW IS TRANSPLANTED UNCHANGED FROM THE
+   ORIGINAL public/dashboard/index.html
+   ══════════════════════════════════════════════════ */
+
 const CHECK_COLS = ['dpi','pixelation','bleed','colour','white_edge','safe_zone','fonts','transparency'];
 let allJobs = [];
 let hiddenCols = new Set();
@@ -242,27 +404,34 @@ function checkIcon(results, id) {
   if (!results) return '<span class="muted">—</span>';
   const r = results.find(r => r.id === id || r.id === id.replace('_',''));
   if (!r) return '<span class="muted">—</span>';
-  if (r.status === 'pass') return '✅';
-  if (r.status === 'fail') return '❌';
-  if (r.status === 'warn') return '⚠️';
-  return '<span class="muted">ℹ️</span>';
+  if (r.status === 'pass') return '<span class="ck ck-pass" title="Pass"></span>';
+  if (r.status === 'fail') return '<span class="ck ck-fail" title="Fail"></span>';
+  if (r.status === 'warn') return '<span class="ck ck-warn" title="Warning"></span>';
+  return '<span class="ck ck-none" title="Info"></span>';
 }
 
 function renderRow(job) {
   const results = job.results || null;
   const statusDot = {pass:'dot-pass',fail:'dot-fail',warn:'dot-warn'}[job.overall_status] || 'dot-pending';
   const pct = job.score_pct;
-  const barColor = pct >= 80 ? '#639922' : pct >= 50 ? '#EF9F27' : '#E24B4A';
+  const ringColor = pct >= 80 ? '#639922' : pct >= 50 ? '#EF9F27' : '#E24B4A';
+  const ringNumColor = pct >= 80 ? '#3B6D11' : pct >= 50 ? '#854F0B' : '#A32D2D';
+  const circ = 81.7;
+  const offset = pct !== null && pct !== undefined ? circ * (1 - pct/100) : circ;
   const scoreHtml = pct !== null && pct !== undefined
-    ? `<div class="score-cell ${pct >= 80 ? 'score-high' : pct >= 50 ? 'score-mid' : 'score-low'}">${pct}%</div>
-       <div class="progress-bar"><div class="progress-fill" style="width:${pct}%;background:${barColor}"></div></div>`
+    ? `<div class="score-wrap">
+         <svg width="34" height="34" viewBox="0 0 34 34" style="transform:rotate(-90deg)">
+           <circle cx="17" cy="17" r="13" fill="none" stroke="#F2F1F6" stroke-width="2.5"/>
+           <circle cx="17" cy="17" r="13" fill="none" stroke="${ringColor}" stroke-width="2.5" stroke-linecap="round" stroke-dasharray="${circ}" stroke-dashoffset="${offset.toFixed(1)}"/>
+         </svg>
+         <div class="score-num" style="color:${ringNumColor}">${pct}</div>
+       </div>`
     : job.assessed_at ? '<span class="muted">—</span>' : '<span class="spinner-sm"></span>';
 
   const badgeType = 'badge-' + (job.file_type||'').toLowerCase();
   const badgeSrc  = 'badge-' + (job.source||'manual').toLowerCase().replace(/\s/g,'');
   const ref = (job.reference||'').replace(/</g,'&lt;');
   const fname = (job.file_name||'').replace(/</g,'&lt;');
-  const skuParam = job.sku ? `&sku=${encodeURIComponent(job.sku)}` : '';
 
   const checkCells = CHECK_COLS.map(col => {
     const hidden = hiddenCols.has(col) ? ' style="display:none"' : '';
@@ -275,7 +444,7 @@ function renderRow(job) {
     <td>${job.order_number  || '<span class="muted">—</span>'}</td>
     <td><div class="filename-cell" title="${fname}">${fname}</div></td>
     <td><span class="badge ${badgeType}">${job.file_type||'?'}</span></td>
-    <td><span class="badge ${badgeSrc}">${job.source||'manual'}</span></td>
+    <td class="source-cell">${job.source||'manual'}</td>
     <td class="date-cell">${fmtDate(job.uploaded_at)}</td>
     <td class="date-cell">${fmtDate(job.assessed_at)}</td>
     <td>${scoreHtml}</td>
@@ -286,6 +455,13 @@ function renderRow(job) {
       <button class="del-btn" onclick="openDeleteModal('${job.id}','${ref}')">✕</button>
     </div></td>
   </tr>`;
+}
+
+function updateStats() {
+  document.getElementById('statTotal').textContent = allJobs.length;
+  document.getElementById('statPass').textContent  = allJobs.filter(j=>j.overall_status==='pass').length;
+  document.getElementById('statWarn').textContent  = allJobs.filter(j=>j.overall_status==='warn').length;
+  document.getElementById('statFail').textContent  = allJobs.filter(j=>j.overall_status==='fail').length;
 }
 
 function renderTable() {
@@ -302,6 +478,7 @@ function renderTable() {
     tbody.innerHTML = pageJobs.map(renderRow).join('');
   }
   applyColVisibility();
+  updateStats();
 
   const showing = total ? `${start + 1}–${Math.min(start + pageSize, total)} of ${total} jobs` : '0 jobs';
   document.getElementById('pgInfo').textContent = showing;
@@ -519,7 +696,7 @@ const banner = document.getElementById('dropBanner');
 banner.addEventListener('dragover', e => { e.preventDefault(); banner.classList.add('drag-over'); });
 banner.addEventListener('dragleave', () => banner.classList.remove('drag-over'));
 banner.addEventListener('drop', e => { e.preventDefault(); banner.classList.remove('drag-over'); addFilesToQueue(Array.from(e.dataTransfer.files)); });
-banner.addEventListener('click', () => document.getElementById('fileInput').click());
+banner.addEventListener('click', e => { if (!e.target.closest('.db-browse')) document.getElementById('fileInput').click(); });
 
 loadJobs();
 </script>
