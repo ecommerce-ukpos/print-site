@@ -356,6 +356,12 @@ canvas{display:block}
 .toast{position:fixed;bottom:20px;left:50%;transform:translateX(-50%);background:#2C2C2A;color:#fff;padding:8px 16px;border-radius:8px;font-size:12px;font-weight:500;opacity:0;transition:opacity 0.2s;pointer-events:none;z-index:999;white-space:nowrap}
 .toast.show{opacity:1}
 </style>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
+<script>
+  if(typeof pdfjsLib!=='undefined'){
+    pdfjsLib.GlobalWorkerOptions.workerSrc='https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
+  }
+</script>
 </head>
 <body>
 
@@ -1525,7 +1531,28 @@ window.addEventListener('touchend',()=>{if(dialDragging){dialDragging=false;rend
 // ── File loading ───────────────────────────────────────────
 function handleFileInput(e){Array.from(e.target.files).forEach(loadLayerFile);e.target.value='';}
 function handleDropOnZone(e){e.preventDefault();document.getElementById('uploadDrop').classList.remove('drag-over');Array.from(e.dataTransfer.files).forEach(loadLayerFile);}
-function loadLayerFile(file){
+async function loadLayerFile(file){
+  if(file.type==='application/pdf'||file.name.toLowerCase().endsWith('.pdf')){
+    if(typeof pdfjsLib==='undefined'){alert('PDF preview library not loaded. Please refresh and try again.');return;}
+    try{
+      const ab=await file.arrayBuffer();
+      const pdf=await pdfjsLib.getDocument({data:ab}).promise;
+      const page=await pdf.getPage(1);
+      const viewport=page.getViewport({scale:3.0});
+      const oc=document.createElement('canvas');
+      oc.width=viewport.width;oc.height=viewport.height;
+      const ctx=oc.getContext('2d');
+      await page.render({canvasContext:ctx,viewport}).promise;
+      const dataUrl=oc.toDataURL('image/png');
+      const img=new Image();
+      img.onload=()=>{captureState('Add layer');addLayer(file.name,img,dataUrl,'image/png');};
+      img.src=dataUrl;
+    }catch(err){
+      console.error('PDF render error:',err);
+      alert('Could not render PDF preview: '+err.message);
+    }
+    return;
+  }
   if(file.type.startsWith('image/')){
     const reader=new FileReader();
     reader.onload=ev=>{const img=new Image();img.onload=()=>{captureState('Add layer');addLayer(file.name,img,ev.target.result,file.type);};img.src=ev.target.result;};
