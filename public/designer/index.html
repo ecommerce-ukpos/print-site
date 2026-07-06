@@ -1152,7 +1152,7 @@ function computeLayout(){
 
 function setCanvasSize(w,h){
   CW=w;CH=h;
-  const dpr=zoomLevel||1;
+  const dpr=(viewMode==='working')?(zoomLevel||1):1;
   ['mainCanvas','snapCanvas','mainCanvas0','snapCanvas0','mainCanvas1','snapCanvas1'].forEach(id=>{
     const el=document.getElementById(id);
     if(el){el.width=Math.round(w*dpr);el.height=Math.round(h*dpr);}
@@ -1169,17 +1169,29 @@ function remapLayersToNewLayout(oTW,oTH,oTX,oTY,nTW,nTH,nTX,nTY){
 // ── Zoom ───────────────────────────────────────────────────
 function applyZoom(){
   const dpr=zoomLevel||1;
-  const pw=Math.round(CW*dpr)+'px', ph=Math.round(CH*dpr)+'px';
-  ['canvasTransform','canvasTransform0','canvasTransform1'].forEach(id=>{
-    const t=document.getElementById(id);
-    if(!t)return;
-    t.style.transform='none';t.style.width=pw;t.style.height=ph;
-  });
-  ['canvasOuter','canvasOuter0','canvasOuter1'].forEach(id=>{
-    const outer=document.getElementById(id);
-    if(!outer)return;
-    outer.style.width=pw;outer.style.height=ph;
-  });
+  if(viewMode==='full'){
+    // Full size: canvas is already at true pixel dimensions — use CSS scale for zoom
+    ['canvasTransform','canvasTransform0','canvasTransform1'].forEach(id=>{
+      const t=document.getElementById(id);if(!t)return;
+      t.style.transform=`scale(${dpr})`;t.style.transformOrigin='top left';
+      t.style.width=CW+'px';t.style.height=CH+'px';
+    });
+    ['canvasOuter','canvasOuter0','canvasOuter1'].forEach(id=>{
+      const outer=document.getElementById(id);if(!outer)return;
+      outer.style.width=Math.round(CW*dpr)+'px';outer.style.height=Math.round(CH*dpr)+'px';
+    });
+  }else{
+    // Working: canvas pixels scale with zoom for crisp rendering
+    const pw=Math.round(CW*dpr)+'px',ph=Math.round(CH*dpr)+'px';
+    ['canvasTransform','canvasTransform0','canvasTransform1'].forEach(id=>{
+      const t=document.getElementById(id);if(!t)return;
+      t.style.transform='none';t.style.width=pw;t.style.height=ph;
+    });
+    ['canvasOuter','canvasOuter0','canvasOuter1'].forEach(id=>{
+      const outer=document.getElementById(id);if(!outer)return;
+      outer.style.width=pw;outer.style.height=ph;
+    });
+  }
   document.getElementById('zoomVal').textContent=Math.round(zoomLevel*100)+'%';
 }
 function zoomBy(delta){zoomLevel=Math.max(0.2,Math.min(4,zoomLevel+delta));setCanvasSize(CW,CH);draw();}
@@ -1209,7 +1221,7 @@ function drawToContext(ctx, layers, bgColor, drawHandlesFlag, tmplA, sideIdx){
   const bx = TX-BLEEDPX, by = TY-BLEEDPX, bw = TW+BLEEDPX*2, bh = TH+BLEEDPX*2;
 
   // ── 1. Canvas background (outside bleed = grey surround) ──
-  const dpr=zoomLevel||1;
+  const dpr=(viewMode==='working')?(zoomLevel||1):1;
   ctx.setTransform(dpr,0,0,dpr,0,0);
   ctx.clearRect(0,0,CW,CH);
   ctx.fillStyle='#EEEDEA'; ctx.fillRect(0,0,CW,CH);
