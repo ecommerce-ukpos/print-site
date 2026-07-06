@@ -1551,18 +1551,25 @@ async function loadLayerFile(file){
       const ab=await file.arrayBuffer();
       const pdf=await pdfjsLib.getDocument({data:ab}).promise;
       const page=await pdf.getPage(1);
+      // Display render — high res for sharp canvas preview
       const viewport=page.getViewport({scale:3.0});
       const oc=document.createElement('canvas');
       oc.width=viewport.width;oc.height=viewport.height;
       const ctx=oc.getContext('2d');
       await page.render({canvasContext:ctx,viewport}).promise;
-      const dataUrl=oc.toDataURL('image/png');
+      const displayDataUrl=oc.toDataURL('image/png');
+      // Upscale render — 1x (72dpi equivalent) keeps the file small enough for the AI upscaler
+      const vpUpscale=page.getViewport({scale:1.0});
+      const ocUpscale=document.createElement('canvas');
+      ocUpscale.width=vpUpscale.width;ocUpscale.height=vpUpscale.height;
+      await page.render({canvasContext:ocUpscale.getContext('2d'),viewport:vpUpscale}).promise;
+      const upscaleDataUrl=ocUpscale.toDataURL('image/png');
       const nativeViewport=page.getViewport({scale:1.0});
       const pdfNativeW=nativeViewport.width*(25.4/72);
       const pdfNativeH=nativeViewport.height*(25.4/72);
       const img=new Image();
-      img.onload=()=>{captureState('Add layer');const l=addLayer(file.name,img,dataUrl,'image/png');if(l){l.pdfNativeW=pdfNativeW;l.pdfNativeH=pdfNativeH;}};
-      img.src=dataUrl;
+      img.onload=()=>{captureState('Add layer');const l=addLayer(file.name,img,upscaleDataUrl,'image/png');if(l){l.pdfNativeW=pdfNativeW;l.pdfNativeH=pdfNativeH;l.img=img;l.displayDataUrl=displayDataUrl;}};
+      img.src=displayDataUrl;
     }catch(err){
       console.error('PDF render error:',err);
       alert('Could not render PDF preview: '+err.message);
