@@ -2196,8 +2196,8 @@ document.addEventListener('keydown',e=>{if(e.key==='Escape')closeUpscaleModal();
 
 // ── AI Upscaler ────────────────────────────────────────────
 const UPSCALE_API='https://ecommerce-ukpos-ukpos-upscaler.hf.space/upscale';
-const UPSCALE_TIMEOUT_MS=120000;
-const UPSCALE_MAX_DIMENSION=4000;
+const UPSCALE_TIMEOUT_MS=300000;
+const UPSCALE_MAX_DIMENSION=32000;
 const UPSCALE_MESSAGES=[
   '⏳ Upscaling… please wait',
   '⏳ Still working — this can take a minute',
@@ -2218,8 +2218,8 @@ async function upscaleWithAI(){
   if(spec&&spec.w){
     const fp=getRotatedFootprint(l);
     const aw=fp.w*l.scale;
-    const artWidthMM=aw*(spec.w/TW);
-    const currentDpi=l.img.width/(artWidthMM/25.4);
+    const artWidthMM=l.pdfNativeW||aw*(spec.w/TW);
+    const currentDpi=l.pdfNativeW?l.img.width/(l.pdfNativeW/25.4):l.img.width/(artWidthMM/25.4);
     if(currentDpi>0&&currentDpi<spec.dpi){
       const SAFETY_MARGIN=1.10;
       const uncappedOutscale=(spec.dpi/currentDpi)*SAFETY_MARGIN;
