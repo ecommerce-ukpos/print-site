@@ -1198,7 +1198,12 @@ function applyZoom(){
 function zoomBy(delta){zoomLevel=Math.max(0.2,Math.min(4,zoomLevel+delta));setCanvasSize(CW,CH);draw();}
 function zoomReset(){
   const s=document.getElementById('canvasScroll');
-  zoomLevel=Math.min(1,Math.min((s.clientWidth-64)/CW,(s.clientHeight-64)/CH));
+  const padH=isDoubleSided?52:104;
+  const padV=76;
+  const fitW=(s.clientWidth-padH)/CW;
+  const fitH=(s.clientHeight-padV)/CH;
+  zoomLevel=Math.min(fitW,fitH)*0.96;
+  zoomLevel=Math.max(0.2,zoomLevel);
   setCanvasSize(CW,CH);draw();
 }
 
@@ -1915,33 +1920,51 @@ async function submitToArtworkList(){
 }
 function goToAssessor(){const p=new URLSearchParams();if(jobId)p.set('job',jobId);if(currentSku)p.set('sku',currentSku);window.location.href='/artwork-assessor'+(p.toString()?'?'+p.toString():'');}
 // ── Export functions ────────────────────────────────────────
-// Customer PNG: artwork + background only, no guides, no template
+function getExportLayout(){
+  const spec=SKU_SPECS[currentSku];
+  if(!spec||!spec.w) return null;
+  const mmPx=25.4/spec.dpi;
+  const eTW=Math.round(spec.w/mmPx);
+  const eTH=Math.round(spec.h/mmPx);
+  const eBLEED=Math.round(spec.bleed/mmPx);
+  const eSAFE=Math.round((spec.safe_zone||5)/mmPx);
+  const eCW=eTW+eBLEED*2+80;
+  const eCH=eTH+eBLEED*2+80;
+  const eTX=Math.round((eCW-eTW)/2);
+  const eTY=Math.round((eCH-eTH)/2);
+  const scaleX=eTW/TW;
+  const scaleY=eTH/TH;
+  return{eTW,eTH,eBLEED,eSAFE,eCW,eCH,eTX,eTY,scaleX,scaleY};
+}
+
+// Customer PNG: artwork at 100% opacity, no template, no guides
 function exportCustomerPNG(){
   const layers=getLayers();
   if(!layers.length){showToast('No artwork to export');return;}
+  const ex=getExportLayout();
+  if(!ex){showToast('Select a SKU before exporting');return;}
   const offscreen=document.createElement('canvas');
-  offscreen.width=CW; offscreen.height=CH;
+  offscreen.width=ex.eCW; offscreen.height=ex.eCH;
   const ctx=offscreen.getContext('2d');
-  // Draw background + layers only — no template, no guides
-  const spec=SKU_SPECS[currentSku];
-  const bx=TX-BLEEDPX,by=TY-BLEEDPX,bw=TW+BLEEDPX*2,bh=TH+BLEEDPX*2;
-  ctx.clearRect(0,0,CW,CH);
+  const bx=ex.eTX-ex.eBLEED,by=ex.eTY-ex.eBLEED,bw=ex.eTW+ex.eBLEED*2,bh=ex.eTH+ex.eBLEED*2;
+  ctx.clearRect(0,0,ex.eCW,ex.eCH);
   if(S().bgColor){
     ctx.save();ctx.beginPath();ctx.rect(bx,by,bw,bh);ctx.clip();
     ctx.fillStyle=S().bgColor;ctx.fillRect(bx,by,bw,bh);ctx.restore();
   }
   for(let i=layers.length-1;i>=0;i--){
     const l=layers[i];if(!l.visible||!l.img)continue;
-    const aw=l.img.width*l.scale,ah=l.img.height*l.scale;
-    ctx.save();ctx.globalAlpha=l.opacity;
-    ctx.translate(l.offsetX,l.offsetY);ctx.rotate(l.rotation||0);
+    const aw=l.img.width*l.scale*ex.scaleX,ah=l.img.height*l.scale*ex.scaleY;
+    const ox=ex.eTX+(l.offsetX-TX-TW/2)*ex.scaleX+ex.eTW/2;
+    const oy=ex.eTY+(l.offsetY-TY-TH/2)*ex.scaleY+ex.eTH/2;
+    ctx.save();ctx.globalAlpha=1.0;
+    ctx.translate(ox,oy);ctx.rotate(l.rotation||0);
     if(l.flipX||l.flipY)ctx.scale(l.flipX?-1:1,l.flipY?-1:1);
     ctx.drawImage(l.img,-aw/2,-ah/2,aw,ah);
     ctx.restore();ctx.globalAlpha=1;
   }
-  // Crop to bleed area only
   const cropCanvas=document.createElement('canvas');
-  cropCanvas.width=bw; cropCanvas.height=bh;
+  cropCanvas.width=bw;cropCanvas.height=bh;
   cropCanvas.getContext('2d').drawImage(offscreen,bx,by,bw,bh,0,0,bw,bh);
   const link=document.createElement('a');
   link.download=(jobId||'artwork')+'_customer.png';
@@ -1950,19 +1973,30 @@ function exportCustomerPNG(){
   showToast('Customer PNG downloaded');
 }
 
-// Print PNG: artwork + background + trim/bleed/safe guide lines, no template
+// Print PNG: layers at 92% opacity, template at 25%, guides on top
 function exportPrintPNG(){
   const layers=getLayers();
   if(!layers.length){showToast('No artwork to export');return;}
+  const ex=getExportLayout();
+  if(!ex){showToast('Select a SKU before exporting');return;}
+  const [oCW,oCH,oTX,oTY,oTW,oTH,oBLEED,oSAFE,oMode]=[CW,CH,TX,TY,TW,TH,BLEEDPX,SAFEPX,viewMode];
+  CW=ex.eCW;CH=ex.eCH;TX=ex.eTX;TY=ex.eTY;TW=ex.eTW;TH=ex.eTH;BLEEDPX=ex.eBLEED;SAFEPX=ex.eSAFE;
+  viewMode='full';
+  const exportLayers=layers.map(l=>({
+    ...l,
+    scale:l.scale*ex.scaleX,
+    opacity:0.92,
+    offsetX:ex.eTX+(l.offsetX-oTX-oTW/2)*ex.scaleX+ex.eTW/2,
+    offsetY:ex.eTY+(l.offsetY-oTY-oTH/2)*ex.scaleY+ex.eTH/2,
+  }));
   const offscreen=document.createElement('canvas');
-  offscreen.width=CW; offscreen.height=CH;
+  offscreen.width=ex.eCW;offscreen.height=ex.eCH;
   const ctx=offscreen.getContext('2d');
-  // Draw everything except template — guides will be on top
-  drawToContext(ctx, layers, S().bgColor, false, 0, activeSide);
-  // Crop to bleed area
-  const bx=TX-BLEEDPX,by=TY-BLEEDPX,bw=TW+BLEEDPX*2,bh=TH+BLEEDPX*2;
+  drawToContext(ctx,exportLayers,S().bgColor,false,0.25,activeSide);
+  CW=oCW;CH=oCH;TX=oTX;TY=oTY;TW=oTW;TH=oTH;BLEEDPX=oBLEED;SAFEPX=oSAFE;viewMode=oMode;
+  const bx=ex.eTX-ex.eBLEED,by=ex.eTY-ex.eBLEED,bw=ex.eTW+ex.eBLEED*2,bh=ex.eTH+ex.eBLEED*2;
   const cropCanvas=document.createElement('canvas');
-  cropCanvas.width=bw; cropCanvas.height=bh;
+  cropCanvas.width=bw;cropCanvas.height=bh;
   cropCanvas.getContext('2d').drawImage(offscreen,bx,by,bw,bh,0,0,bw,bh);
   const link=document.createElement('a');
   link.download=(jobId||'artwork')+'_print.png';
