@@ -1122,8 +1122,15 @@ function computeLayout(){
   const spec=SKU_SPECS[currentSku];
   if(!spec||!spec.w){TX=50;TY=50;TW=360;TH=460;BLEEDPX=10;SAFEPX=8;setCanvasSize(460,560);return;}
   if(viewMode==='full'){
-    const mmPx=25.4/spec.dpi;
-    TW=Math.round(spec.w/mmPx);TH=Math.round(spec.h/mmPx);
+    let mmPx=25.4/spec.dpi;
+    let fTW=Math.round(spec.w/mmPx),fTH=Math.round(spec.h/mmPx);
+    const MAX_CANVAS_PX=16000;
+    if(fTW>MAX_CANVAS_PX||fTH>MAX_CANVAS_PX){
+      const capScale=MAX_CANVAS_PX/Math.max(fTW,fTH);
+      fTW=Math.round(fTW*capScale);fTH=Math.round(fTH*capScale);
+      mmPx=spec.w/fTW;
+    }
+    TW=fTW;TH=fTH;
     BLEEDPX=Math.round(spec.bleed/mmPx);SAFEPX=Math.round((spec.safe_zone||5)/mmPx);
     CW=TW+BLEEDPX*2+80;CH=TH+BLEEDPX*2+80;
   }else{
@@ -1544,8 +1551,11 @@ async function loadLayerFile(file){
       const ctx=oc.getContext('2d');
       await page.render({canvasContext:ctx,viewport}).promise;
       const dataUrl=oc.toDataURL('image/png');
+      const nativeViewport=page.getViewport({scale:1.0});
+      const pdfNativeW=nativeViewport.width*(25.4/72);
+      const pdfNativeH=nativeViewport.height*(25.4/72);
       const img=new Image();
-      img.onload=()=>{captureState('Add layer');addLayer(file.name,img,dataUrl,'image/png');};
+      img.onload=()=>{captureState('Add layer');const l=addLayer(file.name,img,dataUrl,'image/png');if(l){l.pdfNativeW=pdfNativeW;l.pdfNativeH=pdfNativeH;}};
       img.src=dataUrl;
     }catch(err){
       console.error('PDF render error:',err);
@@ -1575,6 +1585,7 @@ function addLayer(name,img,srcB64,srcMime){
   syncControlsToActive();renderLayersList();draw();
   markStepDone(2);
   if(openStep<4)toggleStep(4);
+  return layer;
 }
 
 // ── Layers panel ───────────────────────────────────────────
@@ -1718,16 +1729,18 @@ function updatePreflight(){
     else setPF('pfBleed','fail','Missing','Artwork does not cover the trim area');
   }
   if(spec.w){
-    const artWidthMM=aw*(spec.w/TW);
-    const dpiEst=Math.round(top.img.width/(artWidthMM/25.4));
+    const artWidthMM=top.pdfNativeW||aw*(spec.w/TW);
+    const dpiEst=top.pdfNativeW?Math.round(top.img.width/(top.pdfNativeW/25.4)):Math.round(top.img.width/(artWidthMM/25.4));
     if(dpiEst>=spec.dpi)setPF('pfDpi','pass',dpiEst+'dpi',`Meets ${spec.dpi}dpi minimum`);
     else if(dpiEst>=spec.dpi*0.75)setPF('pfDpi','warn',dpiEst+'dpi',`Below ${spec.dpi}dpi minimum — may show pixelation`);
     else setPF('pfDpi','fail',dpiEst+'dpi',`Significantly below ${spec.dpi}dpi — will pixelate in print`);
   }else{setPF('pfDpi','idle','—','Custom size — check DPI manually');}
-  const aiBtn=document.getElementById('btnAiUpscale');
+const aiBtn=document.getElementById('btnAiUpscale');
   if(aiBtn){
     const tooLarge=top.img.width>UPSCALE_MAX_DIMENSION||top.img.height>UPSCALE_MAX_DIMENSION;
-    aiBtn.style.display=tooLarge?'none':'';
+    aiBtn.disabled=tooLarge;
+    aiBtn.textContent=tooLarge?'↑ Cannot upscale with AI — image too large':'↑ Upscale with AI — fix this automatically';
+    aiBtn.style.display='';
   }
   const szL=TX+SAFEPX,szT=TY+SAFEPX,szR=TX+TW-SAFEPX,szB=TY+TH-SAFEPX;
   const inSafe=al>=szL&&at>=szT&&(al+aw)<=szR&&(at+ah)<=szB;
