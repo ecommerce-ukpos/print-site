@@ -1152,9 +1152,10 @@ function computeLayout(){
 
 function setCanvasSize(w,h){
   CW=w;CH=h;
+  const dpr=zoomLevel||1;
   ['mainCanvas','snapCanvas','mainCanvas0','snapCanvas0','mainCanvas1','snapCanvas1'].forEach(id=>{
     const el=document.getElementById(id);
-    if(el){el.width=w;el.height=h;}
+    if(el){el.width=Math.round(w*dpr);el.height=Math.round(h*dpr);}
   });
   applyZoom();
 }
@@ -1167,25 +1168,25 @@ function remapLayersToNewLayout(oTW,oTH,oTX,oTY,nTW,nTH,nTX,nTY){
 
 // ── Zoom ───────────────────────────────────────────────────
 function applyZoom(){
+  const dpr=zoomLevel||1;
+  const pw=Math.round(CW*dpr)+'px', ph=Math.round(CH*dpr)+'px';
   ['canvasTransform','canvasTransform0','canvasTransform1'].forEach(id=>{
     const t=document.getElementById(id);
     if(!t)return;
-    t.style.transform=`scale(${zoomLevel})`;t.style.transformOrigin='top left';
-    t.style.width=CW+'px';t.style.height=CH+'px';
+    t.style.transform='none';t.style.width=pw;t.style.height=ph;
   });
   ['canvasOuter','canvasOuter0','canvasOuter1'].forEach(id=>{
     const outer=document.getElementById(id);
     if(!outer)return;
-    outer.style.width=Math.round(CW*zoomLevel)+'px';
-    outer.style.height=Math.round(CH*zoomLevel)+'px';
+    outer.style.width=pw;outer.style.height=ph;
   });
   document.getElementById('zoomVal').textContent=Math.round(zoomLevel*100)+'%';
 }
-function zoomBy(delta){zoomLevel=Math.max(0.2,Math.min(4,zoomLevel+delta));applyZoom();draw();}
+function zoomBy(delta){zoomLevel=Math.max(0.2,Math.min(4,zoomLevel+delta));setCanvasSize(CW,CH);draw();}
 function zoomReset(){
   const s=document.getElementById('canvasScroll');
   zoomLevel=Math.min(1,Math.min((s.clientWidth-64)/CW,(s.clientHeight-64)/CH));
-  applyZoom();draw();
+  setCanvasSize(CW,CH);draw();
 }
 
 // ── Draw ───────────────────────────────────────────────────
@@ -1208,6 +1209,8 @@ function drawToContext(ctx, layers, bgColor, drawHandlesFlag, tmplA, sideIdx){
   const bx = TX-BLEEDPX, by = TY-BLEEDPX, bw = TW+BLEEDPX*2, bh = TH+BLEEDPX*2;
 
   // ── 1. Canvas background (outside bleed = grey surround) ──
+  const dpr=zoomLevel||1;
+  ctx.setTransform(dpr,0,0,dpr,0,0);
   ctx.clearRect(0,0,CW,CH);
   ctx.fillStyle='#EEEDEA'; ctx.fillRect(0,0,CW,CH);
   if(!currentSku) return;
@@ -1294,7 +1297,7 @@ function drawToContext(ctx, layers, bgColor, drawHandlesFlag, tmplA, sideIdx){
 }
 
 // ── Snap guides ────────────────────────────────────────────
-function clearSnaps(){if(activeSnapCtx)activeSnapCtx.clearRect(0,0,CW,CH);}
+function clearSnaps(){if(activeSnapCtx){const dpr=zoomLevel||1;activeSnapCtx.setTransform(dpr,0,0,dpr,0,0);activeSnapCtx.clearRect(0,0,CW,CH);}}
 function checkSnaps(l){
   if(!l||!snapEnabled){clearSnaps();return;}
   if(!l.img)return;
@@ -1318,6 +1321,8 @@ function checkSnaps(l){
 }
 function drawSnapLine(dir,val){
   if(!activeSnapCtx)return;
+  const dpr=zoomLevel||1;
+  activeSnapCtx.setTransform(dpr,0,0,dpr,0,0);
   activeSnapCtx.strokeStyle='rgba(0,200,255,0.85)';activeSnapCtx.lineWidth=1;activeSnapCtx.setLineDash([4,3]);
   activeSnapCtx.beginPath();
   if(dir==='v'){activeSnapCtx.moveTo(val,0);activeSnapCtx.lineTo(val,CH);}
@@ -1368,7 +1373,8 @@ function pointInLayer(x,y,l){
 function getCanvasXY(e){
   const c=activeCanvas;if(!c)return{x:0,y:0};
   const r=c.getBoundingClientRect();
-  return{x:(e.clientX-r.left)/zoomLevel,y:(e.clientY-r.top)/zoomLevel};
+  const dpr=zoomLevel||1;
+  return{x:(e.clientX-r.left)*dpr/(r.width),y:(e.clientY-r.top)*dpr/(r.height)};
 }
 
 // ── Canvas event binding ───────────────────────────────────
@@ -1434,8 +1440,8 @@ function bindCanvasEvents(canvas){
     else canvas.style.cursor=getLayers().some(l=>l.visible&&pointInLayer(x,y,l))?'grab':'default';
   });
   let tS={x:0,y:0},tL={};
-  canvas.addEventListener('touchstart',function(e){const l=getActiveLayer();if(!l)return;e.preventDefault();const t=e.touches[0],r=canvas.getBoundingClientRect();tS={x:(t.clientX-r.left)/zoomLevel,y:(t.clientY-r.top)/zoomLevel};tL={offsetX:l.offsetX,offsetY:l.offsetY};},{passive:false});
-  canvas.addEventListener('touchmove',function(e){const l=getActiveLayer();if(!l)return;e.preventDefault();const t=e.touches[0],r=canvas.getBoundingClientRect();l.offsetX=tL.offsetX+(t.clientX-r.left)/zoomLevel-tS.x;l.offsetY=tL.offsetY+(t.clientY-r.top)/zoomLevel-tS.y;checkSnaps(l);draw();},{passive:false});
+  canvas.addEventListener('touchstart',function(e){const l=getActiveLayer();if(!l)return;e.preventDefault();const t=e.touches[0],r=canvas.getBoundingClientRect();const dpr=zoomLevel||1;tS={x:(t.clientX-r.left)*dpr/r.width,y:(t.clientY-r.top)*dpr/r.height};tL={offsetX:l.offsetX,offsetY:l.offsetY};},{passive:false});
+  canvas.addEventListener('touchmove',function(e){const l=getActiveLayer();if(!l)return;e.preventDefault();const t=e.touches[0],r=canvas.getBoundingClientRect();const dpr=zoomLevel||1;l.offsetX=tL.offsetX+(t.clientX-r.left)*dpr/r.width-tS.x;l.offsetY=tL.offsetY+(t.clientY-r.top)*dpr/r.height-tS.y;checkSnaps(l);draw();},{passive:false});
   canvas.addEventListener('touchend',function(){clearSnaps();renderLayersList();});
 }
 
@@ -1728,16 +1734,18 @@ function updatePreflight(){
     else if(coversTrim)setPF('pfBleed','warn','Trim only',`Artwork doesn't reach the ${spec.bleed}mm bleed boundary`);
     else setPF('pfBleed','fail','Missing','Artwork does not cover the trim area');
   }
+  const selLayer=vis.find(l=>l.id===getActiveLayerId())||top;
   if(spec.w){
-    const artWidthMM=top.pdfNativeW||aw*(spec.w/TW);
-    const dpiEst=top.pdfNativeW?Math.round(top.img.width/(top.pdfNativeW/25.4)):Math.round(top.img.width/(artWidthMM/25.4));
+    const sfp=getRotatedFootprint(selLayer),saw=sfp.w*selLayer.scale;
+    const artWidthMM=selLayer.pdfNativeW||saw*(spec.w/TW);
+    const dpiEst=selLayer.pdfNativeW?Math.round(selLayer.img.width/(selLayer.pdfNativeW/25.4)):Math.round(selLayer.img.width/(artWidthMM/25.4));
     if(dpiEst>=spec.dpi)setPF('pfDpi','pass',dpiEst+'dpi',`Meets ${spec.dpi}dpi minimum`);
     else if(dpiEst>=spec.dpi*0.75)setPF('pfDpi','warn',dpiEst+'dpi',`Below ${spec.dpi}dpi minimum — may show pixelation`);
     else setPF('pfDpi','fail',dpiEst+'dpi',`Significantly below ${spec.dpi}dpi — will pixelate in print`);
   }else{setPF('pfDpi','idle','—','Custom size — check DPI manually');}
-const aiBtn=document.getElementById('btnAiUpscale');
+  const aiBtn=document.getElementById('btnAiUpscale');
   if(aiBtn){
-    const tooLarge=top.img.width>UPSCALE_MAX_DIMENSION||top.img.height>UPSCALE_MAX_DIMENSION;
+    const tooLarge=selLayer.img.width>UPSCALE_MAX_DIMENSION||selLayer.img.height>UPSCALE_MAX_DIMENSION;
     aiBtn.disabled=tooLarge;
     aiBtn.textContent=tooLarge?'↑ Cannot upscale with AI — image too large':'↑ Upscale with AI — fix this automatically';
     aiBtn.style.display='';
