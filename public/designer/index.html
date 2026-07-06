@@ -1181,11 +1181,11 @@ function applyZoom(){
   });
   document.getElementById('zoomVal').textContent=Math.round(zoomLevel*100)+'%';
 }
-function zoomBy(delta){zoomLevel=Math.max(0.2,Math.min(4,zoomLevel+delta));applyZoom();}
+function zoomBy(delta){zoomLevel=Math.max(0.2,Math.min(4,zoomLevel+delta));applyZoom();draw();}
 function zoomReset(){
   const s=document.getElementById('canvasScroll');
   zoomLevel=Math.min(1,Math.min((s.clientWidth-64)/CW,(s.clientHeight-64)/CH));
-  applyZoom();
+  applyZoom();draw();
 }
 
 // ── Draw ───────────────────────────────────────────────────
