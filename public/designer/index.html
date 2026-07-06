@@ -180,7 +180,7 @@ input[type=range]{width:100%;cursor:pointer;accent-color:#F47920}
 .ct-info{font-size:10px;color:#888780;margin-left:auto;font-style:italic;white-space:nowrap}
 
 /* Canvas scroll */
-.canvas-scroll{flex:1;overflow:auto;display:flex;align-items:flex-start;justify-content:center;padding:44px 20px 32px;gap:0}
+.canvas-scroll{flex:1;overflow:auto;display:flex;align-items:flex-start;justify-content:flex-start;padding:44px 20px 32px;gap:0}
 .canvas-scroll.single-sided{padding:52px 32px 32px}
 
 /* Dual sided */
@@ -228,6 +228,7 @@ canvas{display:block}
 /* Canvas spinner */
 .canvas-spinner{display:none;position:absolute;inset:0;background:rgba(196,196,192,0.55);z-index:20;align-items:center;justify-content:center;pointer-events:none}
 .canvas-spinner.active{display:flex}
+.upscale-lock{pointer-events:none;opacity:0.45;user-select:none}
 .canvas-spinner svg{width:36px;height:36px;animation:spin 0.7s linear infinite}
 @keyframes spin{to{transform:rotate(360deg)}}
 
@@ -1789,10 +1790,12 @@ function setViewMode(m){
   if(spinner)spinner.classList.add('active');
   requestAnimationFrame(()=>{
     setTimeout(()=>{
-      const oTW=TW,oTH=TH,oTX=TX,oTY=TY;viewMode=m;
+const oTW=TW,oTH=TH,oTX=TX,oTY=TY;viewMode=m;
       computeLayout();remapLayersToNewLayout(oTW,oTH,oTX,oTY,TW,TH,TX,TY);
       updateViewInfo();draw();
       if(spinner)spinner.classList.remove('active');
+      const sc=document.getElementById('canvasScroll');
+      if(sc){sc.scrollLeft=0;sc.scrollTop=0;}
     },0);
   });
 }
@@ -2259,13 +2262,23 @@ async function upscaleWithAI(){
       requiredOutscale=Math.min(Math.max(requiredOutscale,1.5),UPSCALE_MAX_OUTSCALE);
     }
   }
-  const btn=document.getElementById('btnAiUpscale');
+const btn=document.getElementById('btnAiUpscale');
   const origText=btn.textContent;
   btn.disabled=true;
   let msgIdx=0;
   btn.textContent=UPSCALE_MESSAGES[0];
   const msgTimer=setInterval(()=>{msgIdx=Math.min(msgIdx+1,UPSCALE_MESSAGES.length-1);btn.textContent=UPSCALE_MESSAGES[msgIdx];},8000);
-  const resetButton=()=>{clearInterval(msgTimer);btn.disabled=false;btn.textContent=origText;};
+  const lockUI=()=>{
+    ['step-panel','canvasScroll'].forEach(id=>{const el=document.getElementById(id)||document.querySelector('.'+id);if(el)el.classList.add('upscale-lock');});
+    document.querySelectorAll('.right-panel .rp-btn, .right-panel .li-btn, .lp-add-bottom').forEach(el=>el.classList.add('upscale-lock'));
+    const spinner=document.getElementById('canvasSpinner');if(spinner)spinner.classList.add('active');
+  };
+  const unlockUI=()=>{
+    document.querySelectorAll('.upscale-lock').forEach(el=>el.classList.remove('upscale-lock'));
+    const spinner=document.getElementById('canvasSpinner');if(spinner)spinner.classList.remove('active');
+  };
+  const resetButton=()=>{clearInterval(msgTimer);unlockUI();btn.disabled=false;btn.textContent=origText;};
+  lockUI();
   const controller=new AbortController();
   const timeoutId=setTimeout(()=>controller.abort(),UPSCALE_TIMEOUT_MS);
   try{
