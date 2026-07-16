@@ -1391,8 +1391,11 @@ function pointInLayer(x,y,l){
 function getCanvasXY(e){
   const c=activeCanvas;if(!c)return{x:0,y:0};
   const r=c.getBoundingClientRect();
-  const dpr=zoomLevel||1;
-  return{x:(e.clientX-r.left)*dpr/(r.width),y:(e.clientY-r.top)*dpr/(r.height)};
+  // Map screen CSS pixels to logical canvas coordinates [0,CW] / [0,CH].
+  // In Working mode: canvas.width = CW*dpr, r.width = CW*dpr → scale = CW/r.width.
+  // In Full mode:    canvas.width = CW,     r.width = CW*dpr  → scale = CW/r.width.
+  // Both cases: multiply offset by (CW / r.width) and (CH / r.height).
+  return{x:(e.clientX-r.left)*CW/(r.width),y:(e.clientY-r.top)*CH/(r.height)};
 }
 
 // ── Canvas event binding ───────────────────────────────────
