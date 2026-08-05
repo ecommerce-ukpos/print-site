@@ -364,6 +364,31 @@ canvas{display:block}
 .panel-empty{padding:14px 10px;font-size:13px;color:#434343;text-align:center;line-height:1.5}
 
 /* Toast */
+.eps-modal-bg{display:none;position:fixed;inset:0;background:rgba(0,0,0,0.5);z-index:600;align-items:center;justify-content:center;padding:20px}
+.eps-modal-bg.open{display:flex}
+.eps-modal{background:#fff;border-radius:14px;width:100%;max-width:480px;box-shadow:0 12px 48px rgba(0,0,0,0.28);overflow:hidden}
+.eps-modal-header{background:#F47920;padding:16px 20px;display:flex;align-items:center;gap:10px}
+.eps-modal-header h2{font-size:15px;font-weight:700;color:#fff;margin:0;flex:1}
+.eps-modal-header span{font-size:22px}
+.eps-modal-body{padding:18px 20px 6px}
+.eps-modal-body p{font-size:12px;color:#2C2C2A;line-height:1.6;margin-bottom:12px}
+.eps-modal-why{background:#FFF8F3;border:0.5px solid #FAC795;border-radius:8px;padding:12px 14px;margin-bottom:14px}
+.eps-modal-why-title{font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:0.06em;color:#C75E0A;margin-bottom:8px}
+.eps-modal-reason{display:flex;gap:8px;margin-bottom:7px;font-size:11px;color:#2C2C2A;line-height:1.5}
+.eps-modal-reason:last-child{margin-bottom:0}
+.eps-modal-reason-icon{font-size:14px;flex-shrink:0;margin-top:1px}
+.eps-modal-steps{background:#F2F1F6;border-radius:8px;padding:12px 14px;margin-bottom:14px}
+.eps-modal-steps-title{font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:0.06em;color:#5F5E5A;margin-bottom:8px}
+.eps-modal-step{display:flex;gap:8px;margin-bottom:6px;font-size:11px;color:#2C2C2A;align-items:flex-start}
+.eps-modal-step:last-child{margin-bottom:0}
+.eps-modal-step-num{width:16px;height:16px;border-radius:50%;background:#F47920;color:#fff;font-size:9px;font-weight:700;display:flex;align-items:center;justify-content:center;flex-shrink:0;margin-top:1px}
+.eps-modal-also{font-size:11px;color:#5F5E5A;margin-bottom:16px;line-height:1.5}
+.eps-modal-also strong{color:#2C2C2A}
+.eps-modal-footer{padding:0 20px 18px;display:flex;gap:8px}
+.eps-modal-dismiss{flex:1;padding:9px;border-radius:8px;background:#F47920;color:#fff;border:none;font-size:13px;font-weight:600;cursor:pointer;font-family:'Inter',sans-serif}
+.eps-modal-dismiss:hover{background:#C75E0A}
+.eps-modal-contact{padding:9px 14px;border-radius:8px;background:transparent;color:#5F5E5A;border:0.5px solid #D3D1C7;font-size:12px;cursor:pointer;font-family:'Inter',sans-serif;text-decoration:none;display:flex;align-items:center;white-space:nowrap}
+.eps-modal-contact:hover{background:#F2F1F6}
 .toast{position:fixed;bottom:20px;left:50%;transform:translateX(-50%);background:#2C2C2A;color:#fff;padding:8px 16px;border-radius:8px;font-size:12px;font-weight:500;opacity:0;transition:opacity 0.2s;pointer-events:none;z-index:999;white-space:nowrap}
 .toast.show{opacity:1}
 </style>
@@ -467,9 +492,9 @@ canvas{display:block}
         <span class="ud-icon">📂</span>
         <strong>Drop artwork here</strong>
         <div class="ud-sub">or click to browse</div>
-        <div class="ud-formats">PDF · EPS · PNG · JPG · TIFF</div>
+        <div class="ud-formats">PDF · PNG · JPG · TIFF</div>
       </div>
-      <input type="file" id="fileIn" accept=".png,.jpg,.jpeg,.pdf,.tif,.tiff,.eps" multiple onchange="handleFileInput(event)" style="display:none"/>
+      <input type="file" id="fileIn" accept=".png,.jpg,.jpeg,.pdf,.tif,.tiff" multiple onchange="handleFileInput(event)" style="display:none"/>
     </div>
   </div>
 
@@ -1577,6 +1602,13 @@ window.addEventListener('touchend',()=>{if(dialDragging){dialDragging=false;rend
 function handleFileInput(e){Array.from(e.target.files).forEach(loadLayerFile);e.target.value='';}
 function handleDropOnZone(e){e.preventDefault();document.getElementById('uploadDrop').classList.remove('drag-over');Array.from(e.dataTransfer.files).forEach(loadLayerFile);}
 async function loadLayerFile(file){
+  // ── EPS: not supported — show guidance modal ──
+  const isEps=file.name.toLowerCase().endsWith('.eps')||
+              file.type==='application/postscript'||
+              file.type==='application/eps'||
+              file.type==='image/x-eps'||
+              file.type==='application/x-eps';
+  if(isEps){showEpsModal();return;}
   if(file.type==='application/pdf'||file.name.toLowerCase().endsWith('.pdf')){
     if(typeof pdfjsLib==='undefined'){alert('PDF preview library not loaded. Please refresh and try again.');return;}
     try{
@@ -2287,6 +2319,10 @@ function onTmplOpacity(){
   draw();
 }
 
+// ── EPS modal ────────────────────────────────────────────────
+function showEpsModal(){document.getElementById('epsModalBg').classList.add('open');}
+function closeEpsModal(){document.getElementById('epsModalBg').classList.remove('open');}
+
 // ── Upscale modal ───────────────────────────────────────────
 function showUpscaleModal(){document.getElementById('upscaleModalBg').classList.add('open');}
 function closeUpscaleModal(){document.getElementById('upscaleModalBg').classList.remove('open');}
@@ -2403,6 +2439,44 @@ document.addEventListener('click',e=>{
     <div class="sku-confirm-actions">
       <button class="sku-confirm-keep" onclick="skuConfirmCancel()">Keep current</button>
       <button class="sku-confirm-clear" onclick="skuConfirmProceed()">Clear and change</button>
+    </div>
+  </div>
+</div>
+<!-- ══ EPS NOT SUPPORTED MODAL ══ -->
+<div class="eps-modal-bg" id="epsModalBg" onclick="if(event.target===this)closeEpsModal()">
+  <div class="eps-modal" role="dialog" aria-modal="true" aria-labelledby="epsModalTitle">
+    <div class="eps-modal-header">
+      <span>📄</span>
+      <h2 id="epsModalTitle">EPS files aren't supported</h2>
+    </div>
+    <div class="eps-modal-body">
+      <p>We can't preview or process EPS files in the designer. Please re-export your artwork as a <strong>PDF</strong> — it only takes a moment and gives you better results.</p>
+      <div class="eps-modal-why">
+        <div class="eps-modal-why-title">Why PDF instead of EPS?</div>
+        <div class="eps-modal-reason">
+          <span class="eps-modal-reason-icon">🔍</span>
+          <span><strong>Preview works properly.</strong> PDF renders crisply in the designer at any size — EPS can't be displayed in a browser without converting to a fixed-resolution image first.</span>
+        </div>
+        <div class="eps-modal-reason">
+          <span class="eps-modal-reason-icon">📐</span>
+          <span><strong>Vector quality is preserved.</strong> PDF keeps your artwork fully scalable — logos, text and shapes stay sharp no matter how large they're printed.</span>
+        </div>
+        <div class="eps-modal-reason">
+          <span class="eps-modal-reason-icon">🖨️</span>
+          <span><strong>Print-ready.</strong> PDF is the industry standard our RIP software works with directly. EPS adds an unnecessary conversion step that can affect colour accuracy.</span>
+        </div>
+      </div>
+      <div class="eps-modal-steps">
+        <div class="eps-modal-steps-title">How to re-export as PDF</div>
+        <div class="eps-modal-step"><div class="eps-modal-step-num">1</div><span><strong>Illustrator:</strong> File → Save a Copy → Format: Adobe PDF → Save</span></div>
+        <div class="eps-modal-step"><div class="eps-modal-step-num">2</div><span><strong>InDesign:</strong> File → Export → Adobe PDF (Print) → Export</span></div>
+        <div class="eps-modal-step"><div class="eps-modal-step-num">3</div><span><strong>CorelDRAW:</strong> File → Publish to PDF → PDF for Print → Save</span></div>
+      </div>
+      <p class="eps-modal-also">Don't have vector software? A high-resolution <strong>PNG or JPG at 300dpi or above</strong> is also accepted for raster artwork.</p>
+    </div>
+    <div class="eps-modal-footer">
+      <button class="eps-modal-dismiss" onclick="closeEpsModal()">Got it — I'll re-export as PDF</button>
+      <a class="eps-modal-contact" href="https://www.ukpos.com/contact-us/" target="_blank" rel="noopener">Need help?</a>
     </div>
   </div>
 </div>
