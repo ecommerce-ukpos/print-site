@@ -79,6 +79,16 @@ body{font-family:'Inter',-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;
 .step-spacer{flex:1;min-height:8px}
 
 /* SKU chip */
+.sku-confirm-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,0.45);z-index:999;align-items:center;justify-content:center}
+.sku-confirm-overlay.show{display:flex}
+.sku-confirm-card{background:#fff;border-radius:12px;border:0.5px solid #D3D1C7;padding:22px 20px;width:290px;text-align:center;box-shadow:0 8px 32px rgba(0,0,0,0.18)}
+.sku-confirm-card h3{font-size:14px;font-weight:600;color:#2C2C2A;margin-bottom:6px}
+.sku-confirm-card p{font-size:12px;color:#5F5E5A;margin-bottom:18px;line-height:1.55}
+.sku-confirm-actions{display:flex;gap:8px;justify-content:center}
+.sku-confirm-keep{padding:7px 16px;border:0.5px solid #B4B2A9;border-radius:7px;background:#F2F1F6;cursor:pointer;font-size:12px;font-weight:500;color:#2C2C2A;font-family:'Inter',sans-serif}
+.sku-confirm-keep:hover{background:#E8E6DE}
+.sku-confirm-clear{padding:7px 16px;border:0.5px solid #E24B4A;border-radius:7px;background:#FCEBEB;cursor:pointer;font-size:12px;font-weight:500;color:#A32D2D;font-family:'Inter',sans-serif}
+.sku-confirm-clear:hover{background:#E24B4A;color:#fff}
 .sku-summary{display:none;margin:0 12px 2px;padding:6px 9px;background:#FFF3EB;border:0.5px solid #FAC795;border-radius:7px;font-size:10px;cursor:pointer}
 .sku-summary.show{display:block}
 .sku-summary-top{display:flex;align-items:center;gap:5px;margin-bottom:2px}
@@ -590,6 +600,7 @@ canvas{display:block}
 
   <!-- Canvas toolbar: view toggle + zoom, sits above the canvas -->
   <div class="canvas-toolbar">
+    <span style="font-size:10px;font-weight:600;color:#888780;letter-spacing:0.04em;text-transform:uppercase;flex-shrink:0">View</span>
     <div class="tb-view">
       <button class="tb-vbtn active" id="stWorking" onclick="setViewMode('working')">Working</button>
       <button class="tb-vbtn" id="stFull" onclick="setViewMode('full')">Full size</button>
@@ -1756,20 +1767,20 @@ function updatePreflight(){
   const COVERAGE_EPS=0.5;
   const coversBleed=al<=bx+COVERAGE_EPS&&at<=by+COVERAGE_EPS&&(al+aw)>=(bx+bw)-COVERAGE_EPS&&(at+ah)>=(by+bh)-COVERAGE_EPS;
   const coversTrim=al<=TX+COVERAGE_EPS&&at<=TY+COVERAGE_EPS&&(al+aw)>=(TX+TW)-COVERAGE_EPS&&(at+ah)>=(TY+TH)-COVERAGE_EPS;
-  if(spec.bleed===0){setPF('pfBleed',coversTrim?'pass':'warn',coversTrim?'OK':'Check',coversTrim?'Trim covered':'Artwork may not reach trim edges');}
+  if(spec.bleed===0){setPF('pfBleed',coversTrim?'pass':'warn',coversTrim?'OK':'No bleed required — artwork should cover the trim line exactly');}
   else{
-    if(coversBleed)setPF('pfBleed','pass','OK',`Artwork extends ${spec.bleed}mm beyond trim`);
-    else if(coversTrim)setPF('pfBleed','warn','Trim only',`Artwork doesn't reach the ${spec.bleed}mm bleed boundary`);
-    else setPF('pfBleed','fail','Missing','Artwork does not cover the trim area');
+    if(coversBleed)setPF('pfBleed','pass','OK',`Artwork extends ${spec.bleed}mm beyond trim — correct`);
+    else if(coversTrim)setPF('pfBleed','warn','Trim only',`Artwork stops at the trim edge but doesn't reach the ${spec.bleed}mm bleed boundary. The orange line must be covered, or white edges may appear after cutting.`);
+    else setPF('pfBleed','fail','Missing',`Artwork does not cover the trim area. It must extend ${spec.bleed}mm past the trim on all sides (to the orange line) to avoid white borders.`);
   }
   const selLayer=vis.find(l=>l.id===getActiveLayerId())||top;
   if(spec.w){
     const sfp=getRotatedFootprint(selLayer),saw=sfp.w*selLayer.scale;
     const artWidthMM=selLayer.pdfNativeW||saw*(spec.w/TW);
     const dpiEst=selLayer.pdfNativeW?Math.round(selLayer.img.width/(selLayer.pdfNativeW/25.4)):Math.round(selLayer.img.width/(artWidthMM/25.4));
-    if(dpiEst>=spec.dpi)setPF('pfDpi','pass',dpiEst+'dpi',`Meets ${spec.dpi}dpi minimum`);
-    else if(dpiEst>=spec.dpi*0.75)setPF('pfDpi','warn',dpiEst+'dpi',`Below ${spec.dpi}dpi minimum — may show pixelation`);
-    else setPF('pfDpi','fail',dpiEst+'dpi',`Significantly below ${spec.dpi}dpi — will pixelate in print`);
+    if(dpiEst>=spec.dpi)setPF('pfDpi','pass',dpiEst+'dpi',`${dpiEst}dpi meets the ${spec.dpi}dpi minimum for this product`);
+    else if(dpiEst>=spec.dpi*0.75)setPF('pfDpi','warn',dpiEst+'dpi',`${dpiEst}dpi is below the ${spec.dpi}dpi minimum — print may appear slightly soft. Use the AI upscaler to fix this automatically.`);
+    else setPF('pfDpi','fail',dpiEst+'dpi',`${dpiEst}dpi is significantly below the ${spec.dpi}dpi minimum — artwork will print visibly pixelated at this size. Upscale or replace with a higher-resolution file.`);
   }else{setPF('pfDpi','idle','—','Custom size — check DPI manually');}
   const aiBtn=document.getElementById('btnAiUpscale');
   if(aiBtn){
@@ -1781,12 +1792,12 @@ function updatePreflight(){
   const szL=TX+SAFEPX,szT=TY+SAFEPX,szR=TX+TW-SAFEPX,szB=TY+TH-SAFEPX;
   const inSafe=al>=szL&&at>=szT&&(al+aw)<=szR&&(at+ah)<=szB;
   const sz=spec.safe_zone||5;
-  if(inSafe)setPF('pfSafe','pass','Clear',`Content within the ${sz}mm safe zone`);
-  else setPF('pfSafe','warn','Check edges',`Content may be within ${sz}mm of trim — risk of cut-off`);
+  if(inSafe)setPF('pfSafe','pass','Clear',`All content is within the ${sz}mm safe zone — clear of trim risk`);
+  else setPF('pfSafe','warn','Check edges',`Content appears within ${sz}mm of the trim edge. Text or important elements close to the border may be cut off. Move them toward the centre of the canvas.`);
   const mime=top.srcMime||'';
   const isRaster=mime.includes('png')||mime.includes('jpeg')||mime.includes('jpg');
-  if(spec.colour==='CMYK'&&isRaster)setPF('pfColour','warn','RGB file',`${spec.colour} expected — convert before final submission`);
-  else setPF('pfColour','pass',spec.colour,'Colour mode appears correct');
+  if(spec.colour==='CMYK'&&isRaster)setPF('pfColour','warn','RGB file',`This product requires CMYK colour. Your file is RGB and will be converted at the RIP — colours may shift, particularly bright reds and oranges. Convert to CMYK in Photoshop or Illustrator before submitting for best results.`);
+  else setPF('pfColour','pass',spec.colour,'Colour profile looks correct for this product');
 }
 
 // ── View mode ──────────────────────────────────────────────
@@ -1853,7 +1864,7 @@ async function submitToArtworkList(){
     const r=await fetch('/api/jobs',{method:'POST',headers:{'Content-Type':'application/json'},
     body:JSON.stringify({reference:ref,file_name:topLayer.name||'artwork',
         file_type:(topLayer.srcMime||'').split('/').pop().toUpperCase()||'IMG',
-        source:'Designer',sku:currentSku||null,sku_name:currentSkuRow?currentSkuRow.sku_file||null:null,customer_name:null,order_number:null})});
+        source:'Designer',sku:currentSku||null,sku_name:currentSkuRow?currentSkuRow.sku_file||null:null,customer_name:null,order_number:null,status:'draft'})});
     if(!r.ok) throw new Error('HTTP '+r.status+': '+await r.text());
     const d=await r.json();job=Array.isArray(d)?d[0]:d;
   }catch(e){showToast('Job creation failed: '+e.message);return;}
@@ -1906,7 +1917,8 @@ async function submitToArtworkList(){
            assessed_at:now,
            results:pfResults,
            sku:currentSku||null,
-           sku_name:currentSkuRow?currentSkuRow.sku_file||null:null
+           sku_name:currentSkuRow?currentSkuRow.sku_file||null:null,
+           status:'submitted'
          })});
       if(!patchResp.ok){
         const pe=await patchResp.text();
@@ -2128,9 +2140,30 @@ function onSkuSearchKey(e){
   else if(e.key==='Escape'){dd.classList.remove('show');}
 }
 
+let _pendingSkuIdx=null;
 function selectSkuFromDd(idx){
   const dd=document.getElementById('skuSearchDd');
-  if(dd._matches&&dd._matches[idx]){applySkuRow(dd._matches[idx]);dd.classList.remove('show');}
+  if(!dd._matches||!dd._matches[idx])return;
+  const hasLayers=S()&&S().layers&&S().layers.length>0;
+  if(hasLayers&&currentSku){
+    _pendingSkuIdx=idx;
+    document.getElementById('skuConfirmOverlay').classList.add('show');
+  }else{
+    applySkuRow(dd._matches[idx]);dd.classList.remove('show');
+  }
+}
+function skuConfirmCancel(){
+  _pendingSkuIdx=null;
+  document.getElementById('skuConfirmOverlay').classList.remove('show');
+}
+function skuConfirmProceed(){
+  document.getElementById('skuConfirmOverlay').classList.remove('show');
+  const dd=document.getElementById('skuSearchDd');
+  if(_pendingSkuIdx!==null&&dd._matches&&dd._matches[_pendingSkuIdx]){
+    applySkuRow(dd._matches[_pendingSkuIdx]);
+    dd.classList.remove('show');
+  }
+  _pendingSkuIdx=null;
 }
 
 function applySkuRow(row){
@@ -2221,7 +2254,6 @@ function buildStorageUrl(rawPath){
 function loadTemplateImage(imgPath, slot){
   if(!imgPath) return;
   const img = new Image();
-  img.crossOrigin = 'anonymous';
   img.onload  = () => { currentTemplateImg[slot] = img; draw(); };
   img.onerror = () => { console.warn('Template PNG failed to load:', imgPath); };
   img.src = buildStorageUrl(imgPath);
@@ -2364,5 +2396,15 @@ document.addEventListener('click',e=>{
     document.getElementById('skuSearchDd')?.classList.remove('show');
 });
 </script>
+<div class="sku-confirm-overlay" id="skuConfirmOverlay" role="dialog" aria-modal="true" aria-labelledby="skuConfirmTitle">
+  <div class="sku-confirm-card">
+    <h3 id="skuConfirmTitle">Change SKU?</h3>
+    <p>Your current artwork layers will be cleared. This can't be undone.</p>
+    <div class="sku-confirm-actions">
+      <button class="sku-confirm-keep" onclick="skuConfirmCancel()">Keep current</button>
+      <button class="sku-confirm-clear" onclick="skuConfirmProceed()">Clear and change</button>
+    </div>
+  </div>
+</div>
 </body>
 </html>
