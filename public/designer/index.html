@@ -1538,16 +1538,46 @@ function centreOnTemplate(l){l.offsetX=TX+TW/2;l.offsetY=TY+TH/2;}
 function fitLayerToBleed(l){
   if(!l.img||!currentSku)return;
   const bw=TW+BLEEDPX*2,bh=TH+BLEEDPX*2;
-  const fp=getRotatedFootprint(l);
-  l.scale=Math.max(bw/fp.w,bh/fp.h);
+  const spec=SKU_SPECS[currentSku];
+  if(l.pdfNativeW&&l.pdfNativeH&&spec){
+    // PDF layer: scale so physical mm dimensions map to canvas pixels
+    const rotDeg=Math.round(((l.rotation||0)*180/Math.PI)%360+360)%360;
+    const swapped=(rotDeg===90||rotDeg===270);
+    const nativeWmm=swapped?l.pdfNativeH:l.pdfNativeW;
+    const nativeHmm=swapped?l.pdfNativeW:l.pdfNativeH;
+    const canvasPxPerMm=TW/spec.w;
+    const nativeWpx=nativeWmm*canvasPxPerMm;
+    const nativeHpx=nativeHmm*canvasPxPerMm;
+    const fp=getRotatedFootprint(l);
+    const pxPerImgPx=nativeWpx/fp.w;
+    l.scale=Math.max(bw/nativeWpx,bh/nativeHpx)*pxPerImgPx;
+  }else{
+    const fp=getRotatedFootprint(l);
+    l.scale=Math.max(bw/fp.w,bh/fp.h);
+  }
   centreOnTemplate(l);
 }
 function fitToBleed(){const l=getActiveLayerOrOnlyVisible();if(l){captureState('Fit to bleed');fitLayerToBleed(l);syncControlsToActive();draw();}}
 function fitToTrim(){
   const l=getActiveLayerOrOnlyVisible();if(!l||!l.img)return;
   captureState('Fit to trim');
-  const fp=getRotatedFootprint(l);
-  l.scale=Math.max(TW/fp.w,TH/fp.h);
+  const spec=SKU_SPECS[currentSku];
+  if(l.pdfNativeW&&l.pdfNativeH&&spec){
+    // PDF layer: scale so physical mm dimensions map to canvas pixels
+    const rotDeg=Math.round(((l.rotation||0)*180/Math.PI)%360+360)%360;
+    const swapped=(rotDeg===90||rotDeg===270);
+    const nativeWmm=swapped?l.pdfNativeH:l.pdfNativeW;
+    const nativeHmm=swapped?l.pdfNativeW:l.pdfNativeH;
+    const canvasPxPerMm=TW/spec.w;
+    const nativeWpx=nativeWmm*canvasPxPerMm;
+    const nativeHpx=nativeHmm*canvasPxPerMm;
+    const fp=getRotatedFootprint(l);
+    const pxPerImgPx=nativeWpx/fp.w;
+    l.scale=Math.max(TW/nativeWpx,TH/nativeHpx)*pxPerImgPx;
+  }else{
+    const fp=getRotatedFootprint(l);
+    l.scale=Math.max(TW/fp.w,TH/fp.h);
+  }
   centreOnTemplate(l);syncControlsToActive();draw();
 }
 function centreActive(){const l=getActiveLayerOrOnlyVisible();if(l){captureState('Centre');centreOnTemplate(l);draw();}}
@@ -1632,7 +1662,17 @@ async function loadLayerFile(file){
       const pdfNativeW=nativeViewport.width*(25.4/72);
       const pdfNativeH=nativeViewport.height*(25.4/72);
       const img=new Image();
-      img.onload=()=>{captureState('Add layer');const l=addLayer(file.name,img,upscaleDataUrl,'image/png');if(l){l.pdfNativeW=pdfNativeW;l.pdfNativeH=pdfNativeH;l.img=img;l.displayDataUrl=displayDataUrl;}};
+      img.onload=()=>{captureState('Add layer');const l=addLayer(file.name,img,upscaleDataUrl,'image/png');if(l){l.pdfNativeW=pdfNativeW;l.pdfNativeH=pdfNativeH;l.img=img;l.displayDataUrl=displayDataUrl;
+        // Auto-scale PDF to fill trim area using physical mm dimensions
+        const spec=currentSku?SKU_SPECS[currentSku]:null;
+        if(spec&&l.pdfNativeW&&l.pdfNativeH){
+          const canvasPxPerMm=TW/spec.w;
+          const nativeWpx=l.pdfNativeW*canvasPxPerMm;
+          const nativeHpx=l.pdfNativeH*canvasPxPerMm;
+          const pxPerImgPx=nativeWpx/l.img.width;
+          l.scale=Math.min(TW/nativeWpx,TH/nativeHpx)*pxPerImgPx;
+        }
+        centreOnTemplate(l);syncControlsToActive();draw();}};
       img.src=displayDataUrl;
     }catch(err){
       console.error('PDF render error:',err);
