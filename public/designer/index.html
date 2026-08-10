@@ -1538,41 +1538,16 @@ function centreOnTemplate(l){l.offsetX=TX+TW/2;l.offsetY=TY+TH/2;}
 function fitLayerToBleed(l){
   if(!l.img||!currentSku)return;
   const bw=TW+BLEEDPX*2,bh=TH+BLEEDPX*2;
-  const spec=SKU_SPECS[currentSku];
-  if(l.pdfNativeW&&l.pdfNativeH&&spec&&spec.w&&spec.h){
-    const rotDeg=Math.round(((l.rotation||0)*180/Math.PI)%360+360)%360;
-    const swapped=(rotDeg===90||rotDeg===270);
-    const fp=getRotatedFootprint(l);
-    const nativeWmm=swapped?l.pdfNativeH:l.pdfNativeW;
-    const nativeHmm=swapped?l.pdfNativeW:l.pdfNativeH;
-    // scale = (target_canvas_px / img_px) * (pdf_mm / spec_mm)
-    const scaleW=(bw/fp.w)*(nativeWmm/spec.w);
-    const scaleH=(bh/fp.h)*(nativeHmm/spec.h);
-    l.scale=Math.max(scaleW,scaleH);
-  }else{
-    const fp=getRotatedFootprint(l);
-    l.scale=Math.max(bw/fp.w,bh/fp.h);
-  }
+  const fp=getRotatedFootprint(l);
+  l.scale=Math.max(bw/fp.w,bh/fp.h);
   centreOnTemplate(l);
 }
 function fitToBleed(){const l=getActiveLayerOrOnlyVisible();if(l){captureState('Fit to bleed');fitLayerToBleed(l);syncControlsToActive();draw();}}
 function fitToTrim(){
   const l=getActiveLayerOrOnlyVisible();if(!l||!l.img)return;
   captureState('Fit to trim');
-  const spec=SKU_SPECS[currentSku];
-  if(l.pdfNativeW&&l.pdfNativeH&&spec&&spec.w&&spec.h){
-    const rotDeg=Math.round(((l.rotation||0)*180/Math.PI)%360+360)%360;
-    const swapped=(rotDeg===90||rotDeg===270);
-    const fp=getRotatedFootprint(l);
-    const nativeWmm=swapped?l.pdfNativeH:l.pdfNativeW;
-    const nativeHmm=swapped?l.pdfNativeW:l.pdfNativeH;
-    const scaleW=(TW/fp.w)*(nativeWmm/spec.w);
-    const scaleH=(TH/fp.h)*(nativeHmm/spec.h);
-    l.scale=Math.max(scaleW,scaleH);
-  }else{
-    const fp=getRotatedFootprint(l);
-    l.scale=Math.max(TW/fp.w,TH/fp.h);
-  }
+  const fp=getRotatedFootprint(l);
+  l.scale=Math.max(TW/fp.w,TH/fp.h);
   centreOnTemplate(l);syncControlsToActive();draw();
 }
 function centreActive(){const l=getActiveLayerOrOnlyVisible();if(l){captureState('Centre');centreOnTemplate(l);draw();}}
@@ -1665,13 +1640,6 @@ async function loadLayerFile(file){
         // We want the PDF's physical width in mm to map to TW canvas px
         // => scale = (TW / spec.w) * (pdfNativeW_mm / img.width_px) ... simplified:
         // => scale = TW * pdfNativeW / (spec.w * img.width)
-        const spec=currentSku?SKU_SPECS[currentSku]:null;
-        if(spec&&spec.w&&spec.h&&l.pdfNativeW&&l.pdfNativeH){
-          const scaleW=(TW/l.img.width)*(l.pdfNativeW/spec.w);
-          const scaleH=(TH/l.img.height)*(l.pdfNativeH/spec.h);
-          // Use contain (Math.min) so whole artwork is visible initially
-          l.scale=Math.min(scaleW,scaleH);
-        }
         centreOnTemplate(l);syncControlsToActive();draw();}};
       img.src=displayDataUrl;
     }catch(err){
