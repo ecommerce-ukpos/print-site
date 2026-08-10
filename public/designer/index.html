@@ -1539,18 +1539,16 @@ function fitLayerToBleed(l){
   if(!l.img||!currentSku)return;
   const bw=TW+BLEEDPX*2,bh=TH+BLEEDPX*2;
   const spec=SKU_SPECS[currentSku];
-  if(l.pdfNativeW&&l.pdfNativeH&&spec){
-    // PDF layer: scale so physical mm dimensions map to canvas pixels
+  if(l.pdfNativeW&&l.pdfNativeH&&spec&&spec.w&&spec.h){
     const rotDeg=Math.round(((l.rotation||0)*180/Math.PI)%360+360)%360;
     const swapped=(rotDeg===90||rotDeg===270);
+    const fp=getRotatedFootprint(l);
     const nativeWmm=swapped?l.pdfNativeH:l.pdfNativeW;
     const nativeHmm=swapped?l.pdfNativeW:l.pdfNativeH;
-    const canvasPxPerMm=TW/spec.w;
-    const nativeWpx=nativeWmm*canvasPxPerMm;
-    const nativeHpx=nativeHmm*canvasPxPerMm;
-    const fp=getRotatedFootprint(l);
-    const pxPerImgPx=nativeWpx/fp.w;
-    l.scale=Math.max(bw/nativeWpx,bh/nativeHpx)*pxPerImgPx;
+    // scale = (target_canvas_px / img_px) * (pdf_mm / spec_mm)
+    const scaleW=(bw/fp.w)*(nativeWmm/spec.w);
+    const scaleH=(bh/fp.h)*(nativeHmm/spec.h);
+    l.scale=Math.max(scaleW,scaleH);
   }else{
     const fp=getRotatedFootprint(l);
     l.scale=Math.max(bw/fp.w,bh/fp.h);
@@ -1562,18 +1560,15 @@ function fitToTrim(){
   const l=getActiveLayerOrOnlyVisible();if(!l||!l.img)return;
   captureState('Fit to trim');
   const spec=SKU_SPECS[currentSku];
-  if(l.pdfNativeW&&l.pdfNativeH&&spec){
-    // PDF layer: scale so physical mm dimensions map to canvas pixels
+  if(l.pdfNativeW&&l.pdfNativeH&&spec&&spec.w&&spec.h){
     const rotDeg=Math.round(((l.rotation||0)*180/Math.PI)%360+360)%360;
     const swapped=(rotDeg===90||rotDeg===270);
+    const fp=getRotatedFootprint(l);
     const nativeWmm=swapped?l.pdfNativeH:l.pdfNativeW;
     const nativeHmm=swapped?l.pdfNativeW:l.pdfNativeH;
-    const canvasPxPerMm=TW/spec.w;
-    const nativeWpx=nativeWmm*canvasPxPerMm;
-    const nativeHpx=nativeHmm*canvasPxPerMm;
-    const fp=getRotatedFootprint(l);
-    const pxPerImgPx=nativeWpx/fp.w;
-    l.scale=Math.max(TW/nativeWpx,TH/nativeHpx)*pxPerImgPx;
+    const scaleW=(TW/fp.w)*(nativeWmm/spec.w);
+    const scaleH=(TH/fp.h)*(nativeHmm/spec.h);
+    l.scale=Math.max(scaleW,scaleH);
   }else{
     const fp=getRotatedFootprint(l);
     l.scale=Math.max(TW/fp.w,TH/fp.h);
@@ -1664,13 +1659,16 @@ async function loadLayerFile(file){
       const img=new Image();
       img.onload=()=>{captureState('Add layer');const l=addLayer(file.name,img,upscaleDataUrl,'image/png');if(l){l.pdfNativeW=pdfNativeW;l.pdfNativeH=pdfNativeH;l.img=img;l.displayDataUrl=displayDataUrl;
         // Auto-scale PDF to fill trim area using physical mm dimensions
+        // l.scale means: canvas_px = img_px * scale
+        // We want the PDF's physical width in mm to map to TW canvas px
+        // => scale = (TW / spec.w) * (pdfNativeW_mm / img.width_px) ... simplified:
+        // => scale = TW * pdfNativeW / (spec.w * img.width)
         const spec=currentSku?SKU_SPECS[currentSku]:null;
-        if(spec&&l.pdfNativeW&&l.pdfNativeH){
-          const canvasPxPerMm=TW/spec.w;
-          const nativeWpx=l.pdfNativeW*canvasPxPerMm;
-          const nativeHpx=l.pdfNativeH*canvasPxPerMm;
-          const pxPerImgPx=nativeWpx/l.img.width;
-          l.scale=Math.min(TW/nativeWpx,TH/nativeHpx)*pxPerImgPx;
+        if(spec&&spec.w&&spec.h&&l.pdfNativeW&&l.pdfNativeH){
+          const scaleW=(TW/l.img.width)*(l.pdfNativeW/spec.w);
+          const scaleH=(TH/l.img.height)*(l.pdfNativeH/spec.h);
+          // Use contain (Math.min) so whole artwork is visible initially
+          l.scale=Math.min(scaleW,scaleH);
         }
         centreOnTemplate(l);syncControlsToActive();draw();}};
       img.src=displayDataUrl;
