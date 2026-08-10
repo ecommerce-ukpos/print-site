@@ -1640,22 +1640,24 @@ async function loadLayerFile(file){
       const ab=await file.arrayBuffer();
       const pdf=await pdfjsLib.getDocument({data:ab}).promise;
       const page=await pdf.getPage(1);
-      // Display render — high res for sharp canvas preview
-      const viewport=page.getViewport({scale:3.0});
+      const nativeViewport=page.getViewport({scale:1.0});
+      const pdfNativeW=nativeViewport.width*(25.4/72);
+      const pdfNativeH=nativeViewport.height*(25.4/72);
+      // Display render — scale to ~150dpi equivalent for display; willReadFrequently needed for SMask compositing
+      const MAX_DISPLAY_PX=3000;
+      const displayScale=Math.min(2.0, MAX_DISPLAY_PX/Math.max(nativeViewport.width,nativeViewport.height));
+      const viewport=page.getViewport({scale:displayScale});
       const oc=document.createElement('canvas');
-      oc.width=viewport.width;oc.height=viewport.height;
-      const ctx=oc.getContext('2d');
+      oc.width=Math.round(viewport.width);oc.height=Math.round(viewport.height);
+      const ctx=oc.getContext('2d',{willReadFrequently:true});
       await page.render({canvasContext:ctx,viewport}).promise;
       const displayDataUrl=oc.toDataURL('image/png');
       // Upscale render — 1x (72dpi equivalent) keeps the file small enough for the AI upscaler
       const vpUpscale=page.getViewport({scale:1.0});
       const ocUpscale=document.createElement('canvas');
       ocUpscale.width=vpUpscale.width;ocUpscale.height=vpUpscale.height;
-      await page.render({canvasContext:ocUpscale.getContext('2d'),viewport:vpUpscale}).promise;
+      await page.render({canvasContext:ocUpscale.getContext('2d',{willReadFrequently:true}),viewport:vpUpscale}).promise;
       const upscaleDataUrl=ocUpscale.toDataURL('image/png');
-      const nativeViewport=page.getViewport({scale:1.0});
-      const pdfNativeW=nativeViewport.width*(25.4/72);
-      const pdfNativeH=nativeViewport.height*(25.4/72);
       const img=new Image();
       img.onload=()=>{captureState('Add layer');const l=addLayer(file.name,img,upscaleDataUrl,'image/png');if(l){l.pdfNativeW=pdfNativeW;l.pdfNativeH=pdfNativeH;l.img=img;l.displayDataUrl=displayDataUrl;
         // Auto-scale PDF to fill trim area using physical mm dimensions
