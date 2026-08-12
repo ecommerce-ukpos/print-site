@@ -4,316 +4,371 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Artwork Submissions — PrintSite</title>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/react/18.2.0/umd/react.production.min.js"></script>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/react-dom/18.2.0/umd/react-dom.production.min.js"></script>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/babel-standalone/7.23.2/babel.min.js"></script>
   <style>
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-    body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; background: #f8fafc; color: #0f172a; }
+    body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; background: #f8fafc; color: #0f172a; font-size: 12px; }
     ::-webkit-scrollbar { height: 6px; width: 6px; }
     ::-webkit-scrollbar-track { background: #f1f5f9; }
     ::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 3px; }
+
+    /* Header */
+    #header {
+      background: #fff; border-bottom: 1px solid #e2e8f0;
+      padding: 12px 20px; position: sticky; top: 0; z-index: 10;
+      display: flex; align-items: center; gap: 12px; flex-wrap: wrap;
+    }
+    #header-title { font-size: 16px; font-weight: 700; color: #0f172a; letter-spacing: -0.02em; }
+    #header-sub { font-size: 11px; color: #64748b; margin-top: 2px; }
+    #header-sub span { margin: 0 2px; }
+    .filter-input {
+      padding: 7px 12px; border: 1px solid #e2e8f0; border-radius: 6px;
+      font-size: 12px; width: 190px; background: #f8fafc; font-family: inherit;
+      outline: none;
+    }
+    .filter-select {
+      padding: 7px 10px; border: 1px solid #e2e8f0; border-radius: 6px;
+      font-size: 12px; background: #fff; color: #374151; cursor: pointer;
+      font-family: inherit;
+    }
+    #shown-count { margin-left: auto; font-size: 12px; color: #94a3b8; }
+
+    /* Table */
+    #table-wrap { overflow-x: auto; }
+    table { border-collapse: collapse; width: max-content; min-width: 100%; }
+    thead th {
+      padding: 10px 10px; text-align: left; white-space: nowrap;
+      font-weight: 600; font-size: 11px; color: #475569;
+      letter-spacing: 0.05em; text-transform: uppercase; cursor: pointer;
+      user-select: none; background: #f1f5f9;
+      position: sticky; top: 56px; z-index: 2;
+      border-bottom: 2px solid #e2e8f0;
+    }
+    thead th.sort-active { color: #1e40af; background: #e8eef5; }
+    thead th .sort-icon { opacity: 0.25; font-size: 10px; }
+    thead th.sort-active .sort-icon { opacity: 1; }
+    tbody tr { border-bottom: 1px solid #f1f5f9; }
+    tbody tr:nth-child(even) td { background: #f8fafc; }
+    tbody tr:nth-child(odd)  td { background: #fff; }
+    tbody tr:hover td { background: #eff6ff !important; }
+    td { padding: 7px 10px; white-space: nowrap; }
+    td.right { text-align: right; }
+    td.center { text-align: center; }
+
+    /* Badges */
+    .badge {
+      display: inline-block; border-radius: 4px; padding: 2px 7px;
+      font-size: 11px; font-weight: 600; white-space: nowrap;
+    }
+    .badge-ext {
+      background: #f1f5f9; color: #475569; border-radius: 3px;
+      padding: 1px 5px; font-size: 10px; font-family: monospace; font-weight: 600;
+    }
+    .badge-sku {
+      font-family: monospace; font-size: 11px; font-weight: 600;
+      color: #1e40af; background: #eff6ff; padding: 2px 6px; border-radius: 4px;
+    }
+    .colour-dot {
+      display: inline-block; width: 8px; height: 8px;
+      border-radius: 50%; margin-right: 4px; vertical-align: middle;
+    }
+    .tmpl-yes { color: #059669; font-weight: 700; font-size: 14px; }
+    .tmpl-no  { color: #dc2626; font-weight: 700; font-size: 14px; }
+    .tmpl-na  { color: #9ca3af; }
+    .mono { font-family: monospace; font-size: 11px; }
+    .ellipsis { overflow: hidden; text-overflow: ellipsis; display: block; }
+    .muted { color: #9ca3af; }
+    .dpi-ok  { color: #059669; font-weight: 600; }
+    .dpi-bad { color: #dc2626; font-weight: 600; }
+
+    /* Action buttons */
+    .btn {
+      display: inline-block; padding: 4px 10px; border: none; border-radius: 5px;
+      font-size: 11px; font-weight: 600; cursor: pointer; font-family: inherit;
+      white-space: nowrap; text-decoration: none;
+    }
+    .btn-assess   { background: #F47920; color: #fff; }
+    .btn-designer { background: #0f172a; color: #fff; }
+    .btn-disabled { background: #f1f5f9; color: #94a3b8; cursor: default; }
+
+    #loading, #error-msg {
+      display: flex; align-items: center; justify-content: center;
+      height: 60vh; font-size: 14px; color: #94a3b8;
+    }
+    #error-msg { color: #dc2626; }
   </style>
 </head>
 <body>
-  <div id="root"></div>
-  <script type="text/babel">
-    const { useState, useEffect, useMemo } = React;
 
-    const SUPABASE_URL = "https://fqaxuhbcwoikeldnxuvv.supabase.co";
-    const SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImZxYXh1aGJjd29pa2VsZG54dXZ2Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDMwNzQyMTEsImV4cCI6MjA1ODY1MDIxMX0.q0RHsNYE7OxNfv2qvNWQJl2wkqWk0bL2l_KlsXirKzM";
+<div id="header">
+  <div>
+    <div id="header-title">Artwork Submissions</div>
+    <div id="header-sub">
+      <span id="cnt-total">—</span> files &middot;
+      <span id="cnt-matched">—</span> template matched &middot;
+      <span id="cnt-pending" style="color:#475569">— pending</span> &middot;
+      <span id="cnt-hold" style="color:#c2410c">— on hold</span> &middot;
+      <span id="cnt-approved" style="color:#065f46">— approved</span>
+    </div>
+  </div>
+  <input class="filter-input" id="f-search" placeholder="Search any column…" oninput="applyFilters()" />
+  <select class="filter-select" id="f-assessor" onchange="applyFilters()">
+    <option value="">All assessor statuses</option>
+    <option value="pending">Pending</option>
+    <option value="on_hold">On Hold</option>
+    <option value="approved">Approved</option>
+  </select>
+  <select class="filter-select" id="f-upscale" onchange="applyFilters()">
+    <option value="">All upscale statuses</option>
+    <option value="none">Ready</option>
+    <option value="raster">Upscale needed</option>
+    <option value="vector">Vectorise</option>
+    <option value="flag">Flagged</option>
+  </select>
+  <select class="filter-select" id="f-template" onchange="applyFilters()">
+    <option value="">All templates</option>
+    <option value="matched">Template matched</option>
+    <option value="missing">Template missing</option>
+  </select>
+  <select class="filter-select" id="f-sku" onchange="applyFilters()">
+    <option value="">All SKUs</option>
+  </select>
+  <span id="shown-count"></span>
+</div>
 
-    const UPSCALE = {
-      none:   { bg: "#d1fae5", text: "#065f46", label: "Ready"     },
-      raster: { bg: "#fef3c7", text: "#92400e", label: "Upscale"   },
-      vector: { bg: "#dbeafe", text: "#1e40af", label: "Vectorise" },
-      flag:   { bg: "#fee2e2", text: "#991b1b", label: "Flag"      },
-    };
+<div id="loading">Loading artwork submissions…</div>
+<div id="error-msg" style="display:none"></div>
+<div id="table-wrap" style="display:none">
+  <table id="main-table">
+    <thead id="thead"></thead>
+    <tbody id="tbody"></tbody>
+  </table>
+  <div id="empty-msg" style="display:none;text-align:center;padding:64px 24px;color:#94a3b8">No rows match the current filters.</div>
+</div>
 
-    const ASSESSOR_STATUS = {
-      pending:  { bg: "#f1f5f9", text: "#475569", label: "Pending"  },
-      on_hold:  { bg: "#fff7ed", text: "#c2410c", label: "On Hold"  },
-      approved: { bg: "#d1fae5", text: "#065f46", label: "Approved" },
-    };
+<script>
+const SUPA_URL = 'https://fqaxuhbcwoikeldnxuvv.supabase.co';
+const SUPA_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImZxYXh1aGJjd29pa2VsZG54dXZ2Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDMwNzQyMTEsImV4cCI6MjA1ODY1MDIxMX0.q0RHsNYE7OxNfv2qvNWQJl2wkqWk0bL2l_KlsXirKzM';
 
-    const COLS = [
-      { key: "company",             label: "Company",      w: 160 },
-      { key: "customer_name",       label: "Customer",     w: 130 },
-      { key: "sage_order",          label: "Sage Order",   w: 112 },
-      { key: "magento_order",       label: "Magento",      w: 100 },
-      { key: "sku",                 label: "SKU",          w: 170 },
-      { key: "template_match",      label: "Tmpl",         w: 52  },
-      { key: "asset_filename",      label: "File",         w: 200 },
-      { key: "file_ext",            label: "Ext",          w: 46  },
-      { key: "file_size_kb",        label: "KB",           w: 70  },
-      { key: "artwork_class",       label: "Class",        w: 125 },
-      { key: "colour_mode",         label: "Colour",       w: 70  },
-      { key: "width_px",            label: "W px",         w: 62  },
-      { key: "height_px",           label: "H px",         w: 62  },
-      { key: "dpi_reported",        label: "DPI",          w: 50  },
-      { key: "upscale_recommended", label: "Upscale",      w: 86  },
-      { key: "assessor_status",     label: "Assessed",     w: 88  },
-      { key: "finished_w_mm",       label: "Tmpl W",       w: 60  },
-      { key: "finished_h_mm",       label: "Tmpl H",       w: 60  },
-      { key: "notes",               label: "Notes",        w: 240 },
-    ];
+const UPSCALE = {
+  none:   { bg:'#d1fae5', text:'#065f46', label:'Ready'     },
+  raster: { bg:'#fef3c7', text:'#92400e', label:'Upscale'   },
+  vector: { bg:'#dbeafe', text:'#1e40af', label:'Vectorise' },
+  flag:   { bg:'#fee2e2', text:'#991b1b', label:'Flag'       },
+};
+const ASSESSOR = {
+  pending:  { bg:'#f1f5f9', text:'#475569', label:'Pending'  },
+  on_hold:  { bg:'#fff7ed', text:'#c2410c', label:'On Hold'  },
+  approved: { bg:'#d1fae5', text:'#065f46', label:'Approved' },
+};
+const COLS = [
+  { key:'company',             label:'Company',   w:160 },
+  { key:'customer_name',       label:'Customer',  w:130 },
+  { key:'sage_order',          label:'Sage Order',w:112 },
+  { key:'magento_order',       label:'Magento',   w:100 },
+  { key:'sku',                 label:'SKU',       w:170 },
+  { key:'template_match',      label:'Tmpl',      w:52, center:true },
+  { key:'asset_filename',      label:'File',      w:200 },
+  { key:'file_ext',            label:'Ext',       w:46, center:true },
+  { key:'file_size_kb',        label:'KB',        w:70, right:true },
+  { key:'artwork_class',       label:'Class',     w:125 },
+  { key:'colour_mode',         label:'Colour',    w:70 },
+  { key:'width_px',            label:'W px',      w:62, right:true },
+  { key:'height_px',           label:'H px',      w:62, right:true },
+  { key:'dpi_reported',        label:'DPI',       w:50, right:true },
+  { key:'upscale_recommended', label:'Upscale',   w:86 },
+  { key:'assessor_status',     label:'Assessed',  w:88 },
+  { key:'finished_w_mm',       label:'Tmpl W',    w:60, right:true },
+  { key:'finished_h_mm',       label:'Tmpl H',    w:60, right:true },
+  { key:'notes',               label:'Notes',     w:240 },
+];
 
-    function UpscaleBadge({ value }) {
-      if (!value) return <span style={{ color: "#9ca3af", fontSize: 11 }}>—</span>;
-      const c = UPSCALE[value] || { bg: "#f3f4f6", text: "#374151", label: value };
-      return <span style={{ background: c.bg, color: c.text, borderRadius: 4, padding: "2px 7px", fontSize: 11, fontWeight: 600, whiteSpace: "nowrap" }}>{c.label}</span>;
+let allRows = [], filteredRows = [], sortKey = 'sage_order', sortDir = 1;
+
+async function sf(path) {
+  const r = await fetch(SUPA_URL + path, { headers: { apikey: SUPA_KEY, Authorization: 'Bearer ' + SUPA_KEY } });
+  return r.json();
+}
+
+async function init() {
+  try {
+    const [aa, om, ss] = await Promise.all([
+      sf('/rest/v1/artwork_analysis?select=id,sage_order,magento_order,asset_filename,file_ext,file_size_kb,sku,artwork_class,upscale_recommended,colour_mode,width_px,height_px,dpi_reported,notes,assessor_status,assessor_note&limit=1000'),
+      sf('/rest/v1/order_manifest?select=sage_order,company,customer_name'),
+      sf('/rest/v1/sku_specs?select=sku_file,source_pdf,finished_w_mm,finished_h_mm&sku_file=not.ilike.ARCHIVED*'),
+    ]);
+
+    const omMap = {};
+    om.forEach(o => { omMap[o.sage_order] = o; });
+
+    function findTmpl(sku) {
+      if (!sku) return null;
+      const u = sku.toUpperCase();
+      return ss.find(s => s.sku_file && (s.sku_file.toUpperCase().includes(u) || (s.source_pdf||'').toUpperCase().includes(u))) || null;
     }
 
-    function AssessorBadge({ value }) {
-      const s = ASSESSOR_STATUS[value] || ASSESSOR_STATUS.pending;
-      return <span style={{ background: s.bg, color: s.text, borderRadius: 4, padding: "2px 7px", fontSize: 11, fontWeight: 600, whiteSpace: "nowrap", border: `1px solid ${s.text}33` }}>{s.label}</span>;
-    }
-
-    function Th({ col, sort, onSort }) {
-      const active = sort.key === col.key;
-      return (
-        <th onClick={() => onSort(col.key)} style={{
-          padding: "10px 10px", textAlign: "left", whiteSpace: "nowrap",
-          fontWeight: 600, fontSize: 11, color: active ? "#1e40af" : "#475569",
-          letterSpacing: "0.05em", textTransform: "uppercase", cursor: "pointer",
-          userSelect: "none", width: col.w, minWidth: col.w,
-          background: active ? "#e8eef5" : "#f1f5f9",
-          position: "sticky", top: 56, zIndex: 2, borderBottom: "2px solid #e2e8f0",
-        }}>
-          {col.label}&nbsp;
-          <span style={{ opacity: active ? 1 : 0.3, fontSize: 10 }}>
-            {active ? (sort.dir === "asc" ? "↑" : "↓") : "⇅"}
-          </span>
-        </th>
-      );
-    }
-
-    async function supaFetch(path) {
-      const r = await fetch(SUPABASE_URL + path, {
-        headers: { apikey: SUPABASE_KEY, Authorization: "Bearer " + SUPABASE_KEY }
+    allRows = aa.map(row => {
+      const m = omMap[row.sage_order] || {};
+      const t = findTmpl(row.sku);
+      return Object.assign({}, row, {
+        company:       m.company       || '—',
+        customer_name: m.customer_name || '—',
+        _tmpl:         t,
+        template_match: t ? '✓' : (row.sku ? '✗' : '—'),
+        finished_w_mm:  t ? t.finished_w_mm : null,
+        finished_h_mm:  t ? t.finished_h_mm : null,
+        assessor_status: row.assessor_status || 'pending',
       });
-      return r.json();
+    });
+
+    // Populate SKU dropdown
+    const skus = [...new Set(allRows.map(r => r.sku).filter(Boolean))].sort();
+    const skuSel = document.getElementById('f-sku');
+    skus.forEach(s => { const o = document.createElement('option'); o.value = s; o.textContent = s; skuSel.appendChild(o); });
+
+    // Build thead
+    const thead = document.getElementById('thead');
+    let thHtml = '<tr>';
+    COLS.forEach((c, i) => {
+      thHtml += `<th style="width:${c.w}px;min-width:${c.w}px" onclick="doSort('${c.key}')" id="th-${c.key}">
+        ${c.label} <span class="sort-icon" id="si-${c.key}">⇅</span></th>`;
+    });
+    thHtml += '<th style="width:200px;min-width:200px;position:sticky;top:56px;z-index:2;background:#f1f5f9;border-bottom:2px solid #e2e8f0">Actions</th></tr>';
+    thead.innerHTML = thHtml;
+
+    document.getElementById('loading').style.display = 'none';
+    document.getElementById('table-wrap').style.display = '';
+    applyFilters();
+  } catch(e) {
+    document.getElementById('loading').style.display = 'none';
+    const em = document.getElementById('error-msg');
+    em.style.display = 'flex';
+    em.textContent = 'Error: ' + e.message;
+  }
+}
+
+function applyFilters() {
+  const search   = document.getElementById('f-search').value.toLowerCase();
+  const assessor = document.getElementById('f-assessor').value;
+  const upscale  = document.getElementById('f-upscale').value;
+  const template = document.getElementById('f-template').value;
+  const sku      = document.getElementById('f-sku').value;
+
+  filteredRows = allRows.filter(r => {
+    if (search   && !Object.values(r).some(v => v && String(v).toLowerCase().includes(search))) return false;
+    if (assessor && r.assessor_status !== assessor) return false;
+    if (upscale  && r.upscale_recommended !== upscale) return false;
+    if (template === 'matched' && !r._tmpl) return false;
+    if (template === 'missing' && (r._tmpl || !r.sku)) return false;
+    if (sku      && r.sku !== sku) return false;
+    return true;
+  });
+
+  doSort(sortKey, true);
+  updateCounts();
+}
+
+function doSort(key, keepDir) {
+  if (!keepDir) sortDir = (sortKey === key) ? -sortDir : 1;
+  sortKey = key;
+
+  filteredRows.sort((a, b) => {
+    let av = a[key] ?? '', bv = b[key] ?? '';
+    return String(av).localeCompare(String(bv), undefined, { numeric: true }) * sortDir;
+  });
+
+  // Update header indicators
+  document.querySelectorAll('thead th').forEach(th => th.classList.remove('sort-active'));
+  document.querySelectorAll('.sort-icon').forEach(si => si.textContent = '⇅');
+  const activeTh = document.getElementById('th-' + key);
+  const activeSi = document.getElementById('si-' + key);
+  if (activeTh) activeTh.classList.add('sort-active');
+  if (activeSi) activeSi.textContent = sortDir === 1 ? '↑' : '↓';
+
+  renderTable();
+}
+
+function badge(label, bg, text) {
+  return `<span class="badge" style="background:${bg};color:${text}">${label}</span>`;
+}
+
+function renderTable() {
+  const tbody = document.getElementById('tbody');
+  const empty = document.getElementById('empty-msg');
+
+  if (!filteredRows.length) {
+    tbody.innerHTML = '';
+    empty.style.display = '';
+    document.getElementById('shown-count').textContent = '0 shown';
+    return;
+  }
+  empty.style.display = 'none';
+  document.getElementById('shown-count').textContent = filteredRows.length + ' shown';
+
+  const colourDot = mode => {
+    const bg = mode === 'colour' ? '#f59e0b' : mode === 'greyscale' ? '#94a3b8' : '#e2e8f0';
+    return `<span class="colour-dot" style="background:${bg}"></span>${mode || '—'}`;
+  };
+
+  const rows = filteredRows.map(r => {
+    const as = r.assessor_status || 'pending';
+    const asCfg = ASSESSOR[as] || ASSESSOR.pending;
+    const upCfg = UPSCALE[r.upscale_recommended];
+    const upBadge = upCfg ? badge(upCfg.label, upCfg.bg, upCfg.text) : '<span class="muted">—</span>';
+    const asBadge = `<span class="badge" style="background:${asCfg.bg};color:${asCfg.text};border:1px solid ${asCfg.text}33">${asCfg.label}</span>`;
+    const dpiClass = !r.dpi_reported ? 'muted' : r.dpi_reported <= 72 ? 'dpi-bad' : 'dpi-ok';
+    const tmplClass = r.template_match === '✓' ? 'tmpl-yes' : r.template_match === '✗' ? 'tmpl-no' : 'tmpl-na';
+
+    // Actions
+    const assessUrl = `/artwork-assessor/?aa_id=${r.id}&sku=${encodeURIComponent(r.sku||'')}&order=${r.sage_order}`;
+    let actions = `<button class="btn btn-assess" onclick="window.open('${assessUrl}','_blank')">Assess</button>`;
+    if (as === 'approved' && r._tmpl) {
+      const designUrl = `/designer/?aa_id=${r.id}&sku=${encodeURIComponent(r.sku||'')}&order=${r.sage_order}`;
+      actions += ` <button class="btn btn-designer" onclick="window.open('${designUrl}','_blank')">Designer →</button>`;
+    } else if (as === 'approved' && !r._tmpl) {
+      actions += ` <span class="muted">No template</span>`;
     }
 
-    export default function ArtworkList() {
-      const [rows, setRows]         = useState([]);
-      const [loading, setLoading]   = useState(true);
-      const [error, setError]       = useState(null);
-      const [sort, setSort]         = useState({ key: "sage_order", dir: "asc" });
-      const [search, setSearch]     = useState("");
-      const [fUpscale, setFUpscale]         = useState("all");
-      const [fTemplate, setFTemplate]       = useState("all");
-      const [fSku, setFSku]                 = useState("all");
-      const [fAssessor, setFAssessor]       = useState("all");
+    return `<tr>
+      <td><span class="ellipsis" style="max-width:150px;font-weight:600" title="${esc(r.company)}">${esc(r.company)}</span></td>
+      <td><span class="ellipsis" style="max-width:120px;color:#475569" title="${esc(r.customer_name)}">${esc(r.customer_name)}</span></td>
+      <td><span class="mono color:#475569">${r.sage_order}</span></td>
+      <td><span class="mono muted">${r.magento_order||'—'}</span></td>
+      <td>${r.sku ? `<span class="badge-sku">${r.sku}</span>` : '<span class="muted">No SKU</span>'}</td>
+      <td class="center"><span class="${tmplClass}">${r.template_match}</span></td>
+      <td><span class="ellipsis mono" style="max-width:190px;color:#374151" title="${esc(r.asset_filename)}">${esc(r.asset_filename)}</span></td>
+      <td class="center"><span class="badge-ext">${(r.file_ext||'').replace('.','').toUpperCase()}</span></td>
+      <td class="right" style="color:#64748b">${r.file_size_kb ? Number(r.file_size_kb).toLocaleString() : '—'}</td>
+      <td style="color:#475569">${r.artwork_class||'—'}</td>
+      <td>${colourDot(r.colour_mode)}</td>
+      <td class="right" style="color:#64748b">${r.width_px ? r.width_px.toLocaleString() : '—'}</td>
+      <td class="right" style="color:#64748b">${r.height_px ? r.height_px.toLocaleString() : '—'}</td>
+      <td class="right"><span class="${dpiClass}">${r.dpi_reported||'—'}</span></td>
+      <td>${upBadge}</td>
+      <td>${asBadge}</td>
+      <td class="right" style="color:#64748b;font-size:11px">${r.finished_w_mm||'—'}</td>
+      <td class="right" style="color:#64748b;font-size:11px">${r.finished_h_mm||'—'}</td>
+      <td><span class="ellipsis" style="max-width:230px;color:#64748b;font-size:11px" title="${esc(r.notes||'')}">${esc(r.notes)||'—'}</span></td>
+      <td style="white-space:nowrap">${actions}</td>
+    </tr>`;
+  });
 
-      useEffect(() => {
-        async function load() {
-          try {
-            const [aa, om, ss] = await Promise.all([
-              supaFetch("/rest/v1/artwork_analysis?select=id,sage_order,magento_order,asset_filename,file_ext,file_size_kb,sku,artwork_class,upscale_recommended,colour_mode,width_px,height_px,dpi_reported,notes,assessor_status,assessor_note&limit=1000"),
-              supaFetch("/rest/v1/order_manifest?select=sage_order,magento_order,company,customer_name"),
-              supaFetch("/rest/v1/sku_specs?select=sku_file,source_pdf,finished_w_mm,finished_h_mm&sku_file=not.ilike.ARCHIVED*"),
-            ]);
-            const omMap = {};
-            om.forEach(o => { omMap[o.sage_order] = o; });
-            function findTemplate(sku) {
-              if (!sku) return null;
-              const u = sku.toUpperCase();
-              return ss.find(s => s.sku_file && (s.sku_file.toUpperCase().includes(u) || (s.source_pdf||"").toUpperCase().includes(u))) || null;
-            }
-            const merged = aa.map(row => {
-              const m = omMap[row.sage_order] || {};
-              const t = findTemplate(row.sku);
-              return {
-                ...row,
-                company:       m.company       || "—",
-                customer_name: m.customer_name || "—",
-                _tmpl: t,
-                template_match: t ? "✓" : (row.sku ? "✗" : "—"),
-                finished_w_mm:  t ? t.finished_w_mm : null,
-                finished_h_mm:  t ? t.finished_h_mm : null,
-              };
-            });
-            setRows(merged);
-          } catch(e) { setError(e.message); }
-          finally { setLoading(false); }
-        }
-        load();
-      }, []);
+  tbody.innerHTML = rows.join('');
+}
 
-      const skuOptions = useMemo(() => {
-        const s = new Set(rows.map(r => r.sku).filter(Boolean));
-        return ["all", ...Array.from(s).sort()];
-      }, [rows]);
+function updateCounts() {
+  document.getElementById('cnt-total').textContent   = allRows.length;
+  document.getElementById('cnt-matched').textContent = allRows.filter(r => r._tmpl).length;
+  document.getElementById('cnt-pending').textContent = allRows.filter(r => r.assessor_status === 'pending').length + ' pending';
+  document.getElementById('cnt-hold').textContent    = allRows.filter(r => r.assessor_status === 'on_hold').length + ' on hold';
+  document.getElementById('cnt-approved').textContent= allRows.filter(r => r.assessor_status === 'approved').length + ' approved';
+}
 
-      const sorted = useMemo(() => {
-        let data = [...rows];
-        if (search) { const q = search.toLowerCase(); data = data.filter(r => Object.values(r).some(v => v && String(v).toLowerCase().includes(q))); }
-        if (fUpscale !== "all")  data = data.filter(r => r.upscale_recommended === fUpscale);
-        if (fTemplate === "matched") data = data.filter(r => r._tmpl);
-        if (fTemplate === "missing") data = data.filter(r => !r._tmpl && r.sku);
-        if (fSku !== "all")      data = data.filter(r => r.sku === fSku);
-        if (fAssessor !== "all") data = data.filter(r => (r.assessor_status || "pending") === fAssessor);
-        data.sort((a, b) => {
-          let av = a[sort.key] ?? "", bv = b[sort.key] ?? "";
-          const cmp = String(av).localeCompare(String(bv), undefined, { numeric: true });
-          return sort.dir === "asc" ? cmp : -cmp;
-        });
-        return data;
-      }, [rows, sort, search, fUpscale, fTemplate, fSku, fAssessor]);
+function esc(s) {
+  if (!s) return '';
+  return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+}
 
-      function toggleSort(key) {
-        setSort(s => s.key === key ? { key, dir: s.dir === "asc" ? "desc" : "asc" } : { key, dir: "asc" });
-      }
-
-      const counts = useMemo(() => ({
-        total:    rows.length,
-        matched:  rows.filter(r => r._tmpl).length,
-        pending:  rows.filter(r => !r.assessor_status || r.assessor_status === "pending").length,
-        on_hold:  rows.filter(r => r.assessor_status === "on_hold").length,
-        approved: rows.filter(r => r.assessor_status === "approved").length,
-      }), [rows]);
-
-      const sel = { padding: "7px 10px", border: "1px solid #e2e8f0", borderRadius: 6, fontSize: 12, background: "#fff", color: "#374151", cursor: "pointer" };
-
-      if (loading) return <div style={{ display:"flex", alignItems:"center", justifyContent:"center", height:"100vh", color:"#94a3b8", fontSize:14 }}>Loading artwork submissions…</div>;
-      if (error)   return <div style={{ padding:32, color:"#dc2626", fontSize:13 }}>Error: {error}</div>;
-
-      return (
-        <div style={{ minHeight: "100vh" }}>
-          {/* Sticky header */}
-          <div style={{ background: "#fff", borderBottom: "1px solid #e2e8f0", padding: "12px 20px", position: "sticky", top: 0, zIndex: 10, display: "flex", alignItems: "center", gap: 12, flexWrap: "wrap" }}>
-            <div style={{ marginRight: 8 }}>
-              <div style={{ fontSize: 16, fontWeight: 700, color: "#0f172a", letterSpacing: "-0.02em" }}>Artwork Submissions</div>
-              <div style={{ fontSize: 11, color: "#64748b", marginTop: 1 }}>
-                {counts.total} files &middot; {counts.matched} template matched &middot;&nbsp;
-                <span style={{ color: "#475569" }}>{counts.pending} pending</span> &middot;&nbsp;
-                <span style={{ color: "#c2410c" }}>{counts.on_hold} on hold</span> &middot;&nbsp;
-                <span style={{ color: "#065f46" }}>{counts.approved} approved</span>
-              </div>
-            </div>
-
-            <input value={search} onChange={e => setSearch(e.target.value)} placeholder="Search any column…" style={{ ...sel, width: 190, padding: "7px 12px" }} />
-
-            <select value={fAssessor} onChange={e => setFAssessor(e.target.value)} style={sel}>
-              <option value="all">All assessor statuses</option>
-              <option value="pending">Pending</option>
-              <option value="on_hold">On Hold</option>
-              <option value="approved">Approved</option>
-            </select>
-
-            <select value={fUpscale} onChange={e => setFUpscale(e.target.value)} style={sel}>
-              <option value="all">All upscale statuses</option>
-              <option value="none">Ready</option>
-              <option value="raster">Upscale needed</option>
-              <option value="vector">Vectorise</option>
-              <option value="flag">Flagged</option>
-            </select>
-
-            <select value={fTemplate} onChange={e => setFTemplate(e.target.value)} style={sel}>
-              <option value="all">All templates</option>
-              <option value="matched">Template matched</option>
-              <option value="missing">Template missing</option>
-            </select>
-
-            <select value={fSku} onChange={e => setFSku(e.target.value)} style={{ ...sel, maxWidth: 190 }}>
-              {skuOptions.map(s => <option key={s} value={s}>{s === "all" ? "All SKUs" : s}</option>)}
-            </select>
-
-            <span style={{ marginLeft: "auto", fontSize: 12, color: "#94a3b8" }}>{sorted.length} shown</span>
-          </div>
-
-          {/* Table */}
-          <div style={{ overflowX: "auto" }}>
-            <table style={{ borderCollapse: "collapse", width: "max-content", minWidth: "100%", fontSize: 12 }}>
-              <thead>
-                <tr>
-                  {COLS.map(col => <Th key={col.key} col={col} sort={sort} onSort={toggleSort} />)}
-                  <th style={{ padding: "10px 10px", textAlign: "left", fontWeight: 600, fontSize: 11, color: "#475569", letterSpacing: "0.05em", textTransform: "uppercase", background: "#f1f5f9", position: "sticky", top: 56, zIndex: 2, borderBottom: "2px solid #e2e8f0", whiteSpace: "nowrap", width: 200, minWidth: 200 }}>
-                    Actions
-                  </th>
-                </tr>
-              </thead>
-              <tbody>
-                {sorted.map((row, i) => {
-                  const bg = i % 2 === 0 ? "#fff" : "#f8fafc";
-                  const td = (content, extra = {}) => (
-                    <td style={{ padding: "7px 10px", borderBottom: "1px solid #f1f5f9", whiteSpace: "nowrap", background: bg, ...extra }}>{content}</td>
-                  );
-                  const assessorStatus = row.assessor_status || "pending";
-                  return (
-                    <tr key={row.id}
-                      onMouseEnter={e => Array.from(e.currentTarget.cells).forEach(c => c.style.background = "#eff6ff")}
-                      onMouseLeave={e => Array.from(e.currentTarget.cells).forEach(c => c.style.background = bg)}>
-
-                      {td(<span title={row.company} style={{ fontWeight:600, color:"#0f172a", display:"block", overflow:"hidden", textOverflow:"ellipsis", maxWidth:150 }}>{row.company}</span>)}
-                      {td(<span title={row.customer_name} style={{ color:"#475569", display:"block", overflow:"hidden", textOverflow:"ellipsis", maxWidth:120 }}>{row.customer_name}</span>)}
-                      {td(<span style={{ fontFamily:"monospace", fontSize:11, color:"#475569" }}>{row.sage_order}</span>)}
-                      {td(<span style={{ fontFamily:"monospace", fontSize:11, color:"#94a3b8" }}>{row.magento_order || "—"}</span>)}
-                      {td(row.sku
-                        ? <span style={{ fontFamily:"monospace", fontSize:11, fontWeight:600, color:"#1e40af", background:"#eff6ff", padding:"2px 6px", borderRadius:4 }}>{row.sku}</span>
-                        : <span style={{ color:"#9ca3af", fontSize:11 }}>No SKU</span>
-                      )}
-                      {td(<span style={{ fontWeight:700, fontSize:14, color: row.template_match==="✓"?"#059669":row.template_match==="✗"?"#dc2626":"#9ca3af" }}>{row.template_match}</span>, { textAlign:"center" })}
-                      {td(<span title={row.asset_filename} style={{ fontFamily:"monospace", fontSize:11, color:"#374151", display:"block", overflow:"hidden", textOverflow:"ellipsis", maxWidth:190 }}>{row.asset_filename}</span>)}
-                      {td(<span style={{ background:"#f1f5f9", color:"#475569", borderRadius:3, padding:"1px 5px", fontSize:10, fontFamily:"monospace", fontWeight:600 }}>{(row.file_ext||"").replace(".","").toUpperCase()}</span>, { textAlign:"center" })}
-                      {td(<span style={{ color:"#64748b" }}>{row.file_size_kb ? Number(row.file_size_kb).toLocaleString() : "—"}</span>, { textAlign:"right" })}
-                      {td(<span style={{ color:"#475569" }}>{row.artwork_class || "—"}</span>)}
-                      {td(<span style={{ display:"flex", alignItems:"center", gap:4 }}>
-                        <span style={{ width:8, height:8, borderRadius:"50%", flexShrink:0, background: row.colour_mode==="colour"?"#f59e0b":row.colour_mode==="greyscale"?"#94a3b8":"#e2e8f0" }} />
-                        <span style={{ fontSize:11, color:"#64748b" }}>{row.colour_mode||"—"}</span>
-                      </span>)}
-                      {td(<span style={{ color:"#64748b" }}>{row.width_px ? row.width_px.toLocaleString() : "—"}</span>, { textAlign:"right" })}
-                      {td(<span style={{ color:"#64748b" }}>{row.height_px ? row.height_px.toLocaleString() : "—"}</span>, { textAlign:"right" })}
-                      {td(<span style={{ fontWeight:600, color: !row.dpi_reported?"#9ca3af":row.dpi_reported<=72?"#dc2626":"#059669" }}>{row.dpi_reported||"—"}</span>, { textAlign:"right" })}
-                      {td(<UpscaleBadge value={row.upscale_recommended} />)}
-                      {td(<AssessorBadge value={assessorStatus} />)}
-                      {td(<span style={{ color:"#64748b", fontSize:11 }}>{row.finished_w_mm||"—"}</span>, { textAlign:"right" })}
-                      {td(<span style={{ color:"#64748b", fontSize:11 }}>{row.finished_h_mm||"—"}</span>, { textAlign:"right" })}
-                      {td(<span title={row.notes||""} style={{ color:"#64748b", fontSize:11, display:"block", overflow:"hidden", textOverflow:"ellipsis", maxWidth:230 }}>{row.notes||"—"}</span>)}
-
-                      {/* Actions */}
-                      <td style={{ padding:"7px 10px", borderBottom:"1px solid #f1f5f9", background:bg, whiteSpace:"nowrap" }}>
-                        <div style={{ display:"flex", gap:6, alignItems:"center" }}>
-                          {/* Assess button — always available */}
-                          <button
-                            onClick={() => {
-                              const p = new URLSearchParams({ aa_id: row.id, sku: row.sku||"", order: row.sage_order });
-                              window.open("/artwork-assessor/?" + p.toString(), "_blank");
-                            }}
-                            style={{ background:"#F47920", color:"#fff", border:"none", borderRadius:5, padding:"4px 10px", fontSize:11, fontWeight:600, cursor:"pointer", whiteSpace:"nowrap" }}>
-                            Assess
-                          </button>
-                          {/* Designer — only if approved and template matched */}
-                          {assessorStatus === "approved" && row._tmpl ? (
-                            <button
-                              onClick={() => {
-                                const p = new URLSearchParams({ aa_id: row.id, sku: row.sku||"", order: row.sage_order });
-                                window.open("/designer/?" + p.toString(), "_blank");
-                              }}
-                              style={{ background:"#0f172a", color:"#fff", border:"none", borderRadius:5, padding:"4px 10px", fontSize:11, fontWeight:600, cursor:"pointer", whiteSpace:"nowrap" }}>
-                              Designer →
-                            </button>
-                          ) : assessorStatus === "approved" && !row._tmpl ? (
-                            <span style={{ fontSize:11, color:"#94a3b8" }}>No template</span>
-                          ) : null}
-                        </div>
-                      </td>
-                    </tr>
-                  );
-                })}
-              </tbody>
-            </table>
-            {sorted.length === 0 && (
-              <div style={{ textAlign:"center", padding:"64px 24px", color:"#94a3b8", fontSize:13 }}>No rows match the current filters.</div>
-            )}
-          </div>
-        </div>
-      );
-    }
-
-    const root = ReactDOM.createRoot(document.getElementById("root"));
-    root.render(<ArtworkList />);
-  </script>
+init();
+</script>
 </body>
 </html>
