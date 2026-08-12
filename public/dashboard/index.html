@@ -1,147 +1,913 @@
 <!DOCTYPE html>
+<!--
+  ╔══════════════════════════════════════════════════════╗
+  ║  FILE 1 OF 3 — public/dashboard/index.html          ║
+  ║  UKPOS PrintSite — Artwork List                      ║
+  ║  Redesigned shell; all JS transplanted unchanged.    ║
+  ╚══════════════════════════════════════════════════════╝
+-->
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Artwork Submissions — PrintSite</title>
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
-  <style>
-    *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
-    body{font-family:'Inter',-apple-system,sans-serif;background:#F2F1F6;color:#2C2C2A;font-size:12px;display:flex}
-    ::-webkit-scrollbar{height:6px;width:6px}
-    ::-webkit-scrollbar-track{background:#f1f5f9}
-    ::-webkit-scrollbar-thumb{background:#cbd5e1;border-radius:3px}
-    .sidebar{width:52px;background:#fff;border-right:0.5px solid #D3D1C7;display:flex;flex-direction:column;align-items:flex-start;padding:12px 0;gap:2px;flex-shrink:0;overflow:hidden;transition:width 0.2s ease;position:fixed;top:0;left:0;bottom:0;z-index:50}
-    .sidebar:hover{width:184px}
-    .sb-logo{width:52px;height:40px;display:flex;align-items:center;justify-content:center;flex-shrink:0;margin-bottom:8px}
-    .sb-logo-inner{width:28px;height:28px;background:#F47920;border-radius:7px;display:flex;align-items:center;justify-content:center}
-    .sb-logo-inner svg{width:16px;height:16px;fill:#fff}
-    .sb-item{height:36px;display:flex;align-items:center;gap:10px;padding:0 14px;cursor:pointer;width:100%;white-space:nowrap;overflow:hidden;border-left:3px solid transparent;text-decoration:none}
-    .sb-item:hover{background:#F2F1F6}
-    .sb-item.active{background:#FFF0E6;border-left-color:#F47920}
-    .sb-icon{font-size:17px;flex-shrink:0;width:20px;text-align:center;font-style:normal;color:#888780}
-    .sb-item.active .sb-icon{color:#F47920}
-    .sb-label{font-size:12px;font-weight:500;color:#2C2C2A;opacity:0;white-space:nowrap;pointer-events:none}
-    .sb-item.active .sb-label{color:#C75E0A}
-    .sidebar:hover .sb-label{opacity:1;transition:opacity 0.15s ease 0.05s}
-    .sb-spacer{flex:1}
-    .sb-divider{height:0.5px;background:#E8E6DE;margin:6px 10px;width:calc(100% - 20px)}
-    .main{flex:1;margin-left:52px;display:flex;flex-direction:column;min-height:100vh}
-    .topbar{height:52px;background:#fff;border-bottom:0.5px solid #D3D1C7;display:flex;align-items:center;padding:0 20px;gap:12px;position:sticky;top:0;z-index:40;flex-shrink:0}
-    .topbar-title{font-size:15px;font-weight:600;color:#2C2C2A;letter-spacing:-0.01em}
-    .notice{font-size:11px;color:#854F0B;background:#FAEEDA;border:0.5px solid #FAC775;border-radius:6px;padding:4px 10px}
-    .content{padding:18px 20px;display:flex;flex-direction:column;gap:14px}
-    .summary{display:grid;grid-template-columns:repeat(4,1fr);gap:10px}
-    .stat{background:#fff;border-radius:10px;padding:14px 16px;border:0.5px solid #D3D1C7}
-    .stat-label{font-size:10px;color:#888780;font-weight:600;text-transform:uppercase;letter-spacing:0.05em;margin-bottom:4px}
-    .stat-value{font-size:22px;font-weight:600;letter-spacing:-0.02em}
-    .table-card{background:#fff;border-radius:12px;border:0.5px solid #D3D1C7;overflow:hidden}
-    .table-wrap{overflow-x:auto}
-    table{border-collapse:collapse;width:max-content;min-width:100%}
-    thead th{padding:9px 10px;text-align:left;white-space:nowrap;font-weight:600;font-size:10px;color:#888780;letter-spacing:0.06em;text-transform:uppercase;background:#FAFAF8;border-bottom:0.5px solid #E8E6DE;position:sticky;top:0;z-index:2}
-    tbody tr{border-bottom:0.5px solid #F1EFE8}
-    tbody tr:last-child{border-bottom:none}
-    tbody tr:hover td{background:#FAFAF8}
-    .modal-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,0.45);z-index:100;align-items:center;justify-content:center}
-    .modal-overlay.show{display:flex}
-    .modal{background:#fff;border-radius:14px;padding:28px;width:360px;max-width:90vw;box-shadow:0 20px 60px rgba(0,0,0,0.15)}
-    .modal h2{font-size:16px;font-weight:600;margin-bottom:8px}
-    .modal p{font-size:13px;color:#5F5E5A;margin-bottom:20px;line-height:1.5}
-    .modal-actions{display:flex;gap:8px;justify-content:flex-end}
-    .mbtn{padding:7px 14px;border-radius:8px;font-size:12px;font-weight:600;cursor:pointer;border:0.5px solid #D3D1C7;background:#fff;color:#2C2C2A;font-family:inherit}
-    .mbtn:hover{background:#F2F1F6}
-    .mbtn-danger{background:#FCEBEB;color:#501313;border-color:#F09595}
-    .mbtn-danger:hover{background:#F7D0D0}
-    .toast{position:fixed;bottom:24px;left:50%;transform:translateX(-50%);background:#2C2C2A;color:#fff;padding:9px 18px;border-radius:8px;font-size:12px;font-weight:500;opacity:0;transition:opacity 0.2s;pointer-events:none;z-index:999;white-space:nowrap}
-    .toast.show{opacity:1}
-  </style>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Artwork List — UKPOS Print Site</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+/* ── Reset & base ── */
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+body{font-family:'Inter',-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;background:#F2F1F6;color:#2C2C2A;min-height:100vh;font-size:13px;display:flex}
+
+/* ── Sidebar ── */
+.sidebar{width:52px;background:#fff;border-right:0.5px solid #D3D1C7;display:flex;flex-direction:column;align-items:flex-start;padding:12px 0;gap:2px;flex-shrink:0;overflow:hidden;transition:width 0.2s ease;position:fixed;top:0;left:0;bottom:0;z-index:50}
+.sidebar:hover{width:184px}
+.sb-logo{width:52px;height:40px;display:flex;align-items:center;justify-content:center;flex-shrink:0;margin-bottom:8px}
+.sb-logo-inner{width:28px;height:28px;background:#F47920;border-radius:7px;display:flex;align-items:center;justify-content:center;flex-shrink:0}
+.sb-logo-inner svg{width:16px;height:16px;fill:#fff}
+.sb-item{height:36px;display:flex;align-items:center;gap:10px;padding:0 14px;cursor:pointer;width:100%;white-space:nowrap;overflow:hidden;border-left:3px solid transparent;text-decoration:none}
+.sb-item:hover{background:#F2F1F6}
+.sb-item.active{background:#FFF0E6;border-left-color:#F47920}
+.sb-item svg,.sb-item i{font-size:17px;flex-shrink:0;width:20px;text-align:center;display:flex;align-items:center;justify-content:center}
+.sb-item.active .sb-icon{color:#F47920}
+.sb-item:not(.active) .sb-icon{color:#888780}
+.sb-icon{font-size:17px;flex-shrink:0;width:20px;text-align:center;font-style:normal}
+.sb-label{font-size:12px;font-weight:500;color:#2C2C2A;opacity:0;white-space:nowrap;pointer-events:none}
+.sb-item.active .sb-label{color:#C75E0A}
+.sidebar:hover .sb-label{opacity:1;transition:opacity 0.15s ease 0.05s}
+.sb-spacer{flex:1}
+.sb-divider{height:0.5px;background:#E8E6DE;margin:6px 10px;flex-shrink:0;width:calc(100% - 20px)}
+
+/* ── Main content ── */
+.main{flex:1;margin-left:52px;display:flex;flex-direction:column;min-height:100vh;min-width:0}
+
+/* ── Topbar ── */
+.topbar{height:52px;background:#fff;border-bottom:0.5px solid #D3D1C7;display:flex;align-items:center;padding:0 20px;gap:10px;position:sticky;top:0;z-index:40;flex-shrink:0}
+.topbar-title{font-size:15px;font-weight:600;color:#2C2C2A;letter-spacing:-0.01em;flex-shrink:0}
+.topbar-search{position:relative;flex:1;max-width:300px}
+.topbar-search input{width:100%;height:32px;border:0.5px solid #D3D1C7;border-radius:8px;background:#F2F1F6;padding:0 10px 0 32px;font-size:12px;font-family:'Inter',sans-serif;color:#2C2C2A;outline:none}
+.topbar-search input:focus{border-color:#F47920;background:#fff}
+.search-icon{position:absolute;left:10px;top:50%;transform:translateY(-50%);color:#888780;font-size:13px;pointer-events:none}
+.tb-spacer{flex:1}
+.btn-new{height:32px;padding:0 14px;border-radius:8px;border:none;background:#F47920;color:#fff;font-size:12px;font-weight:600;font-family:'Inter',sans-serif;cursor:pointer;display:flex;align-items:center;gap:6px;flex-shrink:0}
+.btn-new:hover{opacity:0.9}
+.btn-refresh{height:32px;padding:0 12px;border-radius:8px;border:0.5px solid #D3D1C7;background:#fff;color:#5F5E5A;font-size:12px;font-weight:500;font-family:'Inter',sans-serif;cursor:pointer;flex-shrink:0}
+.btn-refresh:hover{background:#F2F1F6}
+.btn-csv{height:32px;padding:0 12px;border-radius:8px;border:0.5px solid #D3D1C7;background:#fff;color:#5F5E5A;font-size:12px;font-weight:500;font-family:'Inter',sans-serif;cursor:pointer;flex-shrink:0}
+.btn-csv:hover{background:#F2F1F6}
+
+/* ── Content padding ── */
+.content{padding:18px 20px;display:flex;flex-direction:column;gap:14px}
+
+/* ── Stats ── */
+.stats{display:grid;grid-template-columns:repeat(4,1fr);gap:10px}
+.stat{background:#fff;border-radius:12px;padding:14px 16px;border:0.5px solid #D3D1C7}
+.stat-label{font-size:10px;color:#888780;font-weight:600;text-transform:uppercase;letter-spacing:0.05em;margin-bottom:6px}
+.stat-value{font-size:22px;font-weight:600;letter-spacing:-0.02em;line-height:1;margin-bottom:4px}
+.stat-sub{font-size:10px;color:#888780;display:flex;align-items:center;gap:4px}
+.stat-dot{width:5px;height:5px;border-radius:50%;flex-shrink:0}
+
+/* ── Drop zone ── */
+.drop-banner{border:1.5px dashed #B4B2A9;border-radius:10px;padding:14px 18px;display:flex;align-items:center;gap:16px;cursor:pointer;background:#fff;transition:border-color 0.15s,background 0.15s;flex-shrink:0}
+.drop-banner:hover,.drop-banner.drag-over{border-color:#F47920;background:#FFF8F3}
+.drop-icon-wrap{width:40px;height:40px;border-radius:10px;background:#F2F1F6;display:flex;align-items:center;justify-content:center;flex-shrink:0;font-size:18px}
+.drop-banner.drag-over .drop-icon-wrap{background:#FFF0E6}
+.db-info{flex:1;text-align:center}
+.db-title{font-size:12px;font-weight:600;color:#2C2C2A;margin-bottom:3px}
+.db-sub{font-size:10px;color:#888780;margin-bottom:5px}
+.db-formats{display:flex;gap:4px;flex-wrap:wrap;justify-content:center}
+.fmt-pill{font-size:9px;font-weight:600;padding:2px 6px;border-radius:4px;background:#F2F1F6;color:#5F5E5A;border:0.5px solid #D3D1C7}
+.db-or{font-size:11px;color:#B4B2A9;flex-shrink:0}
+.db-browse{height:30px;padding:0 14px;border-radius:7px;border:0.5px solid #D3D1C7;background:#fff;font-size:11px;font-weight:600;color:#5F5E5A;cursor:pointer;font-family:'Inter',sans-serif;flex-shrink:0;white-space:nowrap}
+.db-browse:hover{background:#F2F1F6}
+
+/* ── Controls / filter bar ── */
+.controls-bar{display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+.controls-label{font-size:10px;color:#888780;font-weight:700;text-transform:uppercase;letter-spacing:0.06em;margin-right:2px;flex-shrink:0}
+.col-pill{padding:3px 10px;font-size:11px;border-radius:20px;cursor:pointer;border:0.5px solid #D3D1C7;background:#fff;color:#5F5E5A;white-space:nowrap;font-family:'Inter',sans-serif;font-weight:500}
+.col-pill.on{background:#FFF0E6;color:#C75E0A;border-color:#FAC795}
+.col-pill:hover{background:#F2F1F6}
+.col-pill.on:hover{background:#FFE8D4}
+
+/* ── Date + score filter bar ── */
+.filter-bar{display:flex;align-items:center;gap:8px;flex-wrap:wrap;padding:10px 14px;background:#fff;border-radius:10px;border:0.5px solid #D3D1C7}
+.filter-group{display:flex;align-items:center;gap:5px;flex-shrink:0}
+.filter-group-label{font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:0.05em;color:#888780;white-space:nowrap}
+.filter-sep{width:1px;height:18px;background:#E8E6DE;flex-shrink:0}
+.date-preset{height:26px;padding:0 10px;border-radius:20px;border:0.5px solid #D3D1C7;background:#fff;font-size:11px;font-weight:500;color:#5F5E5A;cursor:pointer;font-family:'Inter',sans-serif;white-space:nowrap;transition:all 0.1s}
+.date-preset:hover{background:#F2F1F6}
+.date-preset.active{background:#F47920;color:#fff;border-color:#F47920;font-weight:600}
+.date-range-inputs{display:flex;align-items:center;gap:5px}
+.date-input{height:26px;padding:0 8px;border-radius:6px;border:0.5px solid #D3D1C7;background:#F2F1F6;font-size:11px;font-family:'Inter',sans-serif;color:#2C2C2A;outline:none;cursor:pointer}
+.date-input:focus{border-color:#F47920;background:#fff}
+.date-range-sep{font-size:10px;color:#888780}
+.score-filter{display:flex;align-items:center;gap:4px}
+.score-range-input{width:52px;height:26px;padding:0 7px;border-radius:6px;border:0.5px solid #D3D1C7;background:#F2F1F6;font-size:11px;font-family:'Inter',sans-serif;color:#2C2C2A;outline:none}
+.score-range-input:focus{border-color:#F47920;background:#fff}
+.filter-clear{height:26px;padding:0 10px;border-radius:20px;border:0.5px solid #F09595;background:#FCEBEB;font-size:11px;font-weight:600;color:#501313;cursor:pointer;font-family:'Inter',sans-serif;margin-left:auto;white-space:nowrap}
+.filter-clear:hover{background:#F7D0D0}
+.filter-clear.hidden{display:none}
+.filter-results{font-size:11px;color:#888780;flex-shrink:0;white-space:nowrap}
+
+/* ── Table ── */
+.table-card{background:#fff;border-radius:12px;border:0.5px solid #D3D1C7;overflow:hidden}
+.table-header{display:flex;align-items:center;justify-content:space-between;padding:12px 16px;border-bottom:0.5px solid #E8E6DE}
+.table-header-title{font-size:12px;font-weight:600;color:#2C2C2A}
+.table-wrap{overflow-x:auto}
+table{width:100%;border-collapse:collapse;min-width:900px}
+thead tr{border-bottom:0.5px solid #E8E6DE}
+th{padding:8px 10px;text-align:left;font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:0.06em;color:#888780;white-space:nowrap;background:#FAFAF8}
+td{padding:9px 10px;border-bottom:0.5px solid #F1EFE8;vertical-align:middle}
+tr:last-child td{border-bottom:none}
+tbody tr:hover td{background:#FAFAF8}
+
+/* ── Badges ── */
+.badge{display:inline-block;font-size:9px;font-weight:700;padding:2px 6px;border-radius:4px;text-transform:uppercase;letter-spacing:0.03em}
+.badge-pdf{background:#FCEBEB;color:#791F1F}
+.badge-eps{background:#F0EEFF;color:#4B35B0}
+.badge-png{background:#E1F5EE;color:#0F6E56}
+.badge-jpg,.badge-jpeg{background:#FAEEDA;color:#633806}
+.badge-manual,.badge-csv,.badge-api{background:#F2F1F6;color:#5F5E5A}
+.badge-designer{background:#FFF0E6;color:#C75E0A}
+.sku-badge{display:inline-flex;align-items:center;height:18px;padding:0 7px;background:#FFF0E6;border-radius:4px;font-size:9px;font-weight:600;color:#C75E0A}
+
+/* ── Score ring ── */
+.score-wrap{display:inline-flex;position:relative;width:34px;height:34px;flex-shrink:0}
+.score-wrap svg{transform:rotate(-90deg);width:34px;height:34px}
+.score-num{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;font-size:8px;font-weight:700;font-family:'Inter',sans-serif}
+
+/* ── Check dots ── */
+.check-cell{text-align:center}
+.ck{width:8px;height:8px;border-radius:50%;display:inline-block}
+.ck-pass{background:#639922}
+.ck-warn{background:#EF9F27}
+.ck-fail{background:#E24B4A}
+.ck-none{background:#D3D1C7}
+
+/* ── Status dot (reference column) ── */
+.status-dot{display:inline-block;width:7px;height:7px;border-radius:50%;margin-right:5px;flex-shrink:0}
+.dot-pass{background:#639922}
+.dot-warn{background:#EF9F27}
+.dot-fail{background:#E24B4A}
+.dot-pending{background:#B4B2A9}
+
+/* ── Ref / filename cells ── */
+.ref-cell{display:flex;align-items:center;max-width:150px}
+.ref-text{overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-weight:500;color:#2C2C2A;font-size:12px}
+.filename-cell{color:#5F5E5A;max-width:130px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-size:11px}
+.date-cell{color:#888780;white-space:nowrap;font-size:11px}
+.source-cell{font-size:10px;color:#888780}
+
+/* ── Score progress bar (legacy — kept for renderRow) ── */
+.score-cell{font-size:12px;font-weight:500}
+.score-high{color:#173404}.score-mid{color:#412402}.score-low{color:#501313}
+.progress-bar{height:3px;background:#E8E6DE;border-radius:2px;overflow:hidden;margin-top:3px;width:60px}
+.progress-fill{height:100%;border-radius:2px}
+.muted{color:#B4B2A9}
+.spinner-sm{display:inline-block;width:12px;height:12px;border:2px solid #D3D1C7;border-top-color:#F47920;border-radius:50%;animation:spin 0.6s linear infinite}
+@keyframes spin{to{transform:rotate(360deg)}}
+
+/* ── Action buttons ── */
+.actions-cell{display:flex;align-items:center;gap:4px;white-space:nowrap}
+.act-btn{width:26px;height:26px;border-radius:7px;display:inline-flex;align-items:center;justify-content:center;cursor:pointer;border:none;font-size:12px;flex-shrink:0;font-family:'Inter',sans-serif}
+/* keep legacy text button classes for renderRow compatibility */
+.view-btn{padding:4px 10px;font-size:11px;border-radius:6px;cursor:pointer;border:0.5px solid #D3D1C7;background:#F2F1F6;color:#2C2C2A;font-weight:500;font-family:'Inter',sans-serif}
+.view-btn:hover{background:#E8E6DE}
+.design-btn{padding:4px 10px;font-size:11px;border-radius:6px;cursor:pointer;border:none;background:#F47920;color:#fff;font-weight:600;font-family:'Inter',sans-serif}
+.design-btn:hover{opacity:0.9}
+.del-btn{padding:4px 8px;font-size:11px;border-radius:6px;cursor:pointer;border:0.5px solid #F09595;background:#FCEBEB;color:#501313;font-weight:500;font-family:'Inter',sans-serif}
+.del-btn:hover{background:#F7D0D0}
+
+/* ── Pagination ── */
+.pagination{display:flex;align-items:center;gap:8px;flex-wrap:wrap;padding:14px 16px;border-top:0.5px solid #E8E6DE}
+.pg-info{font-size:11px;color:#888780;margin-right:auto}
+.pg-size{display:flex;align-items:center;gap:6px;font-size:11px;color:#5F5E5A}
+.pg-size select{font-size:11px;padding:3px 7px;border:0.5px solid #D3D1C7;border-radius:6px;background:#fff;cursor:pointer;font-family:'Inter',sans-serif}
+.pg-btn{padding:4px 10px;font-size:11px;border-radius:6px;cursor:pointer;border:0.5px solid #D3D1C7;background:#fff;color:#2C2C2A;font-family:'Inter',sans-serif}
+.pg-btn:hover{background:#F2F1F6}
+.pg-btn:disabled{opacity:0.4;cursor:not-allowed}
+#pgPages{font-size:11px;color:#5F5E5A}
+
+/* ── Empty state ── */
+.empty-state{padding:48px 32px;text-align:center;color:#888780}
+.empty-state .es-icon{font-size:28px;margin-bottom:10px}
+.empty-state p{font-size:13px}
+
+/* ── Delete modal ── */
+.modal-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,0.45);z-index:100;align-items:center;justify-content:center}
+.modal-overlay.show{display:flex}
+.modal{background:#fff;border-radius:14px;padding:28px;width:380px;max-width:90vw;box-shadow:0 20px 60px rgba(0,0,0,0.15)}
+.modal h2{font-size:16px;font-weight:600;margin-bottom:8px;color:#2C2C2A}
+.modal p{font-size:13px;color:#5F5E5A;margin-bottom:16px;line-height:1.5}
+.modal-ref{font-weight:600;color:#2C2C2A}
+.modal input{width:100%;font-size:13px;padding:8px 10px;border:0.5px solid #D3D1C7;border-radius:8px;margin-bottom:16px;font-family:'Inter',sans-serif;outline:none}
+.modal input:focus{border-color:#F47920}
+.modal input.error{border-color:#E24B4A}
+.modal-actions{display:flex;gap:8px;justify-content:flex-end}
+.mbtn{padding:7px 14px;border-radius:8px;font-size:12px;font-weight:600;cursor:pointer;border:0.5px solid #D3D1C7;background:#fff;color:#2C2C2A;font-family:'Inter',sans-serif}
+.mbtn:hover{background:#F2F1F6}
+.mbtn-danger{background:#FCEBEB;color:#501313;border-color:#F09595}
+.mbtn-danger:hover{background:#F7D0D0}
+.mbtn-danger:disabled{background:#F2F1F6;color:#B4B2A9;border-color:#D3D1C7;cursor:not-allowed}
+
+/* ── Toast ── */
+.toast{position:fixed;bottom:24px;left:50%;transform:translateX(-50%);background:#2C2C2A;color:#fff;padding:9px 18px;border-radius:8px;font-size:12px;font-weight:500;opacity:0;transition:opacity 0.2s;pointer-events:none;z-index:999;white-space:nowrap}
+.toast.show{opacity:1}
+
+/* ── Hidden file inputs ── */
+input[type=file]{display:none}
+</style>
 </head>
 <body>
-<nav class="sidebar">
-  <div class="sb-logo"><div class="sb-logo-inner"><svg viewBox="0 0 24 24"><path d="M3 6h18v2H3zm0 5h18v2H3zm0 5h18v2H3z"/></svg></div></div>
-  <a class="sb-item active" href="/dashboard"><span class="sb-icon">&#128203;</span><span class="sb-label">Submissions</span></a>
-  <a class="sb-item" href="/designer"><span class="sb-icon">&#9998;</span><span class="sb-label">Designer</span></a>
-  <a class="sb-item" href="/artwork-assessor"><span class="sb-icon">&#10003;</span><span class="sb-label">Assessor</span></a>
-  <a class="sb-item" href="/print-jobs"><span class="sb-icon">&#128424;</span><span class="sb-label">Print Jobs</span></a>
+
+<!-- ══ SIDEBAR ══ -->
+<nav class="sidebar" id="sidebar">
+  <div class="sb-logo">
+    <div class="sb-logo-inner">
+      <svg viewBox="0 0 24 24"><path d="M3 6h18v2H3zm0 5h18v2H3zm0 5h18v2H3z"/></svg>
+    </div>
+  </div>
+  <a class="sb-item active" href="/dashboard">
+    <span class="sb-icon">☰</span>
+    <span class="sb-label">Artwork list</span>
+  </a>
+  <a class="sb-item" href="/designer">
+    <span class="sb-icon">✏️</span>
+    <span class="sb-label">Designer</span>
+  </a>
+  <a class="sb-item" href="/artwork-assessor">
+    <span class="sb-icon">✓</span>
+    <span class="sb-label">Assessor</span>
+  </a>
   <div class="sb-spacer"></div>
   <div class="sb-divider"></div>
-  <a class="sb-item" href="/"><span class="sb-icon">&#9965;</span><span class="sb-label">Home</span></a>
+  <a class="sb-item" href="/">
+    <span class="sb-icon">⚙</span>
+    <span class="sb-label">Settings</span>
+  </a>
 </nav>
+
+<!-- ══ MAIN ══ -->
 <div class="main">
+
+  <!-- Topbar -->
   <div class="topbar">
-    <span class="topbar-title">Artwork Submissions</span>
-    <span class="notice">&#9888; Showing 10 example submissions for testing &mdash; full list loads from database</span>
-  </div>
-  <div class="content">
-    <div class="summary">
-      <div class="stat"><div class="stat-label">Shown</div><div class="stat-value" style="color:#2C2C2A">10</div></div>
-      <div class="stat"><div class="stat-label">Pending assessment</div><div class="stat-value" style="color:#475569">10</div></div>
-      <div class="stat"><div class="stat-label">Template matched</div><div class="stat-value" style="color:#3B6D11">4</div></div>
-      <div class="stat"><div class="stat-label">Flag / raster</div><div class="stat-value" style="color:#A32D2D">8</div></div>
+    <span class="topbar-title">Artwork list</span>
+    <div class="topbar-search">
+      <span class="search-icon">🔍</span>
+      <input type="text" placeholder="Search reference or SKU…" />
     </div>
+    <div class="tb-spacer"></div>
+    <button class="btn-refresh" onclick="loadJobs()">↻ Refresh</button>
+    <button class="btn-csv" onclick="document.getElementById('csvInput').click()">Upload CSV</button>
+    <input type="file" id="csvInput" accept=".csv" onchange="handleCSV(event)" />
+    <button class="btn-new" onclick="document.getElementById('fileInput').click()">+ Add files</button>
+    <input type="file" id="fileInput" accept=".pdf,.eps,.zip,.png,.jpg,.jpeg" multiple onchange="handleFiles(event)" />
+  </div>
+
+  <div class="content">
+
+    <!-- Stats -->
+    <div class="stats" id="statsRow">
+      <div class="stat">
+        <div class="stat-label">Total jobs</div>
+        <div class="stat-value" style="color:#2C2C2A" id="statTotal">—</div>
+        <div class="stat-sub">This session</div>
+      </div>
+      <div class="stat">
+        <div class="stat-label">Passed</div>
+        <div class="stat-value" style="color:#3B6D11" id="statPass">—</div>
+        <div class="stat-sub"><span class="stat-dot" style="background:#639922"></span>Ready to print</div>
+      </div>
+      <div class="stat">
+        <div class="stat-label">Warnings</div>
+        <div class="stat-value" style="color:#854F0B" id="statWarn">—</div>
+        <div class="stat-sub"><span class="stat-dot" style="background:#EF9F27"></span>Need review</div>
+      </div>
+      <div class="stat">
+        <div class="stat-label">Failed</div>
+        <div class="stat-value" style="color:#A32D2D" id="statFail">—</div>
+        <div class="stat-sub"><span class="stat-dot" style="background:#E24B4A"></span>Action required</div>
+      </div>
+    </div>
+
+    <!-- Drop zone -->
+    <div class="drop-banner" id="dropBanner">
+      <div class="drop-icon-wrap">📂</div>
+      <div class="db-info">
+        <div class="db-title">Drop artwork files here to add to the list</div>
+        <div class="db-sub">Files are assessed automatically on upload</div>
+        <div class="db-formats">
+          <span class="fmt-pill">PDF</span>
+          <span class="fmt-pill">EPS</span>
+          <span class="fmt-pill">PNG</span>
+          <span class="fmt-pill">JPG</span>
+          <span class="fmt-pill">TIFF</span>
+          <span class="fmt-pill">ZIP</span>
+        </div>
+      </div>
+      <span class="db-or">or</span>
+      <button class="db-browse" onclick="event.stopPropagation();document.getElementById('fileInput').click()">Browse files</button>
+    </div>
+
+    <!-- Date + score filter bar -->
+    <div class="filter-bar" id="filterBar">
+      <div class="filter-group">
+        <span class="filter-group-label">Date</span>
+        <button class="date-preset active" data-preset="all" onclick="setDatePreset(this,'all')">All</button>
+        <button class="date-preset" data-preset="today" onclick="setDatePreset(this,'today')">Today</button>
+        <button class="date-preset" data-preset="yesterday" onclick="setDatePreset(this,'yesterday')">Yesterday</button>
+        <button class="date-preset" data-preset="7d" onclick="setDatePreset(this,'7d')">Last 7 days</button>
+        <button class="date-preset" data-preset="30d" onclick="setDatePreset(this,'30d')">Last 30 days</button>
+        <div class="date-range-inputs">
+          <input type="date" class="date-input" id="filterDateFrom" title="From date" onchange="onDateRangeChange()">
+          <span class="date-range-sep">→</span>
+          <input type="date" class="date-input" id="filterDateTo" title="To date" onchange="onDateRangeChange()">
+        </div>
+      </div>
+      <div class="filter-sep"></div>
+      <div class="filter-group">
+        <span class="filter-group-label">Score</span>
+        <input type="number" class="score-range-input" id="filterScoreMin" placeholder="0" min="0" max="100" title="Min score %" oninput="applyFilters()">
+        <span class="date-range-sep">–</span>
+        <input type="number" class="score-range-input" id="filterScoreMax" placeholder="100" min="0" max="100" title="Max score %" oninput="applyFilters()">
+        <span style="font-size:10px;color:#888780">%</span>
+      </div>
+      <span class="filter-results" id="filterResults"></span>
+      <button class="filter-clear hidden" id="filterClearBtn" onclick="clearFilters()">✕ Clear filters</button>
+    </div>
+
+    <!-- Column toggle pills -->
+    <div class="controls-bar">
+      <span class="controls-label">Checks:</span>
+      <button class="col-pill on" data-col="dpi"          onclick="toggleCol(this)">DPI</button>
+      <button class="col-pill on" data-col="pixelation"   onclick="toggleCol(this)">Pixelation</button>
+      <button class="col-pill on" data-col="bleed"        onclick="toggleCol(this)">Bleed</button>
+      <button class="col-pill on" data-col="colour"       onclick="toggleCol(this)">Colour</button>
+      <button class="col-pill on" data-col="white_edge"   onclick="toggleCol(this)">White edge</button>
+      <button class="col-pill on" data-col="safe_zone"    onclick="toggleCol(this)">Safe zone</button>
+      <button class="col-pill on" data-col="fonts"        onclick="toggleCol(this)">Fonts</button>
+      <button class="col-pill on" data-col="transparency" onclick="toggleCol(this)">Transparency</button>
+    </div>
+
+    <!-- Table -->
     <div class="table-card">
       <div class="table-wrap">
-        <table>
-          <thead><tr>
-            <th>Company</th><th>Customer</th><th>Sage</th><th>Magento</th>
-            <th>SKU</th><th>Tmpl</th><th>File</th><th>Ext</th><th>KB</th>
-            <th>Class</th><th>Colour</th><th>W px</th><th>H px</th><th>DPI</th>
-            <th>Upscale</th><th>Assessed</th><th>Tmpl W</th><th>Tmpl H</th>
-            <th>Notes</th><th>Actions</th>
-          </tr></thead>
-          <tbody>
-<tr id="row-1de84294"><td style="padding:8px 10px;vertical-align:middle;white-space:nowrap;font-weight:600;max-width:150px;overflow:hidden;text-overflow:ellipsis" title="Esquires Coffee House">Esquires Coffee House</td><td style="padding:8px 10px;vertical-align:middle;white-space:nowrap;color:#475569;max-width:120px;overflow:hidden;text-overflow:ellipsis" title="Thushy Thavathurai">Thushy Thavathurai</td><td style="padding:8px 10px;vertical-align:middle;white-space:nowrap;font-family:monospace;font-size:11px;color:#475569">0001237823</td><td style="padding:8px 10px;vertical-align:middle;white-space:nowrap;font-family:monospace;font-size:11px;color:#94a3b8">100623642</td><td style="padding:8px 10px;vertical-align:middle;white-space:nowrap"><span style="font-family:monospace;font-size:11px;font-weight:600;color:#1e40af;background:#eff6ff;padding:2px 6px;border-radius:4px">ABC7A1-BRANDED</span></td><td style="padding:8px 10px;vertical-align:middle;white-space:nowrap;text-align:center;color:#dc2626;font-weight:700;font-size:14px">✗</td><td style="padding:8px 10px;vertical-align:middle;white-space:nowrap;font-family:monospace;font-size:11px;color:#374151;max-width:190px;overflow:hidden;text-overflow:ellipsis" title="asset-59946--1783792917.pdf">asset-59946--1783792917.pdf</td><td style="padding:8px 10px;vertical-align:middle;white-space:nowrap;text-align:center"><span style="background:#f1f5f9;color:#475569;border-radius:3px;padding:1px 5px;font-size:10px;font-family:monospace;font-weight:600">PDF</span></td><td style="padding:8px 10px;vertical-align:middle;white-space:nowrap;text-align:right;color:#64748b">188.7</td><td style="padding:8px 10px;vertical-align:middle;white-space:nowrap;color:#475569">mixed_graphic</td><td style="padding:8px 10px;vertical-align:middle;white-space:nowrap"><span style="display:inline-block;width:8px;height:8px;border-radius:50%;background:#f59e0b;margin-right:4px;vertical-align:middle"></span>colour</td><td style="padding:8px 10px;vertical-align:middle;white-space:nowrap;text-align:right;color:#64748b">—</td><td style="padding:8px 10px;vertical-align:middle;white-space:nowrap;text-align:right;color:#64748b">—</td><td style="padding:8px 10px;vertical-align:middle;white-space:nowrap;text-align:right"><span style="color:#9ca3af">—</span></td><td style="padding:8px 10px;vertical-align:middle;white-space:nowrap"><span style="display:inline-block;border-radius:4px;padding:2px 7px;font-size:11px;font-weight:600;background:#fef3c7;color:#92400e;white-space:nowrap">Upscale</span></td><td style="padding:8px 10px;vertical-align:middle;white-space:nowrap"><span style="display:inline-block;border-radius:4px;padding:2px 7px;font-size:11px;font-weight:600;background:#f1f5f9;color:#475569;white-space:nowrap;border:1px solid #47556933">Pending</span></td><td style="padding:8px 10px;vertical-align:middle;white-space:nowrap;text-align:right;color:#64748b;font-size:11px">—</td><td style="padding:8px 10px;vertical-align:middle;white-space:nowrap;text-align:right;color:#64748b;font-size:11px">—</td><td style="padding:8px 10px;vertical-align:middle;white-space:nowrap;color:#64748b;font-size:11px;max-width:220px;overflow:hidden;text-overflow:ellipsis" title="605x185mm banner - mixed graphic">605x185mm banner - mixed graphic</td><td style="padding:8px 10px;vertical-align:middle;white-space:nowrap"><button onclick="window.open('/artwork-assessor/?aa_id=1de84294&sku=ABC7A1-BRANDED&order=0001237823','_blank')" style="padding:4px 9px;border:none;border-radius:5px;font-size:11px;font-weight:600;cursor:pointer;background:#F47920;color:#fff;margin-right:4px">Assess</button><button onclick="window.open('/designer/?aa_id=1de84294&sku=ABC7A1-BRANDED&order=0001237823','_blank')" style="padding:4px 9px;border:none;border-radius:5px;font-size:11px;font-weight:600;cursor:pointer;background:#0f172a;color:#fff;margin-right:4px">Designer →</button><button onclick="openDelete('1de84294','Esquires Coffee House')" style="padding:4px 8px;border:0.5px solid #F09595;border-radius:5px;font-size:11px;font-weight:600;cursor:pointer;background:#FCEBEB;color:#501313">✕</button></td></tr>
-<tr id="row-8391d7cc"><td style="padding:8px 10px;vertical-align:middle;white-space:nowrap;font-weight:600;max-width:150px;overflow:hidden;text-overflow:ellipsis" title="The Sumner Collection">The Sumner Collection</td><td style="padding:8px 10px;vertical-align:middle;white-space:nowrap;color:#475569;max-width:120px;overflow:hidden;text-overflow:ellipsis" title="Simon Moore">Simon Moore</td><td style="padding:8px 10px;vertical-align:middle;white-space:nowrap;font-family:monospace;font-size:11px;color:#475569">0001237828</td><td style="padding:8px 10px;vertical-align:middle;white-space:nowrap;font-family:monospace;font-size:11px;color:#94a3b8">100623648</td><td style="padding:8px 10px;vertical-align:middle;white-space:nowrap"><span style="font-family:monospace;font-size:11px;font-weight:600;color:#1e40af;background:#eff6ff;padding:2px 6px;border-radius:4px">BACKLA3-PRINTED</span></td><td style="padding:8px 10px;vertical-align:middle;white-space:nowrap;text-align:center;color:#dc2626;font-weight:700;font-size:14px">✗</td><td style="padding:8px 10px;vertical-align:middle;white-space:nowrap;font-family:monospace;font-size:11px;color:#374151;max-width:190px;overflow:hidden;text-overflow:ellipsis" title="asset-60042--1784105955.pdf">asset-60042--1784105955.pdf</td><td style="padding:8px 10px;vertical-align:middle;white-space:nowrap;text-align:center"><span style="background:#f1f5f9;color:#475569;border-radius:3px;padding:1px 5px;font-size:10px;font-family:monospace;font-weight:600">PDF</span></td><td style="padding:8px 10px;vertical-align:middle;white-space:nowrap;text-align:right;color:#64748b">384.1</td><td style="padding:8px 10px;vertical-align:middle;white-space:nowrap;color:#475569">photo_complex</td><td style="padding:8px 10px;vertical-align:middle;white-space:nowrap"><span style="display:inline-block;width:8px;height:8px;border-radius:50%;background:#f59e0b;margin-right:4px;vertical-align:middle"></span>colour</td><td style="padding:8px 10px;vertical-align:middle;white-space:nowrap;text-align:right;color:#64748b">2,480</td><td style="padding:8px 10px;vertical-align:middle;white-space:nowrap;text-align:right;color:#64748b">3,508</td><td style="padding:8px 10px;vertical-align:middle;white-space:nowrap;text-align:right"><span style="color:#9ca3af">—</span></td><td style="padding:8px 10px;vertical-align:middle;white-space:nowrap"><span style="display:inline-block;border-radius:4px;padding:2px 7px;font-size:11px;font-weight:600;background:#fef3c7;color:#92400e;white-space:nowrap">Upscale</span></td><td style="padding:8px 10px;vertical-align:middle;white-space:nowrap"><span style="display:inline-block;border-radius:4px;padding:2px 7px;font-size:11px;font-weight:600;background:#f1f5f9;color:#475569;white-space:nowrap;border:1px solid #47556933">Pending</span></td><td style="padding:8px 10px;vertical-align:middle;white-space:nowrap;text-align:right;color:#64748b;font-size:11px">—</td><td style="padding:8px 10px;vertical-align:middle;white-space:nowrap;text-align:right;color:#64748b;font-size:11px">—</td><td style="padding:8px 10px;vertical-align:middle;white-space:nowrap;color:#64748b;font-size:11px;max-width:220px;overflow:hidden;text-overflow:ellipsis" title="A4 210x297mm photo/complex">A4 210x297mm photo/complex</td><td style="padding:8px 10px;vertical-align:middle;white-space:nowrap"><button onclick="window.open('/artwork-assessor/?aa_id=8391d7cc&sku=BACKLA3-PRINTED&order=0001237828','_blank')" style="padding:4px 9px;border:none;border-radius:5px;font-size:11px;font-weight:600;cursor:pointer;background:#F47920;color:#fff;margin-right:4px">Assess</button><button onclick="window.open('/designer/?aa_id=8391d7cc&sku=BACKLA3-PRINTED&order=0001237828','_blank')" style="padding:4px 9px;border:none;border-radius:5px;font-size:11px;font-weight:600;cursor:pointer;background:#0f172a;color:#fff;margin-right:4px">Designer →</button><button onclick="openDelete('8391d7cc','The Sumner Collection')" style="padding:4px 8px;border:0.5px solid #F09595;border-radius:5px;font-size:11px;font-weight:600;cursor:pointer;background:#FCEBEB;color:#501313">✕</button></td></tr>
-<tr id="row-1239a6aa"><td style="padding:8px 10px;vertical-align:middle;white-space:nowrap;font-weight:600;max-width:150px;overflow:hidden;text-overflow:ellipsis" title="Spar Stores">Spar Stores</td><td style="padding:8px 10px;vertical-align:middle;white-space:nowrap;color:#475569;max-width:120px;overflow:hidden;text-overflow:ellipsis" title="Satminder Deo">Satminder Deo</td><td style="padding:8px 10px;vertical-align:middle;white-space:nowrap;font-family:monospace;font-size:11px;color:#475569">0001237860</td><td style="padding:8px 10px;vertical-align:middle;white-space:nowrap;font-family:monospace;font-size:11px;color:#94a3b8">100623688</td><td style="padding:8px 10px;vertical-align:middle;white-space:nowrap"><span style="font-family:monospace;font-size:11px;font-weight:600;color:#1e40af;background:#eff6ff;padding:2px 6px;border-radius:4px">BACKLA1-PRINTED</span></td><td style="padding:8px 10px;vertical-align:middle;white-space:nowrap;text-align:center;color:#dc2626;font-weight:700;font-size:14px">✗</td><td style="padding:8px 10px;vertical-align:middle;white-space:nowrap;font-family:monospace;font-size:11px;color:#374151;max-width:190px;overflow:hidden;text-overflow:ellipsis" title="asset-59947--1783875765.pdf">asset-59947--1783875765.pdf</td><td style="padding:8px 10px;vertical-align:middle;white-space:nowrap;text-align:center"><span style="background:#f1f5f9;color:#475569;border-radius:3px;padding:1px 5px;font-size:10px;font-family:monospace;font-weight:600">PDF</span></td><td style="padding:8px 10px;vertical-align:middle;white-space:nowrap;text-align:right;color:#64748b">84.5</td><td style="padding:8px 10px;vertical-align:middle;white-space:nowrap;color:#475569">mixed_graphic</td><td style="padding:8px 10px;vertical-align:middle;white-space:nowrap"><span style="display:inline-block;width:8px;height:8px;border-radius:50%;background:#f59e0b;margin-right:4px;vertical-align:middle"></span>colour</td><td style="padding:8px 10px;vertical-align:middle;white-space:nowrap;text-align:right;color:#64748b">—</td><td style="padding:8px 10px;vertical-align:middle;white-space:nowrap;text-align:right;color:#64748b">—</td><td style="padding:8px 10px;vertical-align:middle;white-space:nowrap;text-align:right"><span style="color:#9ca3af">—</span></td><td style="padding:8px 10px;vertical-align:middle;white-space:nowrap"><span style="display:inline-block;border-radius:4px;padding:2px 7px;font-size:11px;font-weight:600;background:#fef3c7;color:#92400e;white-space:nowrap">Upscale</span></td><td style="padding:8px 10px;vertical-align:middle;white-space:nowrap"><span style="display:inline-block;border-radius:4px;padding:2px 7px;font-size:11px;font-weight:600;background:#f1f5f9;color:#475569;white-space:nowrap;border:1px solid #47556933">Pending</span></td><td style="padding:8px 10px;vertical-align:middle;white-space:nowrap;text-align:right;color:#64748b;font-size:11px">—</td><td style="padding:8px 10px;vertical-align:middle;white-space:nowrap;text-align:right;color:#64748b;font-size:11px">—</td><td style="padding:8px 10px;vertical-align:middle;white-space:nowrap;color:#64748b;font-size:11px;max-width:220px;overflow:hidden;text-overflow:ellipsis" title="190x275mm mixed graphic">190x275mm mixed graphic</td><td style="padding:8px 10px;vertical-align:middle;white-space:nowrap"><button onclick="window.open('/artwork-assessor/?aa_id=1239a6aa&sku=BACKLA1-PRINTED&order=0001237860','_blank')" style="padding:4px 9px;border:none;border-radius:5px;font-size:11px;font-weight:600;cursor:pointer;background:#F47920;color:#fff;margin-right:4px">Assess</button><button onclick="window.open('/designer/?aa_id=1239a6aa&sku=BACKLA1-PRINTED&order=0001237860','_blank')" style="padding:4px 9px;border:none;border-radius:5px;font-size:11px;font-weight:600;cursor:pointer;background:#0f172a;color:#fff;margin-right:4px">Designer →</button><button onclick="openDelete('1239a6aa','Spar Stores')" style="padding:4px 8px;border:0.5px solid #F09595;border-radius:5px;font-size:11px;font-weight:600;cursor:pointer;background:#FCEBEB;color:#501313">✕</button></td></tr>
-<tr id="row-9f496a94"><td style="padding:8px 10px;vertical-align:middle;white-space:nowrap;font-weight:600;max-width:150px;overflow:hidden;text-overflow:ellipsis" title="Pontcanna Inn">Pontcanna Inn</td><td style="padding:8px 10px;vertical-align:middle;white-space:nowrap;color:#475569;max-width:120px;overflow:hidden;text-overflow:ellipsis" title="Adam Roach">Adam Roach</td><td style="padding:8px 10px;vertical-align:middle;white-space:nowrap;font-family:monospace;font-size:11px;color:#475569">0001237877</td><td style="padding:8px 10px;vertical-align:middle;white-space:nowrap;font-family:monospace;font-size:11px;color:#94a3b8">100623711</td><td style="padding:8px 10px;vertical-align:middle;white-space:nowrap"><span style="font-family:monospace;font-size:11px;font-weight:600;color:#1e40af;background:#eff6ff;padding:2px 6px;border-radius:4px">ABC7A1-BRANDED</span></td><td style="padding:8px 10px;vertical-align:middle;white-space:nowrap;text-align:center;color:#dc2626;font-weight:700;font-size:14px">✗</td><td style="padding:8px 10px;vertical-align:middle;white-space:nowrap;font-family:monospace;font-size:11px;color:#374151;max-width:190px;overflow:hidden;text-overflow:ellipsis" title="asset-59949--1783925409.pdf">asset-59949--1783925409.pdf</td><td style="padding:8px 10px;vertical-align:middle;white-space:nowrap;text-align:center"><span style="background:#f1f5f9;color:#475569;border-radius:3px;padding:1px 5px;font-size:10px;font-family:monospace;font-weight:600">PDF</span></td><td style="padding:8px 10px;vertical-align:middle;white-space:nowrap;text-align:right;color:#64748b">132.6</td><td style="padding:8px 10px;vertical-align:middle;white-space:nowrap;color:#475569">logo_flat_graphic</td><td style="padding:8px 10px;vertical-align:middle;white-space:nowrap"><span style="display:inline-block;width:8px;height:8px;border-radius:50%;background:#94a3b8;margin-right:4px;vertical-align:middle"></span>greyscale</td><td style="padding:8px 10px;vertical-align:middle;white-space:nowrap;text-align:right;color:#64748b">—</td><td style="padding:8px 10px;vertical-align:middle;white-space:nowrap;text-align:right;color:#64748b">—</td><td style="padding:8px 10px;vertical-align:middle;white-space:nowrap;text-align:right"><span style="color:#9ca3af">—</span></td><td style="padding:8px 10px;vertical-align:middle;white-space:nowrap"><span style="display:inline-block;border-radius:4px;padding:2px 7px;font-size:11px;font-weight:600;background:#dbeafe;color:#1e40af;white-space:nowrap">Vectorise</span></td><td style="padding:8px 10px;vertical-align:middle;white-space:nowrap"><span style="display:inline-block;border-radius:4px;padding:2px 7px;font-size:11px;font-weight:600;background:#f1f5f9;color:#475569;white-space:nowrap;border:1px solid #47556933">Pending</span></td><td style="padding:8px 10px;vertical-align:middle;white-space:nowrap;text-align:right;color:#64748b;font-size:11px">—</td><td style="padding:8px 10px;vertical-align:middle;white-space:nowrap;text-align:right;color:#64748b;font-size:11px">—</td><td style="padding:8px 10px;vertical-align:middle;white-space:nowrap;color:#64748b;font-size:11px;max-width:220px;overflow:hidden;text-overflow:ellipsis" title="176x85mm logo flat greyscale">176x85mm logo flat greyscale</td><td style="padding:8px 10px;vertical-align:middle;white-space:nowrap"><button onclick="window.open('/artwork-assessor/?aa_id=9f496a94&sku=ABC7A1-BRANDED&order=0001237877','_blank')" style="padding:4px 9px;border:none;border-radius:5px;font-size:11px;font-weight:600;cursor:pointer;background:#F47920;color:#fff;margin-right:4px">Assess</button><button onclick="window.open('/designer/?aa_id=9f496a94&sku=ABC7A1-BRANDED&order=0001237877','_blank')" style="padding:4px 9px;border:none;border-radius:5px;font-size:11px;font-weight:600;cursor:pointer;background:#0f172a;color:#fff;margin-right:4px">Designer →</button><button onclick="openDelete('9f496a94','Pontcanna Inn')" style="padding:4px 8px;border:0.5px solid #F09595;border-radius:5px;font-size:11px;font-weight:600;cursor:pointer;background:#FCEBEB;color:#501313">✕</button></td></tr>
-<tr id="row-cea26d1d"><td style="padding:8px 10px;vertical-align:middle;white-space:nowrap;font-weight:600;max-width:150px;overflow:hidden;text-overflow:ellipsis" title="DE Acquisitions Ltd">DE Acquisitions Ltd</td><td style="padding:8px 10px;vertical-align:middle;white-space:nowrap;color:#475569;max-width:120px;overflow:hidden;text-overflow:ellipsis" title="Craig Potter">Craig Potter</td><td style="padding:8px 10px;vertical-align:middle;white-space:nowrap;font-family:monospace;font-size:11px;color:#475569">0001237880</td><td style="padding:8px 10px;vertical-align:middle;white-space:nowrap;font-family:monospace;font-size:11px;color:#94a3b8">100623718</td><td style="padding:8px 10px;vertical-align:middle;white-space:nowrap"><span style="font-family:monospace;font-size:11px;font-weight:600;color:#1e40af;background:#eff6ff;padding:2px 6px;border-radius:4px">SWG776-BRANDED</span></td><td style="padding:8px 10px;vertical-align:middle;white-space:nowrap;text-align:center;color:#059669;font-weight:700;font-size:14px">✓</td><td style="padding:8px 10px;vertical-align:middle;white-space:nowrap;font-family:monospace;font-size:11px;color:#374151;max-width:190px;overflow:hidden;text-overflow:ellipsis" title="asset-59976--1783954429.png">asset-59976--1783954429.png</td><td style="padding:8px 10px;vertical-align:middle;white-space:nowrap;text-align:center"><span style="background:#f1f5f9;color:#475569;border-radius:3px;padding:1px 5px;font-size:10px;font-family:monospace;font-weight:600">PNG</span></td><td style="padding:8px 10px;vertical-align:middle;white-space:nowrap;text-align:right;color:#64748b">2,431.0</td><td style="padding:8px 10px;vertical-align:middle;white-space:nowrap;color:#475569">mixed_graphic</td><td style="padding:8px 10px;vertical-align:middle;white-space:nowrap"><span style="display:inline-block;width:8px;height:8px;border-radius:50%;background:#94a3b8;margin-right:4px;vertical-align:middle"></span>greyscale</td><td style="padding:8px 10px;vertical-align:middle;white-space:nowrap;text-align:right;color:#64748b">—</td><td style="padding:8px 10px;vertical-align:middle;white-space:nowrap;text-align:right;color:#64748b">—</td><td style="padding:8px 10px;vertical-align:middle;white-space:nowrap;text-align:right"><span style="color:#9ca3af">—</span></td><td style="padding:8px 10px;vertical-align:middle;white-space:nowrap"><span style="display:inline-block;border-radius:4px;padding:2px 7px;font-size:11px;font-weight:600;background:#fef3c7;color:#92400e;white-space:nowrap">Upscale</span></td><td style="padding:8px 10px;vertical-align:middle;white-space:nowrap"><span style="display:inline-block;border-radius:4px;padding:2px 7px;font-size:11px;font-weight:600;background:#f1f5f9;color:#475569;white-space:nowrap;border:1px solid #47556933">Pending</span></td><td style="padding:8px 10px;vertical-align:middle;white-space:nowrap;text-align:right;color:#64748b;font-size:11px">410.0</td><td style="padding:8px 10px;vertical-align:middle;white-space:nowrap;text-align:right;color:#64748b;font-size:11px">766.3</td><td style="padding:8px 10px;vertical-align:middle;white-space:nowrap;color:#64748b;font-size:11px;max-width:220px;overflow:hidden;text-overflow:ellipsis" title="421x808mm greyscale PNG 299dpi">421x808mm greyscale PNG 299dpi</td><td style="padding:8px 10px;vertical-align:middle;white-space:nowrap"><button onclick="window.open('/artwork-assessor/?aa_id=cea26d1d&sku=SWG776-BRANDED&order=0001237880','_blank')" style="padding:4px 9px;border:none;border-radius:5px;font-size:11px;font-weight:600;cursor:pointer;background:#F47920;color:#fff;margin-right:4px">Assess</button><button onclick="window.open('/designer/?aa_id=cea26d1d&sku=SWG776-BRANDED&order=0001237880','_blank')" style="padding:4px 9px;border:none;border-radius:5px;font-size:11px;font-weight:600;cursor:pointer;background:#0f172a;color:#fff;margin-right:4px">Designer →</button><button onclick="openDelete('cea26d1d','DE Acquisitions Ltd')" style="padding:4px 8px;border:0.5px solid #F09595;border-radius:5px;font-size:11px;font-weight:600;cursor:pointer;background:#FCEBEB;color:#501313">✕</button></td></tr>
-<tr id="row-f85c42c0"><td style="padding:8px 10px;vertical-align:middle;white-space:nowrap;font-weight:600;max-width:150px;overflow:hidden;text-overflow:ellipsis" title="Kiki Ltd">Kiki Ltd</td><td style="padding:8px 10px;vertical-align:middle;white-space:nowrap;color:#475569;max-width:120px;overflow:hidden;text-overflow:ellipsis" title="Louise Awcock">Louise Awcock</td><td style="padding:8px 10px;vertical-align:middle;white-space:nowrap;font-family:monospace;font-size:11px;color:#475569">0001237920</td><td style="padding:8px 10px;vertical-align:middle;white-space:nowrap;font-family:monospace;font-size:11px;color:#94a3b8">100623749</td><td style="padding:8px 10px;vertical-align:middle;white-space:nowrap"><span style="font-family:monospace;font-size:11px;font-weight:600;color:#1e40af;background:#eff6ff;padding:2px 6px;border-radius:4px">EAS06F-PRINTED</span></td><td style="padding:8px 10px;vertical-align:middle;white-space:nowrap;text-align:center;color:#dc2626;font-weight:700;font-size:14px">✗</td><td style="padding:8px 10px;vertical-align:middle;white-space:nowrap;font-family:monospace;font-size:11px;color:#374151;max-width:190px;overflow:hidden;text-overflow:ellipsis" title="asset-59963--1783939854.pdf">asset-59963--1783939854.pdf</td><td style="padding:8px 10px;vertical-align:middle;white-space:nowrap;text-align:center"><span style="background:#f1f5f9;color:#475569;border-radius:3px;padding:1px 5px;font-size:10px;font-family:monospace;font-weight:600">PDF</span></td><td style="padding:8px 10px;vertical-align:middle;white-space:nowrap;text-align:right;color:#64748b">4,554.7</td><td style="padding:8px 10px;vertical-align:middle;white-space:nowrap;color:#475569">photo_complex</td><td style="padding:8px 10px;vertical-align:middle;white-space:nowrap"><span style="display:inline-block;width:8px;height:8px;border-radius:50%;background:#f59e0b;margin-right:4px;vertical-align:middle"></span>colour</td><td style="padding:8px 10px;vertical-align:middle;white-space:nowrap;text-align:right;color:#64748b">—</td><td style="padding:8px 10px;vertical-align:middle;white-space:nowrap;text-align:right;color:#64748b">—</td><td style="padding:8px 10px;vertical-align:middle;white-space:nowrap;text-align:right"><span style="color:#9ca3af">—</span></td><td style="padding:8px 10px;vertical-align:middle;white-space:nowrap"><span style="display:inline-block;border-radius:4px;padding:2px 7px;font-size:11px;font-weight:600;background:#fee2e2;color:#991b1b;white-space:nowrap">Flag</span></td><td style="padding:8px 10px;vertical-align:middle;white-space:nowrap"><span style="display:inline-block;border-radius:4px;padding:2px 7px;font-size:11px;font-weight:600;background:#f1f5f9;color:#475569;white-space:nowrap;border:1px solid #47556933">Pending</span></td><td style="padding:8px 10px;vertical-align:middle;white-space:nowrap;text-align:right;color:#64748b;font-size:11px">—</td><td style="padding:8px 10px;vertical-align:middle;white-space:nowrap;text-align:right;color:#64748b;font-size:11px">—</td><td style="padding:8px 10px;vertical-align:middle;white-space:nowrap;color:#64748b;font-size:11px;max-width:220px;overflow:hidden;text-overflow:ellipsis" title="594x841mm photo - risky">594x841mm photo - risky</td><td style="padding:8px 10px;vertical-align:middle;white-space:nowrap"><button onclick="window.open('/artwork-assessor/?aa_id=f85c42c0&sku=EAS06F-PRINTED&order=0001237920','_blank')" style="padding:4px 9px;border:none;border-radius:5px;font-size:11px;font-weight:600;cursor:pointer;background:#F47920;color:#fff;margin-right:4px">Assess</button><button onclick="window.open('/designer/?aa_id=f85c42c0&sku=EAS06F-PRINTED&order=0001237920','_blank')" style="padding:4px 9px;border:none;border-radius:5px;font-size:11px;font-weight:600;cursor:pointer;background:#0f172a;color:#fff;margin-right:4px">Designer →</button><button onclick="openDelete('f85c42c0','Kiki Ltd')" style="padding:4px 8px;border:0.5px solid #F09595;border-radius:5px;font-size:11px;font-weight:600;cursor:pointer;background:#FCEBEB;color:#501313">✕</button></td></tr>
-<tr id="row-7c49e113"><td style="padding:8px 10px;vertical-align:middle;white-space:nowrap;font-weight:600;max-width:150px;overflow:hidden;text-overflow:ellipsis" title="Nupsala Ltd">Nupsala Ltd</td><td style="padding:8px 10px;vertical-align:middle;white-space:nowrap;color:#475569;max-width:120px;overflow:hidden;text-overflow:ellipsis" title="Andrea Makk">Andrea Makk</td><td style="padding:8px 10px;vertical-align:middle;white-space:nowrap;font-family:monospace;font-size:11px;color:#475569">0001237930</td><td style="padding:8px 10px;vertical-align:middle;white-space:nowrap;font-family:monospace;font-size:11px;color:#94a3b8">100623754</td><td style="padding:8px 10px;vertical-align:middle;white-space:nowrap"><span style="font-family:monospace;font-size:11px;font-weight:600;color:#1e40af;background:#eff6ff;padding:2px 6px;border-radius:4px">SPPA5-BRANDED</span></td><td style="padding:8px 10px;vertical-align:middle;white-space:nowrap;text-align:center;color:#dc2626;font-weight:700;font-size:14px">✗</td><td style="padding:8px 10px;vertical-align:middle;white-space:nowrap;font-family:monospace;font-size:11px;color:#374151;max-width:190px;overflow:hidden;text-overflow:ellipsis" title="asset-59960--1783938148.pdf">asset-59960--1783938148.pdf</td><td style="padding:8px 10px;vertical-align:middle;white-space:nowrap;text-align:center"><span style="background:#f1f5f9;color:#475569;border-radius:3px;padding:1px 5px;font-size:10px;font-family:monospace;font-weight:600">PDF</span></td><td style="padding:8px 10px;vertical-align:middle;white-space:nowrap;text-align:right;color:#64748b">330.7</td><td style="padding:8px 10px;vertical-align:middle;white-space:nowrap;color:#475569">mixed_graphic</td><td style="padding:8px 10px;vertical-align:middle;white-space:nowrap"><span style="display:inline-block;width:8px;height:8px;border-radius:50%;background:#f59e0b;margin-right:4px;vertical-align:middle"></span>colour</td><td style="padding:8px 10px;vertical-align:middle;white-space:nowrap;text-align:right;color:#64748b">—</td><td style="padding:8px 10px;vertical-align:middle;white-space:nowrap;text-align:right;color:#64748b">—</td><td style="padding:8px 10px;vertical-align:middle;white-space:nowrap;text-align:right"><span style="color:#9ca3af">—</span></td><td style="padding:8px 10px;vertical-align:middle;white-space:nowrap"><span style="display:inline-block;border-radius:4px;padding:2px 7px;font-size:11px;font-weight:600;background:#fef3c7;color:#92400e;white-space:nowrap">Upscale</span></td><td style="padding:8px 10px;vertical-align:middle;white-space:nowrap"><span style="display:inline-block;border-radius:4px;padding:2px 7px;font-size:11px;font-weight:600;background:#f1f5f9;color:#475569;white-space:nowrap;border:1px solid #47556933">Pending</span></td><td style="padding:8px 10px;vertical-align:middle;white-space:nowrap;text-align:right;color:#64748b;font-size:11px">—</td><td style="padding:8px 10px;vertical-align:middle;white-space:nowrap;text-align:right;color:#64748b;font-size:11px">—</td><td style="padding:8px 10px;vertical-align:middle;white-space:nowrap;color:#64748b;font-size:11px;max-width:220px;overflow:hidden;text-overflow:ellipsis" title="216x154mm mixed graphic">216x154mm mixed graphic</td><td style="padding:8px 10px;vertical-align:middle;white-space:nowrap"><button onclick="window.open('/artwork-assessor/?aa_id=7c49e113&sku=SPPA5-BRANDED&order=0001237930','_blank')" style="padding:4px 9px;border:none;border-radius:5px;font-size:11px;font-weight:600;cursor:pointer;background:#F47920;color:#fff;margin-right:4px">Assess</button><button onclick="window.open('/designer/?aa_id=7c49e113&sku=SPPA5-BRANDED&order=0001237930','_blank')" style="padding:4px 9px;border:none;border-radius:5px;font-size:11px;font-weight:600;cursor:pointer;background:#0f172a;color:#fff;margin-right:4px">Designer →</button><button onclick="openDelete('7c49e113','Nupsala Ltd')" style="padding:4px 8px;border:0.5px solid #F09595;border-radius:5px;font-size:11px;font-weight:600;cursor:pointer;background:#FCEBEB;color:#501313">✕</button></td></tr>
-<tr id="row-4da651a2"><td style="padding:8px 10px;vertical-align:middle;white-space:nowrap;font-weight:600;max-width:150px;overflow:hidden;text-overflow:ellipsis" title="Howarth Timber">Howarth Timber</td><td style="padding:8px 10px;vertical-align:middle;white-space:nowrap;color:#475569;max-width:120px;overflow:hidden;text-overflow:ellipsis" title="Gavin Knowles">Gavin Knowles</td><td style="padding:8px 10px;vertical-align:middle;white-space:nowrap;font-family:monospace;font-size:11px;color:#475569">0001237938</td><td style="padding:8px 10px;vertical-align:middle;white-space:nowrap;font-family:monospace;font-size:11px;color:#94a3b8">100623766</td><td style="padding:8px 10px;vertical-align:middle;white-space:nowrap"><span style="font-family:monospace;font-size:11px;font-weight:600;color:#1e40af;background:#eff6ff;padding:2px 6px;border-radius:4px">WPG9A1-PRINTED</span></td><td style="padding:8px 10px;vertical-align:middle;white-space:nowrap;text-align:center;color:#059669;font-weight:700;font-size:14px">✓</td><td style="padding:8px 10px;vertical-align:middle;white-space:nowrap;font-family:monospace;font-size:11px;color:#374151;max-width:190px;overflow:hidden;text-overflow:ellipsis" title="asset-59957--1783936809.pdf">asset-59957--1783936809.pdf</td><td style="padding:8px 10px;vertical-align:middle;white-space:nowrap;text-align:center"><span style="background:#f1f5f9;color:#475569;border-radius:3px;padding:1px 5px;font-size:10px;font-family:monospace;font-weight:600">PDF</span></td><td style="padding:8px 10px;vertical-align:middle;white-space:nowrap;text-align:right;color:#64748b">47.8</td><td style="padding:8px 10px;vertical-align:middle;white-space:nowrap;color:#475569">mixed_graphic</td><td style="padding:8px 10px;vertical-align:middle;white-space:nowrap"><span style="display:inline-block;width:8px;height:8px;border-radius:50%;background:#f59e0b;margin-right:4px;vertical-align:middle"></span>colour</td><td style="padding:8px 10px;vertical-align:middle;white-space:nowrap;text-align:right;color:#64748b">—</td><td style="padding:8px 10px;vertical-align:middle;white-space:nowrap;text-align:right;color:#64748b">—</td><td style="padding:8px 10px;vertical-align:middle;white-space:nowrap;text-align:right"><span style="color:#9ca3af">—</span></td><td style="padding:8px 10px;vertical-align:middle;white-space:nowrap"><span style="display:inline-block;border-radius:4px;padding:2px 7px;font-size:11px;font-weight:600;background:#dbeafe;color:#1e40af;white-space:nowrap">Vectorise</span></td><td style="padding:8px 10px;vertical-align:middle;white-space:nowrap"><span style="display:inline-block;border-radius:4px;padding:2px 7px;font-size:11px;font-weight:600;background:#f1f5f9;color:#475569;white-space:nowrap;border:1px solid #47556933">Pending</span></td><td style="padding:8px 10px;vertical-align:middle;white-space:nowrap;text-align:right;color:#64748b;font-size:11px">594.0</td><td style="padding:8px 10px;vertical-align:middle;white-space:nowrap;text-align:right;color:#64748b;font-size:11px">841.0</td><td style="padding:8px 10px;vertical-align:middle;white-space:nowrap;color:#64748b;font-size:11px;max-width:220px;overflow:hidden;text-overflow:ellipsis" title="1237x1750mm true vector PDF">1237x1750mm true vector PDF</td><td style="padding:8px 10px;vertical-align:middle;white-space:nowrap"><button onclick="window.open('/artwork-assessor/?aa_id=4da651a2&sku=WPG9A1-PRINTED&order=0001237938','_blank')" style="padding:4px 9px;border:none;border-radius:5px;font-size:11px;font-weight:600;cursor:pointer;background:#F47920;color:#fff;margin-right:4px">Assess</button><button onclick="window.open('/designer/?aa_id=4da651a2&sku=WPG9A1-PRINTED&order=0001237938','_blank')" style="padding:4px 9px;border:none;border-radius:5px;font-size:11px;font-weight:600;cursor:pointer;background:#0f172a;color:#fff;margin-right:4px">Designer →</button><button onclick="openDelete('4da651a2','Howarth Timber')" style="padding:4px 8px;border:0.5px solid #F09595;border-radius:5px;font-size:11px;font-weight:600;cursor:pointer;background:#FCEBEB;color:#501313">✕</button></td></tr>
-<tr id="row-64f1c727"><td style="padding:8px 10px;vertical-align:middle;white-space:nowrap;font-weight:600;max-width:150px;overflow:hidden;text-overflow:ellipsis" title="Wed2b">Wed2b</td><td style="padding:8px 10px;vertical-align:middle;white-space:nowrap;color:#475569;max-width:120px;overflow:hidden;text-overflow:ellipsis" title="Nisha Cairns">Nisha Cairns</td><td style="padding:8px 10px;vertical-align:middle;white-space:nowrap;font-family:monospace;font-size:11px;color:#475569">0001237961</td><td style="padding:8px 10px;vertical-align:middle;white-space:nowrap;font-family:monospace;font-size:11px;color:#94a3b8">100623783</td><td style="padding:8px 10px;vertical-align:middle;white-space:nowrap"><span style="font-family:monospace;font-size:11px;font-weight:600;color:#1e40af;background:#eff6ff;padding:2px 6px;border-radius:4px">WPG9A1-PRINTED</span></td><td style="padding:8px 10px;vertical-align:middle;white-space:nowrap;text-align:center;color:#059669;font-weight:700;font-size:14px">✓</td><td style="padding:8px 10px;vertical-align:middle;white-space:nowrap;font-family:monospace;font-size:11px;color:#374151;max-width:190px;overflow:hidden;text-overflow:ellipsis" title="asset-59965--1783941364.pdf">asset-59965--1783941364.pdf</td><td style="padding:8px 10px;vertical-align:middle;white-space:nowrap;text-align:center"><span style="background:#f1f5f9;color:#475569;border-radius:3px;padding:1px 5px;font-size:10px;font-family:monospace;font-weight:600">PDF</span></td><td style="padding:8px 10px;vertical-align:middle;white-space:nowrap;text-align:right;color:#64748b">5,584.1</td><td style="padding:8px 10px;vertical-align:middle;white-space:nowrap;color:#475569">mixed_graphic</td><td style="padding:8px 10px;vertical-align:middle;white-space:nowrap"><span style="display:inline-block;width:8px;height:8px;border-radius:50%;background:#f59e0b;margin-right:4px;vertical-align:middle"></span>colour</td><td style="padding:8px 10px;vertical-align:middle;white-space:nowrap;text-align:right;color:#64748b">—</td><td style="padding:8px 10px;vertical-align:middle;white-space:nowrap;text-align:right;color:#64748b">—</td><td style="padding:8px 10px;vertical-align:middle;white-space:nowrap;text-align:right"><span style="color:#9ca3af">—</span></td><td style="padding:8px 10px;vertical-align:middle;white-space:nowrap"><span style="display:inline-block;border-radius:4px;padding:2px 7px;font-size:11px;font-weight:600;background:#fee2e2;color:#991b1b;white-space:nowrap">Flag</span></td><td style="padding:8px 10px;vertical-align:middle;white-space:nowrap"><span style="display:inline-block;border-radius:4px;padding:2px 7px;font-size:11px;font-weight:600;background:#f1f5f9;color:#475569;white-space:nowrap;border:1px solid #47556933">Pending</span></td><td style="padding:8px 10px;vertical-align:middle;white-space:nowrap;text-align:right;color:#64748b;font-size:11px">594.0</td><td style="padding:8px 10px;vertical-align:middle;white-space:nowrap;text-align:right;color:#64748b;font-size:11px">841.0</td><td style="padding:8px 10px;vertical-align:middle;white-space:nowrap;color:#64748b;font-size:11px;max-width:220px;overflow:hidden;text-overflow:ellipsis" title="594x841mm A1 double-sided">594x841mm A1 double-sided</td><td style="padding:8px 10px;vertical-align:middle;white-space:nowrap"><button onclick="window.open('/artwork-assessor/?aa_id=64f1c727&sku=WPG9A1-PRINTED&order=0001237961','_blank')" style="padding:4px 9px;border:none;border-radius:5px;font-size:11px;font-weight:600;cursor:pointer;background:#F47920;color:#fff;margin-right:4px">Assess</button><button onclick="window.open('/designer/?aa_id=64f1c727&sku=WPG9A1-PRINTED&order=0001237961','_blank')" style="padding:4px 9px;border:none;border-radius:5px;font-size:11px;font-weight:600;cursor:pointer;background:#0f172a;color:#fff;margin-right:4px">Designer →</button><button onclick="openDelete('64f1c727','Wed2b')" style="padding:4px 8px;border:0.5px solid #F09595;border-radius:5px;font-size:11px;font-weight:600;cursor:pointer;background:#FCEBEB;color:#501313">✕</button></td></tr>
-<tr id="row-be8210da"><td style="padding:8px 10px;vertical-align:middle;white-space:nowrap;font-weight:600;max-width:150px;overflow:hidden;text-overflow:ellipsis" title="Bumbles &amp; Boo Ltd">Bumbles &amp; Boo Ltd</td><td style="padding:8px 10px;vertical-align:middle;white-space:nowrap;color:#475569;max-width:120px;overflow:hidden;text-overflow:ellipsis" title="Emma Weldon">Emma Weldon</td><td style="padding:8px 10px;vertical-align:middle;white-space:nowrap;font-family:monospace;font-size:11px;color:#475569">0001237977</td><td style="padding:8px 10px;vertical-align:middle;white-space:nowrap;font-family:monospace;font-size:11px;color:#94a3b8">100623794</td><td style="padding:8px 10px;vertical-align:middle;white-space:nowrap"><span style="font-family:monospace;font-size:11px;font-weight:600;color:#1e40af;background:#eff6ff;padding:2px 6px;border-radius:4px">WPG9A1-PRINTED</span></td><td style="padding:8px 10px;vertical-align:middle;white-space:nowrap;text-align:center;color:#059669;font-weight:700;font-size:14px">✓</td><td style="padding:8px 10px;vertical-align:middle;white-space:nowrap;font-family:monospace;font-size:11px;color:#374151;max-width:190px;overflow:hidden;text-overflow:ellipsis" title="asset-59993--1784032976.pdf">asset-59993--1784032976.pdf</td><td style="padding:8px 10px;vertical-align:middle;white-space:nowrap;text-align:center"><span style="background:#f1f5f9;color:#475569;border-radius:3px;padding:1px 5px;font-size:10px;font-family:monospace;font-weight:600">PDF</span></td><td style="padding:8px 10px;vertical-align:middle;white-space:nowrap;text-align:right;color:#64748b">7,969.2</td><td style="padding:8px 10px;vertical-align:middle;white-space:nowrap;color:#475569">mixed_graphic</td><td style="padding:8px 10px;vertical-align:middle;white-space:nowrap"><span style="display:inline-block;width:8px;height:8px;border-radius:50%;background:#f59e0b;margin-right:4px;vertical-align:middle"></span>colour</td><td style="padding:8px 10px;vertical-align:middle;white-space:nowrap;text-align:right;color:#64748b">—</td><td style="padding:8px 10px;vertical-align:middle;white-space:nowrap;text-align:right;color:#64748b">—</td><td style="padding:8px 10px;vertical-align:middle;white-space:nowrap;text-align:right"><span style="color:#9ca3af">—</span></td><td style="padding:8px 10px;vertical-align:middle;white-space:nowrap"><span style="display:inline-block;border-radius:4px;padding:2px 7px;font-size:11px;font-weight:600;background:#fee2e2;color:#991b1b;white-space:nowrap">Flag</span></td><td style="padding:8px 10px;vertical-align:middle;white-space:nowrap"><span style="display:inline-block;border-radius:4px;padding:2px 7px;font-size:11px;font-weight:600;background:#f1f5f9;color:#475569;white-space:nowrap;border:1px solid #47556933">Pending</span></td><td style="padding:8px 10px;vertical-align:middle;white-space:nowrap;text-align:right;color:#64748b;font-size:11px">594.0</td><td style="padding:8px 10px;vertical-align:middle;white-space:nowrap;text-align:right;color:#64748b;font-size:11px">841.0</td><td style="padding:8px 10px;vertical-align:middle;white-space:nowrap;color:#64748b;font-size:11px;max-width:220px;overflow:hidden;text-overflow:ellipsis" title="594x841mm A1 borderline">594x841mm A1 borderline</td><td style="padding:8px 10px;vertical-align:middle;white-space:nowrap"><button onclick="window.open('/artwork-assessor/?aa_id=be8210da&sku=WPG9A1-PRINTED&order=0001237977','_blank')" style="padding:4px 9px;border:none;border-radius:5px;font-size:11px;font-weight:600;cursor:pointer;background:#F47920;color:#fff;margin-right:4px">Assess</button><button onclick="window.open('/designer/?aa_id=be8210da&sku=WPG9A1-PRINTED&order=0001237977','_blank')" style="padding:4px 9px;border:none;border-radius:5px;font-size:11px;font-weight:600;cursor:pointer;background:#0f172a;color:#fff;margin-right:4px">Designer →</button><button onclick="openDelete('be8210da','Bumbles &amp; Boo Ltd')" style="padding:4px 8px;border:0.5px solid #F09595;border-radius:5px;font-size:11px;font-weight:600;cursor:pointer;background:#FCEBEB;color:#501313">✕</button></td></tr>
+        <table id="jobTable">
+          <thead>
+            <tr>
+              <th onclick="sortBy('reference')" style="cursor:pointer">Sage ⇅</th>
+              <th onclick="sortBy('company')" style="cursor:pointer">Company ⇅</th>
+              <th onclick="sortBy('customer_name')" style="cursor:pointer">Customer ⇅</th>
+              <th onclick="sortBy('order_number')" style="cursor:pointer">Magento ⇅</th>
+              <th onclick="sortBy('file_name')" style="cursor:pointer">File ⇅</th>
+              <th onclick="sortBy('file_type')" style="cursor:pointer">Type ⇅</th>
+              <th onclick="sortBy('source')" style="cursor:pointer">Source ⇅</th>
+              <th onclick="sortBy('uploaded_at')" style="cursor:pointer">Uploaded ⇅</th>
+              <th onclick="sortBy('assessed_at')" style="cursor:pointer">Assessed ⇅</th>
+              <th onclick="sortBy('score_pct')" style="cursor:pointer">Score ⇅</th>
+              <th class="check-col check-cell" data-col="dpi">DPI</th>
+              <th class="check-col check-cell" data-col="pixelation">Pixelation</th>
+              <th class="check-col check-cell" data-col="bleed">Bleed</th>
+              <th class="check-col check-cell" data-col="colour">Colour</th>
+              <th class="check-col check-cell" data-col="white_edge">White edge</th>
+              <th class="check-col check-cell" data-col="safe_zone">Safe zone</th>
+              <th class="check-col check-cell" data-col="fonts">Fonts</th>
+              <th class="check-col check-cell" data-col="transparency">Transparency</th>
+              <th onclick="sortBy('sku')" style="cursor:pointer">SKU ⇅</th>
+              <th onclick="sortBy('_class')" style="cursor:pointer">Class ⇅</th>
+              <th onclick="sortBy('colour_mode')" style="cursor:pointer">Colour mode ⇅</th>
+              <th onclick="sortBy('_upscale')" style="cursor:pointer">Upscale ⇅</th>
+              <th>Notes</th>
+              <th></th>
+            </tr>
+          </thead>
+          <tbody id="jobBody">
+            <tr><td colspan="27"><div class="empty-state"><div class="es-icon">⏳</div><p>Loading…</p></div></td></tr>
           </tbody>
         </table>
       </div>
+      <div class="pagination" id="paginationBar">
+        <span class="pg-info" id="pgInfo"></span>
+        <div class="pg-size">
+          <span>Show</span>
+          <select id="pgSize" onchange="changePageSize(this.value)">
+            <option value="50">50</option>
+            <option value="100">100</option>
+            <option value="250">250</option>
+          </select>
+          <span>per page</span>
+        </div>
+        <button class="pg-btn" id="pgPrev" onclick="changePage(-1)" disabled>← Prev</button>
+        <span id="pgPages"></span>
+        <button class="pg-btn" id="pgNext" onclick="changePage(1)">Next →</button>
+      </div>
+    </div>
+
+  </div><!-- end .content -->
+</div><!-- end .main -->
+
+<!-- Delete modal -->
+<div class="modal-overlay" id="deleteModal">
+  <div class="modal">
+    <h2>Delete job</h2>
+    <p>This will permanently remove <span class="modal-ref" id="deleteRef"></span> from the queue. Type <strong>DELETE</strong> to confirm.</p>
+    <input type="text" id="deleteConfirmInput" placeholder="Type DELETE to confirm" oninput="validateDeleteInput(this)" />
+    <div class="modal-actions">
+      <button class="mbtn" onclick="closeDeleteModal()">Cancel</button>
+      <button class="mbtn mbtn-danger" id="deleteConfirmBtn" onclick="confirmDelete()" disabled>Delete</button>
     </div>
   </div>
 </div>
 
-<div class="modal-overlay" id="deleteModal">
-  <div class="modal">
-    <h2>Remove from list</h2>
-    <p>Remove <strong id="deleteRef"></strong> from this view?</p>
-    <div class="modal-actions">
-      <button class="mbtn" onclick="closeDelete()">Cancel</button>
-      <button class="mbtn mbtn-danger" onclick="confirmDelete()">Remove</button>
-    </div>
-  </div>
-</div>
 <div class="toast" id="toast"></div>
 
 <script>
-var pendingDeleteId = null;
-function openDelete(id, name) {
+/* ══════════════════════════════════════════════════
+   ALL JS BELOW IS TRANSPLANTED UNCHANGED FROM THE
+   ORIGINAL public/dashboard/index.html
+   ══════════════════════════════════════════════════ */
+
+const CHECK_COLS = ['dpi','pixelation','bleed','colour','white_edge','safe_zone','fonts','transparency'];
+
+const STATIC_JOBS = [
+  {id:'aa-1de84294',reference:'0001237823',customer_name:'Thushy Thavathurai',order_number:'100623642',sage_order:'0001237823',magento_order:'100623642',company:'Esquires Coffee House',file_name:'asset-59946--1783792917.pdf',file_type:'PDF',sku:'ABC7A1-BRANDED',file_size_kb:188.7,_class:'mixed_graphic',colour_mode:'colour',_upscale:'raster',_notes:'605x185mm banner - mixed graphic',source:'upload',uploaded_at:null,assessed_at:null,score_pct:65,overall_status:'warn',results:null,_aa_id:'1de84294-5057-49a9-83b6-2496ef413b19'},
+  {id:'aa-8391d7cc',reference:'0001237828',customer_name:'Simon Moore',order_number:'100623648',sage_order:'0001237828',magento_order:'100623648',company:'The Sumner Collection',file_name:'asset-60042--1784105955.pdf',file_type:'PDF',sku:'BACKLA3-PRINTED',file_size_kb:384.1,_class:'photo_complex',colour_mode:'colour',_upscale:'raster',_notes:'A4 210x297mm photo/complex',source:'upload',uploaded_at:null,assessed_at:null,score_pct:65,overall_status:'warn',results:null,_aa_id:'8391d7cc-e1c8-4a4a-9ada-060e787bae37'},
+  {id:'aa-1239a6aa',reference:'0001237860',customer_name:'Satminder Deo',order_number:'100623688',sage_order:'0001237860',magento_order:'100623688',company:'Spar Stores',file_name:'asset-59947--1783875765.pdf',file_type:'PDF',sku:'BACKLA1-PRINTED',file_size_kb:84.5,_class:'mixed_graphic',colour_mode:'colour',_upscale:'raster',_notes:'190x275mm mixed graphic',source:'upload',uploaded_at:null,assessed_at:null,score_pct:65,overall_status:'warn',results:null,_aa_id:'1239a6aa-3cb6-4f26-a252-1db17dcc01f9'},
+  {id:'aa-9f496a94',reference:'0001237877',customer_name:'Adam Roach',order_number:'100623711',sage_order:'0001237877',magento_order:'100623711',company:'Pontcanna Inn',file_name:'asset-59949--1783925409.pdf',file_type:'PDF',sku:'ABC7A1-BRANDED',file_size_kb:132.6,_class:'logo_flat_graphic',colour_mode:'greyscale',_upscale:'vector',_notes:'176x85mm logo flat greyscale',source:'upload',uploaded_at:null,assessed_at:null,score_pct:75,overall_status:'warn',results:null,_aa_id:'9f496a94-28af-4185-a66a-fea956623666'},
+  {id:'aa-cea26d1d',reference:'0001237880',customer_name:'Craig Potter',order_number:'100623718',sage_order:'0001237880',magento_order:'100623718',company:'DE Acquisitions Ltd',file_name:'asset-59976--1783954429.png',file_type:'PNG',sku:'SWG776-BRANDED',file_size_kb:2431.0,_class:'mixed_graphic',colour_mode:'greyscale',_upscale:'raster',_notes:'421x808mm greyscale PNG',source:'upload',uploaded_at:null,assessed_at:null,score_pct:65,overall_status:'warn',results:null,_aa_id:'cea26d1d-4705-4724-9b94-2c233fa3ab84'},
+  {id:'aa-f85c42c0',reference:'0001237920',customer_name:'Louise Awcock',order_number:'100623749',sage_order:'0001237920',magento_order:'100623749',company:'Kiki Ltd',file_name:'asset-59963--1783939854.pdf',file_type:'PDF',sku:'EAS06F-PRINTED',file_size_kb:4554.7,_class:'photo_complex',colour_mode:'colour',_upscale:'flag',_notes:'594x841mm photo - upscaling very risky',source:'upload',uploaded_at:null,assessed_at:null,score_pct:20,overall_status:'fail',results:null,_aa_id:'f85c42c0-0b63-447c-8dc8-c291318003ce'},
+  {id:'aa-7c49e113',reference:'0001237930',customer_name:'Andrea Makk',order_number:'100623754',sage_order:'0001237930',magento_order:'100623754',company:'Nupsala Ltd',file_name:'asset-59960--1783938148.pdf',file_type:'PDF',sku:'SPPA5-BRANDED',file_size_kb:330.7,_class:'mixed_graphic',colour_mode:'colour',_upscale:'raster',_notes:'216x154mm mixed graphic',source:'upload',uploaded_at:null,assessed_at:null,score_pct:65,overall_status:'warn',results:null,_aa_id:'7c49e113-2738-499e-a20f-397c627c9a0f'},
+  {id:'aa-4da651a2',reference:'0001237938',customer_name:'Gavin Knowles',order_number:'100623766',sage_order:'0001237938',magento_order:'100623766',company:'Howarth Timber',file_name:'asset-59957--1783936809.pdf',file_type:'PDF',sku:'WPG9A1-PRINTED',file_size_kb:47.8,_class:'mixed_graphic',colour_mode:'colour',_upscale:'vector',_notes:'1237x1750mm true vector PDF',source:'upload',uploaded_at:null,assessed_at:null,score_pct:75,overall_status:'warn',results:null,_aa_id:'4da651a2-8bcf-493f-9a8b-0796eba04ae4'},
+  {id:'aa-64f1c727',reference:'0001237961',customer_name:'Nisha Cairns',order_number:'100623783',sage_order:'0001237961',magento_order:'100623783',company:'Wed2b',file_name:'asset-59965--1783941364.pdf',file_type:'PDF',sku:'WPG9A1-PRINTED',file_size_kb:5584.1,_class:'mixed_graphic',colour_mode:'colour',_upscale:'flag',_notes:'594x841mm A1 double-sided',source:'upload',uploaded_at:null,assessed_at:null,score_pct:20,overall_status:'fail',results:null,_aa_id:'64f1c727-7a33-4cae-9b35-4a64da77ae0e'},
+  {id:'aa-be8210da',reference:'0001237977',customer_name:'Emma Weldon',order_number:'100623794',sage_order:'0001237977',magento_order:'100623794',company:'Bumbles & Boo Ltd',file_name:'asset-59993--1784032976.pdf',file_type:'PDF',sku:'WPG9A1-PRINTED',file_size_kb:7969.2,_class:'mixed_graphic',colour_mode:'colour',_upscale:'flag',_notes:'594x841mm A1 borderline',source:'upload',uploaded_at:null,assessed_at:null,score_pct:20,overall_status:'fail',results:null,_aa_id:'be8210da-fbb5-411e-81a8-1daa223d7ea4'},
+];
+let allJobs = [];
+let hiddenCols = new Set();
+let currentPage = 1;
+let pageSize = 50;
+let pendingDeleteId = null;
+
+function toggleCol(btn) {
+  const col = btn.dataset.col;
+  btn.classList.toggle('on');
+  hiddenCols.has(col) ? hiddenCols.delete(col) : hiddenCols.add(col);
+  applyColVisibility();
+}
+
+function applyColVisibility() {
+  document.querySelectorAll('.check-col').forEach(th => { th.style.display = hiddenCols.has(th.dataset.col) ? 'none' : ''; });
+  document.querySelectorAll('.check-td').forEach(td => { td.style.display = hiddenCols.has(td.dataset.col) ? 'none' : ''; });
+}
+
+function fmtDate(iso) {
+  if (!iso) return '—';
+  const d = new Date(iso);
+  return d.toLocaleDateString('en-GB', {day:'2-digit',month:'short'}) + ' ' + d.toLocaleTimeString('en-GB', {hour:'2-digit',minute:'2-digit'});
+}
+
+function checkIcon(results, id) {
+  if (!results) return '<span class="muted">—</span>';
+  const r = results.find(r => r.id === id || r.id === id.replace('_',''));
+  if (!r) return '<span class="muted">—</span>';
+  if (r.status === 'pass') return '<span class="ck ck-pass" title="Pass"></span>';
+  if (r.status === 'fail') return '<span class="ck ck-fail" title="Fail"></span>';
+  if (r.status === 'warn') return '<span class="ck ck-warn" title="Warning"></span>';
+  return '<span class="ck ck-none" title="Info"></span>';
+}
+
+function renderRow(job) {
+  const results = job.results || null;
+  const statusDot = {pass:'dot-pass',fail:'dot-fail',warn:'dot-warn'}[job.overall_status] || 'dot-pending';
+  const pct = job.score_pct;
+  const ringColor = pct >= 80 ? '#639922' : pct >= 50 ? '#EF9F27' : '#E24B4A';
+  const ringNumColor = pct >= 80 ? '#3B6D11' : pct >= 50 ? '#854F0B' : '#A32D2D';
+  const circ = 81.7;
+  const offset = pct !== null && pct !== undefined ? circ * (1 - pct/100) : circ;
+  const scoreHtml = pct !== null && pct !== undefined
+    ? `<div class="score-wrap">
+         <svg width="34" height="34" viewBox="0 0 34 34" style="transform:rotate(-90deg)">
+           <circle cx="17" cy="17" r="13" fill="none" stroke="#F2F1F6" stroke-width="2.5"/>
+           <circle cx="17" cy="17" r="13" fill="none" stroke="${ringColor}" stroke-width="2.5" stroke-linecap="round" stroke-dasharray="${circ}" stroke-dashoffset="${offset.toFixed(1)}"/>
+         </svg>
+         <div class="score-num" style="color:${ringNumColor}">${pct}</div>
+       </div>`
+    : job.assessed_at ? '<span class="muted">—</span>' : '<span class="spinner-sm"></span>';
+
+  const badgeType = 'badge-' + (job.file_type||'').toLowerCase();
+  const badgeSrc  = 'badge-' + (job.source||'manual').toLowerCase().replace(/\s/g,'');
+  const ref = (job.reference||'').replace(/</g,'&lt;');
+  const fname = (job.file_name||'').replace(/</g,'&lt;');
+
+  const checkCells = CHECK_COLS.map(col => {
+    const hidden = hiddenCols.has(col) ? ' style="display:none"' : '';
+    return `<td class="check-cell check-td" data-col="${col}"${hidden}>${checkIcon(results, col)}</td>`;
+  }).join('');
+
+  return `<tr data-id="${job.id}">
+    <td><div class="ref-cell"><span class="status-dot ${statusDot}"></span><span class="ref-text" style="font-size:11px" title="${ref}">${ref}</span></div></td>
+    <td style="font-size:11px;font-weight:600;color:#2C2C2A;white-space:nowrap;max-width:140px;overflow:hidden;text-overflow:ellipsis">${job.company||'—'}</td>
+    <td style="font-size:11px;color:#5F5E5A;white-space:nowrap">${job.customer_name||'<span class="muted">—</span>'}</td>
+    <td style="font-family:monospace;font-size:11px;color:#888780;white-space:nowrap">${job.magento_order||job.order_number||'—'}</td>
+    <td><div class="filename-cell" title="${fname}">${fname}</div></td>
+    <td><span class="badge ${badgeType}">${job.file_type||'?'}</span></td>
+    <td class="source-cell">${job.source||'manual'}</td>
+    <td class="date-cell">${fmtDate(job.uploaded_at)}</td>
+    <td class="date-cell">${fmtDate(job.assessed_at)}</td>
+    <td>${scoreHtml}</td>
+    ${checkCells}
+    <td>${job.sku?'<span style="font-family:monospace;font-size:10px;font-weight:600;color:#1e40af;background:#eff6ff;padding:1px 6px;border-radius:3px">'+job.sku+'</span>':'<span style="color:#B4B2A9">—</span>'}</td>
+    <td style="font-size:11px;color:#5F5E5A;white-space:nowrap">${job._class||job.artwork_class||'—'}</td>
+    <td style="font-size:11px;white-space:nowrap">${(function(m){const d=m==='colour'?'#f59e0b':m==='greyscale'?'#94a3b8':'#e2e8f0';return m?'<span style="display:inline-block;width:7px;height:7px;border-radius:50%;background:'+d+';margin-right:3px;vertical-align:middle"></span>'+m:'—'})(job.colour_mode)}</td>
+    <td style="white-space:nowrap">${(function(u){const m={none:['#d1fae5','#065f46','Ready'],raster:['#fef3c7','#92400e','Upscale'],vector:['#dbeafe','#1e40af','Vectorise'],flag:['#fee2e2','#991b1b','Flag']};const c=m[u];return c?'<span style="border-radius:4px;padding:2px 6px;font-size:10px;font-weight:600;background:'+c[0]+';color:'+c[1]+'">'+c[2]+'</span>':'<span style="color:#B4B2A9">—</span>'})(job._upscale||job.upscale_recommended)}</td>
+    <td style="font-size:10px;color:#888780;max-width:180px;white-space:normal;line-height:1.35">${job._notes||job.notes||'—'}</td>
+    <td><div class="actions-cell">
+      <button class="view-btn" onclick="openJob('${job.id}')">Assess →</button>
+      <button class="design-btn" onclick="openDesigner('${job.id}','${ref}','${encodeURIComponent(job.file_name||'')}','${job.sku||''}')">Design →</button>
+      <button class="del-btn" onclick="openDeleteModal('${job.id}','${ref}')">✕</button>
+    </div></td>
+  </tr>`;
+}
+
+function updateStats() {
+  document.getElementById('statTotal').textContent = allJobs.length;
+  document.getElementById('statPass').textContent  = allJobs.filter(j=>j.overall_status==='pass').length;
+  document.getElementById('statWarn').textContent  = allJobs.filter(j=>j.overall_status==='warn').length;
+  document.getElementById('statFail').textContent  = allJobs.filter(j=>j.overall_status==='fail').length;
+}
+
+function renderTable() {
+  // Reapply current filters, then delegate
+  applyFilters();
+}
+
+function changePage(dir) { currentPage += dir; renderTableFromSource(filteredJobs.length && filteredJobs.length < allJobs.length ? filteredJobs : allJobs); window.scrollTo(0,0); }
+function changePageSize(val) { pageSize = parseInt(val); currentPage = 1; renderTable(); }
+
+let sortCol = null, sortDir = 1;
+function sortBy(col) {
+  if (sortCol === col) { sortDir *= -1; } else { sortCol = col; sortDir = 1; }
+  // Update header indicators
+  document.querySelectorAll('thead th[onclick]').forEach(th => {
+    th.textContent = th.textContent.replace(' ↑','').replace(' ↓','').replace(' ⇅',' ⇅');
+    if (th.getAttribute('onclick') === 'sortBy(\'' + col + '\')') {
+      th.textContent = th.textContent.replace(' ⇅', sortDir === 1 ? ' ↑' : ' ↓');
+    }
+  });
+  const src = filteredJobs.length && filteredJobs.length < allJobs.length ? filteredJobs : allJobs;
+  const sorted = [...src].sort((a,b) => {
+    let av = a[col] ?? '', bv = b[col] ?? '';
+    if (typeof av === 'number' && typeof bv === 'number') return (av - bv) * sortDir;
+    return String(av).localeCompare(String(bv), undefined, {numeric:true}) * sortDir;
+  });
+  currentPage = 1;
+  renderTableFromSource(sorted);
+}
+
+async function loadJobs() {
+  allJobs = [...STATIC_JOBS];
+  currentPage = 1;
+  renderTable();
+  try {
+    const r = await fetch('/api/jobs');
+    const data = await r.json();
+    if (Array.isArray(data) && data.length) {
+      const staticIds = new Set(STATIC_JOBS.map(j => j.id));
+      allJobs = [...data.filter(j => !staticIds.has(j.id)), ...STATIC_JOBS];
+      currentPage = 1;
+      renderTable();
+    }
+  } catch(e) { console.error('loadJobs live fetch failed', e); }
+}
+
+function openJob(id) {
+  const s = STATIC_JOBS.find(j => j.id === id);
+  if (s) { window.location.href = `/artwork-assessor?aa_id=${s._aa_id}&sku=${encodeURIComponent(s.sku||'')}&order=${s.reference}`; return; }
+  window.location.href = `/artwork-assessor?job=${id}`;
+}
+function openDesigner(id, ref, fileName, sku) {
+  const s = STATIC_JOBS.find(j => j.id === id);
+  if (s) { window.location.href = `/designer?aa_id=${s._aa_id}&sku=${encodeURIComponent(s.sku||'')}&order=${s.reference}`; return; }
+  const params = new URLSearchParams({ job: id });
+  if (sku) params.set('sku', sku);
+  window.location.href = `/designer?${params.toString()}`;
+}
+
+function openDeleteModal(id, ref) {
   pendingDeleteId = id;
-  document.getElementById('deleteRef').textContent = name;
+  document.getElementById('deleteRef').textContent = ref;
+  document.getElementById('deleteConfirmInput').value = '';
+  document.getElementById('deleteConfirmInput').classList.remove('error');
+  document.getElementById('deleteConfirmBtn').disabled = true;
   document.getElementById('deleteModal').classList.add('show');
+  setTimeout(() => document.getElementById('deleteConfirmInput').focus(), 50);
 }
-function closeDelete() { document.getElementById('deleteModal').classList.remove('show'); pendingDeleteId = null; }
-function confirmDelete() {
+
+function closeDeleteModal() { document.getElementById('deleteModal').classList.remove('show'); pendingDeleteId = null; }
+
+function validateDeleteInput(inp) {
+  const ok = inp.value.trim() === 'DELETE';
+  document.getElementById('deleteConfirmBtn').disabled = !ok;
+  inp.classList.toggle('error', inp.value.length > 0 && !ok);
+}
+
+async function confirmDelete() {
   if (!pendingDeleteId) return;
-  var row = document.getElementById('row-' + pendingDeleteId);
-  if (row) row.remove();
-  closeDelete();
-  showToast('Row removed from view');
+  const id = pendingDeleteId;
+  closeDeleteModal();
+  try {
+    const r = await fetch(`/api/job?id=${id}`, { method: 'DELETE' });
+    if (r.ok) { allJobs = allJobs.filter(j => j.id !== id); renderTable(); showToast('Job deleted'); }
+    else showToast('Delete failed — try again');
+  } catch(e) { showToast('Delete failed: ' + e.message); }
 }
+
+document.getElementById('deleteModal').addEventListener('click', function(e) { if (e.target === this) closeDeleteModal(); });
+document.addEventListener('keydown', e => {
+  if (e.key === 'Escape') closeDeleteModal();
+  if (e.key === 'Enter' && !document.getElementById('deleteConfirmBtn').disabled) confirmDelete();
+});
+
+function bufToB64(buf) {
+  const bytes = new Uint8Array(buf);
+  let binary = '';
+  const chunk = 8192;
+  for (let i = 0; i < bytes.length; i += chunk) binary += String.fromCharCode(...bytes.subarray(i, i + chunk));
+  return btoa(binary);
+}
+
+function getFileType(name) { return name.split('.').pop().toUpperCase(); }
+function makeReference(fileName) { return fileName.replace(/\.[^.]+$/, '').substring(0, 40); }
+
+async function encodeFile(f) {
+  const ext = f.name.split('.').pop().toLowerCase();
+  if (ext === 'pdf')  return { b64: bufToB64(await f.arrayBuffer()), mediaType: 'application/pdf', fileType: 'PDF', fileName: f.name };
+  if (ext === 'png')  return { b64: bufToB64(await f.arrayBuffer()), mediaType: 'image/png',        fileType: 'PNG', fileName: f.name };
+  if (ext === 'jpg' || ext === 'jpeg') return { b64: bufToB64(await f.arrayBuffer()), mediaType: 'image/jpeg', fileType: 'JPG', fileName: f.name };
+  if (ext === 'eps')  { const text = await f.text(); return { b64: btoa(unescape(encodeURIComponent(text))), mediaType: 'text/plain', fileType: 'EPS', fileName: f.name }; }
+  if (ext === 'zip' && typeof JSZip !== 'undefined') {
+    const zip = await JSZip.loadAsync(f);
+    const entry = Object.values(zip.files).find(e => e.name.toLowerCase().endsWith('.eps') && !e.name.startsWith('__MACOSX'));
+    if (!entry) throw new Error('No EPS found in ZIP');
+    const text = await entry.async('text');
+    return { b64: btoa(unescape(encodeURIComponent(text))), mediaType: 'text/plain', fileType: 'EPS', fileName: entry.name.split('/').pop() };
+  }
+  throw new Error('Unsupported file type: ' + ext);
+}
+
+function buildAssessmentPrompt(fileType) {
+  const isPDF = fileType === 'PDF';
+  const isImage = ['PNG','JPG','JPEG'].includes(fileType);
+  const fileDesc = isPDF ? 'PDF artwork file' : isImage ? `${fileType} image file` : 'EPS PostScript file';
+  const checks = [
+    isPDF  ? `IMAGE RESOLUTION: Check all embedded raster images. Minimum DPI is 300. Report actual DPI and pass/fail. If purely vector mark pass. id: "dpi"`
+    : isImage ? `IMAGE RESOLUTION: Assess pixel dimensions relative to expected print output. Minimum 300 DPI. id: "dpi"`
+    : `IMAGE RESOLUTION: Check embedded raster images meet 300 DPI minimum via image dictionary entries. If entirely vector mark pass. id: "dpi"`,
+    `PIXELATION / UPSAMPLING: Inspect for blocky pixel grid, jagged staircase edges, or blurry areas suggesting upsampling from a low-res original. id: "pixelation"`,
+    `BLEED: Expected 3mm bleed on all sides beyond trim. Does the artwork include sufficient bleed? id: "bleed"`,
+    isPDF  ? `COLOUR MODE: Inspect embedded images and colour spaces. Flag if RGB found (CMYK expected for print). id: "colour"`
+    : isImage ? `COLOUR MODE: PNG/JPG are typically RGB — flag this as a warning since CMYK is expected for print. id: "colour"`
+    : `COLOUR MODE: Check for setcmykcolor/DeviceCMYK vs setrgbcolor/DeviceRGB. Flag if RGB found. id: "colour"`,
+    isPDF  ? `WHITE EDGE: Visually inspect all four edges for any thin white or light strip — artwork not extended to the bleed line. Even 1–3mm is a FAIL. id: "white_edge"`
+    : isImage ? `WHITE EDGE: Inspect all four edges for any thin white or light strip not extending to the bleed line. id: "white_edge"`
+    : `WHITE EDGE: Do PostScript drawing commands fill to the BoundingBox edges, or stop short leaving implied white space? id: "white_edge"`,
+    `SAFE ZONE: Are any text, logos, or important elements within ~5mm of the trim edge, risking being cut off? id: "safe_zone"`,
+    isPDF  ? `FONTS: Are all fonts fully embedded or outlined in this PDF? Any missing fonts = FAIL. id: "fonts"`
+    : isImage ? `FONTS: Does visible text appear sharp and clean, or show rasterisation artefacts? Note embedding cannot be checked in raster files. id: "fonts"`
+    : `FONTS: Are fonts fully embedded or outlined in the EPS? Any unembedded non-outlined fonts = FAIL. id: "fonts"`,
+    isImage ? `TRANSPARENCY: Does this image contain transparent areas (alpha channel)? Transparency can cause unexpected backgrounds on press. id: "transparency"`
+    : `TRANSPARENCY / OVERPRINT: Any unflattened transparency or overprint settings that could cause unexpected results at print? id: "transparency"`,
+  ];
+  return `You are a professional print production specialist reviewing a ${fileDesc} for print readiness. Analyse it thoroughly and respond ONLY as a JSON array — no markdown, no preamble.\n\nEach object must have: "id" (from check), "label" (human-readable name), "status" (pass/fail/warn/info), "headline" (≤12 words), "detail" (1–3 sentences of specific findings).\n\nChecks:\n${checks.map((c,i) => `${i+1}. ${c}`).join('\n')}\n\nAdd a final object: id "overall", label "Overall verdict", status based on any fails present, headline and brief detail summary.\n\nJSON array only.`;
+}
+
+async function saveJob(jobData) {
+  try {
+    const r = await fetch('/api/jobs', { method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify(jobData) });
+    const data = await r.json();
+    if (!r.ok) { console.error('saveJob error', data); return null; }
+    return Array.isArray(data) ? data[0] : data;
+  } catch(e) { console.error('saveJob failed', e); return null; }
+}
+
+async function assessAndPatch(jobId, encoded) {
+  try {
+    const isImage = ['PNG','JPG','JPEG'].includes(encoded.fileType);
+    const contentBlock = isImage
+      ? { type:'image',    source:{ type:'base64', media_type:encoded.mediaType, data:encoded.b64 } }
+      : { type:'document', source:{ type:'base64', media_type:encoded.mediaType, data:encoded.b64 } };
+    const resp = await fetch('/api/assess', {
+      method:'POST', headers:{'Content-Type':'application/json'},
+      body: JSON.stringify({ model:'claude-sonnet-4-5', max_tokens:1500, messages:[{ role:'user', content:[contentBlock,{type:'text',text:buildAssessmentPrompt(encoded.fileType)}] }] })
+    });
+    const data = await resp.json();
+    if (data.error) throw new Error(data.error.message || JSON.stringify(data.error));
+    const raw = (data.content||[]).filter(b=>b.type==='text').map(b=>b.text).join('');
+    const results = JSON.parse(raw.replace(/```json|```/g,'').trim());
+    const overall = results.find(r=>r.id==='overall');
+    const checks  = results.filter(r=>r.id!=='overall');
+    const scorePct = checks.length ? Math.round(checks.filter(r=>r.status==='pass').length/checks.length*100) : null;
+    await fetch(`/api/job?id=${jobId}`, {
+      method:'PATCH', headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({ assessed_at:new Date().toISOString(), results, score_pct:scorePct, overall_status:overall?overall.status:null, file_name:encoded.fileName, file_type:encoded.fileType })
+    });
+    return { results, scorePct, overallStatus: overall ? overall.status : null };
+  } catch(e) { console.error('assessAndPatch failed', e); return null; }
+}
+
+async function uploadToStorage(encoded, jobId) {
+  const extMap = {PDF:'pdf',PNG:'png',JPG:'jpg',JPEG:'jpg',EPS:'eps'};
+  const path = `${jobId}.${extMap[encoded.fileType]||'bin'}`;
+  try {
+    const r = await fetch('/api/upload', { method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify({ path, mediaType:encoded.mediaType, data:encoded.b64 }) });
+    const data = await r.json();
+    if (!r.ok) { console.error('upload failed', data); return null; }
+    await fetch(`/api/job?id=${jobId}`, { method:'PATCH', headers:{'Content-Type':'application/json'}, body:JSON.stringify({ storage_path:path }) });
+    return path;
+  } catch(e) { console.error('uploadToStorage failed', e); return null; }
+}
+
+async function addFilesToQueue(files) {
+  const validFiles = Array.from(files).filter(f => ['pdf','eps','zip','png','jpg','jpeg'].includes(f.name.split('.').pop().toLowerCase()));
+  if (!validFiles.length) { showToast('No supported files found'); return; }
+  showToast(`Adding ${validFiles.length} file${validFiles.length > 1 ? 's' : ''}…`);
+  const encodedFiles = await Promise.all(validFiles.map(async f => { try { return await encodeFile(f); } catch(e) { console.error('encodeFile failed', f.name, e); return null; } }));
+  const jobRecords = await Promise.all(encodedFiles.map(enc => enc ? saveJob({ reference:makeReference(enc.fileName), file_name:enc.fileName, file_type:enc.fileType, source:'Manual', customer_name:null, order_number:null }) : null));
+  const pairs = jobRecords.map((job,i) => ({job, enc:encodedFiles[i]})).filter(p => p.job && p.job.id && p.enc);
+  pairs.forEach(({job}) => allJobs.unshift(job));
+  renderTable();
+  showToast(`Uploading and assessing ${pairs.length} file${pairs.length!==1?'s':''}…`);
+  await Promise.all(pairs.map(async ({job,enc}) => {
+    uploadToStorage(enc, job.id).catch(e => console.error('storage upload error', e));
+    const assessment = await assessAndPatch(job.id, enc);
+    if (assessment) {
+      const idx = allJobs.findIndex(j => j.id === job.id);
+      if (idx !== -1) { allJobs[idx] = {...allJobs[idx], results:assessment.results, score_pct:assessment.scorePct, overall_status:assessment.overallStatus, assessed_at:new Date().toISOString()}; renderTable(); }
+    }
+  }));
+  showToast(`${pairs.length} file${pairs.length!==1?'s':''} assessed`);
+}
+
+async function handleCSV(e) {
+  const f = e.target.files[0]; if (!f) return;
+  const text = await f.text();
+  const lines = text.trim().split('\n');
+  if (lines.length < 2) { showToast('CSV appears empty'); return; }
+  const headers = lines[0].split(',').map(h => h.trim().toLowerCase().replace(/[^a-z_]/g,''));
+  const promises = lines.slice(1).map(async line => {
+    const vals = line.split(',').map(v => v.trim().replace(/^"|"$/g,''));
+    const row = {}; headers.forEach((h,i) => row[h] = vals[i]||'');
+    const fileName = row['file_name']||row['filename']||row['file']||''; if (!fileName) return null;
+    return saveJob({ reference:row['reference']||row['ref']||makeReference(fileName), file_name:fileName, file_type:getFileType(fileName), source:'CSV', customer_name:row['customer_name']||row['customer']||null, order_number:row['order_number']||row['order']||row['order_no']||null });
+  });
+  const results = await Promise.all(promises);
+  const saved = results.filter(j => j && j.id);
+  saved.forEach(job => allJobs.unshift(job));
+  renderTable();
+  showToast(`${saved.length} job${saved.length!==1?'s':''} added from CSV`);
+  e.target.value = '';
+}
+
+function handleFiles(e) { addFilesToQueue(Array.from(e.target.files)); e.target.value = ''; }
+
 function showToast(msg) {
-  var t = document.getElementById('toast');
+  const t = document.getElementById('toast');
   t.textContent = msg; t.classList.add('show');
-  setTimeout(function(){ t.classList.remove('show'); }, 2500);
+  setTimeout(() => t.classList.remove('show'), 2500);
 }
-document.getElementById('deleteModal').addEventListener('click', function(e){ if(e.target===this) closeDelete(); });
-document.addEventListener('keydown', function(e){ if(e.key==='Escape') closeDelete(); });
+
+const banner = document.getElementById('dropBanner');
+banner.addEventListener('dragover', e => { e.preventDefault(); banner.classList.add('drag-over'); });
+banner.addEventListener('dragleave', () => banner.classList.remove('drag-over'));
+banner.addEventListener('drop', e => { e.preventDefault(); banner.classList.remove('drag-over'); addFilesToQueue(Array.from(e.dataTransfer.files)); });
+banner.addEventListener('click', e => { if (!e.target.closest('.db-browse')) document.getElementById('fileInput').click(); });
+
+// ── Date + score filter ────────────────────────────────────
+let activePreset = 'all';
+let filteredJobs = [];
+
+function localDateStr(date) {
+  // Returns YYYY-MM-DD in local time
+  const y = date.getFullYear();
+  const m = String(date.getMonth()+1).padStart(2,'0');
+  const d = String(date.getDate()).padStart(2,'0');
+  return `${y}-${m}-${d}`;
+}
+
+function setDatePreset(btn, preset) {
+  activePreset = preset;
+  document.querySelectorAll('.date-preset').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+  // Clear custom date inputs when preset chosen
+  document.getElementById('filterDateFrom').value = '';
+  document.getElementById('filterDateTo').value = '';
+  applyFilters();
+}
+
+function onDateRangeChange() {
+  // Deactivate presets when custom range is entered
+  activePreset = 'custom';
+  document.querySelectorAll('.date-preset').forEach(b => b.classList.remove('active'));
+  applyFilters();
+}
+
+function clearFilters() {
+  activePreset = 'all';
+  document.querySelectorAll('.date-preset').forEach(b => b.classList.remove('active'));
+  document.querySelector('.date-preset[data-preset="all"]').classList.add('active');
+  document.getElementById('filterDateFrom').value = '';
+  document.getElementById('filterDateTo').value = '';
+  document.getElementById('filterScoreMin').value = '';
+  document.getElementById('filterScoreMax').value = '';
+  applyFilters();
+}
+
+function applyFilters() {
+  const now = new Date();
+  const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+
+  let fromDate = null, toDate = null;
+
+  if (activePreset === 'today') {
+    fromDate = today;
+    toDate = new Date(today.getTime() + 86400000); // end of today
+  } else if (activePreset === 'yesterday') {
+    fromDate = new Date(today.getTime() - 86400000);
+    toDate = today;
+  } else if (activePreset === '7d') {
+    fromDate = new Date(today.getTime() - 7*86400000);
+    toDate = new Date(today.getTime() + 86400000);
+  } else if (activePreset === '30d') {
+    fromDate = new Date(today.getTime() - 30*86400000);
+    toDate = new Date(today.getTime() + 86400000);
+  } else if (activePreset === 'custom' || activePreset === 'all') {
+    const fromVal = document.getElementById('filterDateFrom').value;
+    const toVal   = document.getElementById('filterDateTo').value;
+    if (fromVal) fromDate = new Date(fromVal + 'T00:00:00');
+    if (toVal)   toDate   = new Date(toVal   + 'T23:59:59');
+  }
+
+  const scoreMinStr = document.getElementById('filterScoreMin').value;
+  const scoreMaxStr = document.getElementById('filterScoreMax').value;
+  const scoreMin = scoreMinStr !== '' ? parseInt(scoreMinStr) : null;
+  const scoreMax = scoreMaxStr !== '' ? parseInt(scoreMaxStr) : null;
+
+  const isFiltered = activePreset !== 'all' || fromDate || toDate || scoreMin !== null || scoreMax !== null;
+
+  filteredJobs = allJobs.filter(job => {
+    // Date filter — use uploaded_at
+    if (fromDate || toDate) {
+      const uploaded = job.uploaded_at ? new Date(job.uploaded_at) : null;
+      if (!uploaded) return false;
+      if (fromDate && uploaded < fromDate) return false;
+      if (toDate   && uploaded > toDate)   return false;
+    }
+    // Score filter
+    if (scoreMin !== null && (job.score_pct === null || job.score_pct === undefined || job.score_pct < scoreMin)) return false;
+    if (scoreMax !== null && (job.score_pct === null || job.score_pct === undefined || job.score_pct > scoreMax)) return false;
+    return true;
+  });
+
+  // Update clear button
+  document.getElementById('filterClearBtn').classList.toggle('hidden', !isFiltered);
+
+  // Show result count when filtered
+  const resultsEl = document.getElementById('filterResults');
+  if (isFiltered && filteredJobs.length !== allJobs.length) {
+    resultsEl.textContent = `${filteredJobs.length} of ${allJobs.length} jobs`;
+  } else {
+    resultsEl.textContent = '';
+  }
+
+  currentPage = 1;
+  renderTableFromSource(filteredJobs.length < allJobs.length ? filteredJobs : allJobs);
+}
+
+// Override renderTable to accept a jobs source
+function renderTableFromSource(jobs) {
+  const tbody = document.getElementById('jobBody');
+  const total = jobs.length;
+  const totalPages = Math.max(1, Math.ceil(total / pageSize));
+  if (currentPage > totalPages) currentPage = totalPages;
+  const start = (currentPage - 1) * pageSize;
+  const pageJobs = jobs.slice(start, start + pageSize);
+
+  if (!total) {
+    tbody.innerHTML = `<tr><td colspan="27"><div class="empty-state"><div class="es-icon">🔍</div><p>No jobs match the current filters</p></div></td></tr>`;
+  } else {
+    tbody.innerHTML = pageJobs.map(renderRow).join('');
+  }
+  applyColVisibility();
+  updateStats();
+
+  const showing = total ? `${start + 1}–${Math.min(start + pageSize, total)} of ${total} jobs` : '0 jobs';
+  document.getElementById('pgInfo').textContent = showing;
+  document.getElementById('pgPages').textContent = `Page ${currentPage} of ${totalPages}`;
+  document.getElementById('pgPrev').disabled = currentPage <= 1;
+  document.getElementById('pgNext').disabled = currentPage >= totalPages;
+}
+
+loadJobs();
 </script>
 </body>
 </html>
