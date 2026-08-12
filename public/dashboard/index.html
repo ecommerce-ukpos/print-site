@@ -4,371 +4,144 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Artwork Submissions — PrintSite</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
   <style>
-    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-    body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; background: #f8fafc; color: #0f172a; font-size: 12px; }
-    ::-webkit-scrollbar { height: 6px; width: 6px; }
-    ::-webkit-scrollbar-track { background: #f1f5f9; }
-    ::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 3px; }
-
-    /* Header */
-    #header {
-      background: #fff; border-bottom: 1px solid #e2e8f0;
-      padding: 12px 20px; position: sticky; top: 0; z-index: 10;
-      display: flex; align-items: center; gap: 12px; flex-wrap: wrap;
-    }
-    #header-title { font-size: 16px; font-weight: 700; color: #0f172a; letter-spacing: -0.02em; }
-    #header-sub { font-size: 11px; color: #64748b; margin-top: 2px; }
-    #header-sub span { margin: 0 2px; }
-    .filter-input {
-      padding: 7px 12px; border: 1px solid #e2e8f0; border-radius: 6px;
-      font-size: 12px; width: 190px; background: #f8fafc; font-family: inherit;
-      outline: none;
-    }
-    .filter-select {
-      padding: 7px 10px; border: 1px solid #e2e8f0; border-radius: 6px;
-      font-size: 12px; background: #fff; color: #374151; cursor: pointer;
-      font-family: inherit;
-    }
-    #shown-count { margin-left: auto; font-size: 12px; color: #94a3b8; }
-
-    /* Table */
-    #table-wrap { overflow-x: auto; }
-    table { border-collapse: collapse; width: max-content; min-width: 100%; }
-    thead th {
-      padding: 10px 10px; text-align: left; white-space: nowrap;
-      font-weight: 600; font-size: 11px; color: #475569;
-      letter-spacing: 0.05em; text-transform: uppercase; cursor: pointer;
-      user-select: none; background: #f1f5f9;
-      position: sticky; top: 56px; z-index: 2;
-      border-bottom: 2px solid #e2e8f0;
-    }
-    thead th.sort-active { color: #1e40af; background: #e8eef5; }
-    thead th .sort-icon { opacity: 0.25; font-size: 10px; }
-    thead th.sort-active .sort-icon { opacity: 1; }
-    tbody tr { border-bottom: 1px solid #f1f5f9; }
-    tbody tr:nth-child(even) td { background: #f8fafc; }
-    tbody tr:nth-child(odd)  td { background: #fff; }
-    tbody tr:hover td { background: #eff6ff !important; }
-    td { padding: 7px 10px; white-space: nowrap; }
-    td.right { text-align: right; }
-    td.center { text-align: center; }
-
-    /* Badges */
-    .badge {
-      display: inline-block; border-radius: 4px; padding: 2px 7px;
-      font-size: 11px; font-weight: 600; white-space: nowrap;
-    }
-    .badge-ext {
-      background: #f1f5f9; color: #475569; border-radius: 3px;
-      padding: 1px 5px; font-size: 10px; font-family: monospace; font-weight: 600;
-    }
-    .badge-sku {
-      font-family: monospace; font-size: 11px; font-weight: 600;
-      color: #1e40af; background: #eff6ff; padding: 2px 6px; border-radius: 4px;
-    }
-    .colour-dot {
-      display: inline-block; width: 8px; height: 8px;
-      border-radius: 50%; margin-right: 4px; vertical-align: middle;
-    }
-    .tmpl-yes { color: #059669; font-weight: 700; font-size: 14px; }
-    .tmpl-no  { color: #dc2626; font-weight: 700; font-size: 14px; }
-    .tmpl-na  { color: #9ca3af; }
-    .mono { font-family: monospace; font-size: 11px; }
-    .ellipsis { overflow: hidden; text-overflow: ellipsis; display: block; }
-    .muted { color: #9ca3af; }
-    .dpi-ok  { color: #059669; font-weight: 600; }
-    .dpi-bad { color: #dc2626; font-weight: 600; }
-
-    /* Action buttons */
-    .btn {
-      display: inline-block; padding: 4px 10px; border: none; border-radius: 5px;
-      font-size: 11px; font-weight: 600; cursor: pointer; font-family: inherit;
-      white-space: nowrap; text-decoration: none;
-    }
-    .btn-assess   { background: #F47920; color: #fff; }
-    .btn-designer { background: #0f172a; color: #fff; }
-    .btn-disabled { background: #f1f5f9; color: #94a3b8; cursor: default; }
-
-    #loading, #error-msg {
-      display: flex; align-items: center; justify-content: center;
-      height: 60vh; font-size: 14px; color: #94a3b8;
-    }
-    #error-msg { color: #dc2626; }
+    *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+    body{font-family:'Inter',-apple-system,sans-serif;background:#F2F1F6;color:#2C2C2A;font-size:12px;display:flex}
+    ::-webkit-scrollbar{height:6px;width:6px}
+    ::-webkit-scrollbar-track{background:#f1f5f9}
+    ::-webkit-scrollbar-thumb{background:#cbd5e1;border-radius:3px}
+    .sidebar{width:52px;background:#fff;border-right:0.5px solid #D3D1C7;display:flex;flex-direction:column;align-items:flex-start;padding:12px 0;gap:2px;flex-shrink:0;overflow:hidden;transition:width 0.2s ease;position:fixed;top:0;left:0;bottom:0;z-index:50}
+    .sidebar:hover{width:184px}
+    .sb-logo{width:52px;height:40px;display:flex;align-items:center;justify-content:center;flex-shrink:0;margin-bottom:8px}
+    .sb-logo-inner{width:28px;height:28px;background:#F47920;border-radius:7px;display:flex;align-items:center;justify-content:center}
+    .sb-logo-inner svg{width:16px;height:16px;fill:#fff}
+    .sb-item{height:36px;display:flex;align-items:center;gap:10px;padding:0 14px;cursor:pointer;width:100%;white-space:nowrap;overflow:hidden;border-left:3px solid transparent;text-decoration:none}
+    .sb-item:hover{background:#F2F1F6}
+    .sb-item.active{background:#FFF0E6;border-left-color:#F47920}
+    .sb-icon{font-size:17px;flex-shrink:0;width:20px;text-align:center;font-style:normal;color:#888780}
+    .sb-item.active .sb-icon{color:#F47920}
+    .sb-label{font-size:12px;font-weight:500;color:#2C2C2A;opacity:0;white-space:nowrap;pointer-events:none}
+    .sb-item.active .sb-label{color:#C75E0A}
+    .sidebar:hover .sb-label{opacity:1;transition:opacity 0.15s ease 0.05s}
+    .sb-spacer{flex:1}
+    .sb-divider{height:0.5px;background:#E8E6DE;margin:6px 10px;width:calc(100% - 20px)}
+    .main{flex:1;margin-left:52px;display:flex;flex-direction:column;min-height:100vh}
+    .topbar{height:52px;background:#fff;border-bottom:0.5px solid #D3D1C7;display:flex;align-items:center;padding:0 20px;gap:12px;position:sticky;top:0;z-index:40;flex-shrink:0}
+    .topbar-title{font-size:15px;font-weight:600;color:#2C2C2A;letter-spacing:-0.01em}
+    .notice{font-size:11px;color:#854F0B;background:#FAEEDA;border:0.5px solid #FAC775;border-radius:6px;padding:4px 10px}
+    .content{padding:18px 20px;display:flex;flex-direction:column;gap:14px}
+    .summary{display:grid;grid-template-columns:repeat(4,1fr);gap:10px}
+    .stat{background:#fff;border-radius:10px;padding:14px 16px;border:0.5px solid #D3D1C7}
+    .stat-label{font-size:10px;color:#888780;font-weight:600;text-transform:uppercase;letter-spacing:0.05em;margin-bottom:4px}
+    .stat-value{font-size:22px;font-weight:600;letter-spacing:-0.02em}
+    .table-card{background:#fff;border-radius:12px;border:0.5px solid #D3D1C7;overflow:hidden}
+    .table-wrap{overflow-x:auto}
+    table{border-collapse:collapse;width:max-content;min-width:100%}
+    thead th{padding:9px 10px;text-align:left;white-space:nowrap;font-weight:600;font-size:10px;color:#888780;letter-spacing:0.06em;text-transform:uppercase;background:#FAFAF8;border-bottom:0.5px solid #E8E6DE;position:sticky;top:0;z-index:2}
+    tbody tr{border-bottom:0.5px solid #F1EFE8}
+    tbody tr:last-child{border-bottom:none}
+    tbody tr:hover td{background:#FAFAF8}
+    .modal-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,0.45);z-index:100;align-items:center;justify-content:center}
+    .modal-overlay.show{display:flex}
+    .modal{background:#fff;border-radius:14px;padding:28px;width:360px;max-width:90vw;box-shadow:0 20px 60px rgba(0,0,0,0.15)}
+    .modal h2{font-size:16px;font-weight:600;margin-bottom:8px}
+    .modal p{font-size:13px;color:#5F5E5A;margin-bottom:20px;line-height:1.5}
+    .modal-actions{display:flex;gap:8px;justify-content:flex-end}
+    .mbtn{padding:7px 14px;border-radius:8px;font-size:12px;font-weight:600;cursor:pointer;border:0.5px solid #D3D1C7;background:#fff;color:#2C2C2A;font-family:inherit}
+    .mbtn:hover{background:#F2F1F6}
+    .mbtn-danger{background:#FCEBEB;color:#501313;border-color:#F09595}
+    .mbtn-danger:hover{background:#F7D0D0}
+    .toast{position:fixed;bottom:24px;left:50%;transform:translateX(-50%);background:#2C2C2A;color:#fff;padding:9px 18px;border-radius:8px;font-size:12px;font-weight:500;opacity:0;transition:opacity 0.2s;pointer-events:none;z-index:999;white-space:nowrap}
+    .toast.show{opacity:1}
   </style>
 </head>
 <body>
-
-<div id="header">
-  <div>
-    <div id="header-title">Artwork Submissions</div>
-    <div id="header-sub">
-      <span id="cnt-total">—</span> files &middot;
-      <span id="cnt-matched">—</span> template matched &middot;
-      <span id="cnt-pending" style="color:#475569">— pending</span> &middot;
-      <span id="cnt-hold" style="color:#c2410c">— on hold</span> &middot;
-      <span id="cnt-approved" style="color:#065f46">— approved</span>
+<nav class="sidebar">
+  <div class="sb-logo"><div class="sb-logo-inner"><svg viewBox="0 0 24 24"><path d="M3 6h18v2H3zm0 5h18v2H3zm0 5h18v2H3z"/></svg></div></div>
+  <a class="sb-item active" href="/dashboard"><span class="sb-icon">&#128203;</span><span class="sb-label">Submissions</span></a>
+  <a class="sb-item" href="/designer"><span class="sb-icon">&#9998;</span><span class="sb-label">Designer</span></a>
+  <a class="sb-item" href="/artwork-assessor"><span class="sb-icon">&#10003;</span><span class="sb-label">Assessor</span></a>
+  <a class="sb-item" href="/print-jobs"><span class="sb-icon">&#128424;</span><span class="sb-label">Print Jobs</span></a>
+  <div class="sb-spacer"></div>
+  <div class="sb-divider"></div>
+  <a class="sb-item" href="/"><span class="sb-icon">&#9965;</span><span class="sb-label">Home</span></a>
+</nav>
+<div class="main">
+  <div class="topbar">
+    <span class="topbar-title">Artwork Submissions</span>
+    <span class="notice">&#9888; Showing 10 example submissions for testing &mdash; full list loads from database</span>
+  </div>
+  <div class="content">
+    <div class="summary">
+      <div class="stat"><div class="stat-label">Shown</div><div class="stat-value" style="color:#2C2C2A">10</div></div>
+      <div class="stat"><div class="stat-label">Pending assessment</div><div class="stat-value" style="color:#475569">10</div></div>
+      <div class="stat"><div class="stat-label">Template matched</div><div class="stat-value" style="color:#3B6D11">4</div></div>
+      <div class="stat"><div class="stat-label">Flag / raster</div><div class="stat-value" style="color:#A32D2D">8</div></div>
+    </div>
+    <div class="table-card">
+      <div class="table-wrap">
+        <table>
+          <thead><tr>
+            <th>Company</th><th>Customer</th><th>Sage</th><th>Magento</th>
+            <th>SKU</th><th>Tmpl</th><th>File</th><th>Ext</th><th>KB</th>
+            <th>Class</th><th>Colour</th><th>W px</th><th>H px</th><th>DPI</th>
+            <th>Upscale</th><th>Assessed</th><th>Tmpl W</th><th>Tmpl H</th>
+            <th>Notes</th><th>Actions</th>
+          </tr></thead>
+          <tbody>
+<tr id="row-1de84294"><td style="padding:8px 10px;vertical-align:middle;white-space:nowrap;font-weight:600;max-width:150px;overflow:hidden;text-overflow:ellipsis" title="Esquires Coffee House">Esquires Coffee House</td><td style="padding:8px 10px;vertical-align:middle;white-space:nowrap;color:#475569;max-width:120px;overflow:hidden;text-overflow:ellipsis" title="Thushy Thavathurai">Thushy Thavathurai</td><td style="padding:8px 10px;vertical-align:middle;white-space:nowrap;font-family:monospace;font-size:11px;color:#475569">0001237823</td><td style="padding:8px 10px;vertical-align:middle;white-space:nowrap;font-family:monospace;font-size:11px;color:#94a3b8">100623642</td><td style="padding:8px 10px;vertical-align:middle;white-space:nowrap"><span style="font-family:monospace;font-size:11px;font-weight:600;color:#1e40af;background:#eff6ff;padding:2px 6px;border-radius:4px">ABC7A1-BRANDED</span></td><td style="padding:8px 10px;vertical-align:middle;white-space:nowrap;text-align:center;color:#dc2626;font-weight:700;font-size:14px">✗</td><td style="padding:8px 10px;vertical-align:middle;white-space:nowrap;font-family:monospace;font-size:11px;color:#374151;max-width:190px;overflow:hidden;text-overflow:ellipsis" title="asset-59946--1783792917.pdf">asset-59946--1783792917.pdf</td><td style="padding:8px 10px;vertical-align:middle;white-space:nowrap;text-align:center"><span style="background:#f1f5f9;color:#475569;border-radius:3px;padding:1px 5px;font-size:10px;font-family:monospace;font-weight:600">PDF</span></td><td style="padding:8px 10px;vertical-align:middle;white-space:nowrap;text-align:right;color:#64748b">188.7</td><td style="padding:8px 10px;vertical-align:middle;white-space:nowrap;color:#475569">mixed_graphic</td><td style="padding:8px 10px;vertical-align:middle;white-space:nowrap"><span style="display:inline-block;width:8px;height:8px;border-radius:50%;background:#f59e0b;margin-right:4px;vertical-align:middle"></span>colour</td><td style="padding:8px 10px;vertical-align:middle;white-space:nowrap;text-align:right;color:#64748b">—</td><td style="padding:8px 10px;vertical-align:middle;white-space:nowrap;text-align:right;color:#64748b">—</td><td style="padding:8px 10px;vertical-align:middle;white-space:nowrap;text-align:right"><span style="color:#9ca3af">—</span></td><td style="padding:8px 10px;vertical-align:middle;white-space:nowrap"><span style="display:inline-block;border-radius:4px;padding:2px 7px;font-size:11px;font-weight:600;background:#fef3c7;color:#92400e;white-space:nowrap">Upscale</span></td><td style="padding:8px 10px;vertical-align:middle;white-space:nowrap"><span style="display:inline-block;border-radius:4px;padding:2px 7px;font-size:11px;font-weight:600;background:#f1f5f9;color:#475569;white-space:nowrap;border:1px solid #47556933">Pending</span></td><td style="padding:8px 10px;vertical-align:middle;white-space:nowrap;text-align:right;color:#64748b;font-size:11px">—</td><td style="padding:8px 10px;vertical-align:middle;white-space:nowrap;text-align:right;color:#64748b;font-size:11px">—</td><td style="padding:8px 10px;vertical-align:middle;white-space:nowrap;color:#64748b;font-size:11px;max-width:220px;overflow:hidden;text-overflow:ellipsis" title="605x185mm banner - mixed graphic">605x185mm banner - mixed graphic</td><td style="padding:8px 10px;vertical-align:middle;white-space:nowrap"><button onclick="window.open('/artwork-assessor/?aa_id=1de84294&sku=ABC7A1-BRANDED&order=0001237823','_blank')" style="padding:4px 9px;border:none;border-radius:5px;font-size:11px;font-weight:600;cursor:pointer;background:#F47920;color:#fff;margin-right:4px">Assess</button><button onclick="window.open('/designer/?aa_id=1de84294&sku=ABC7A1-BRANDED&order=0001237823','_blank')" style="padding:4px 9px;border:none;border-radius:5px;font-size:11px;font-weight:600;cursor:pointer;background:#0f172a;color:#fff;margin-right:4px">Designer →</button><button onclick="openDelete('1de84294','Esquires Coffee House')" style="padding:4px 8px;border:0.5px solid #F09595;border-radius:5px;font-size:11px;font-weight:600;cursor:pointer;background:#FCEBEB;color:#501313">✕</button></td></tr>
+<tr id="row-8391d7cc"><td style="padding:8px 10px;vertical-align:middle;white-space:nowrap;font-weight:600;max-width:150px;overflow:hidden;text-overflow:ellipsis" title="The Sumner Collection">The Sumner Collection</td><td style="padding:8px 10px;vertical-align:middle;white-space:nowrap;color:#475569;max-width:120px;overflow:hidden;text-overflow:ellipsis" title="Simon Moore">Simon Moore</td><td style="padding:8px 10px;vertical-align:middle;white-space:nowrap;font-family:monospace;font-size:11px;color:#475569">0001237828</td><td style="padding:8px 10px;vertical-align:middle;white-space:nowrap;font-family:monospace;font-size:11px;color:#94a3b8">100623648</td><td style="padding:8px 10px;vertical-align:middle;white-space:nowrap"><span style="font-family:monospace;font-size:11px;font-weight:600;color:#1e40af;background:#eff6ff;padding:2px 6px;border-radius:4px">BACKLA3-PRINTED</span></td><td style="padding:8px 10px;vertical-align:middle;white-space:nowrap;text-align:center;color:#dc2626;font-weight:700;font-size:14px">✗</td><td style="padding:8px 10px;vertical-align:middle;white-space:nowrap;font-family:monospace;font-size:11px;color:#374151;max-width:190px;overflow:hidden;text-overflow:ellipsis" title="asset-60042--1784105955.pdf">asset-60042--1784105955.pdf</td><td style="padding:8px 10px;vertical-align:middle;white-space:nowrap;text-align:center"><span style="background:#f1f5f9;color:#475569;border-radius:3px;padding:1px 5px;font-size:10px;font-family:monospace;font-weight:600">PDF</span></td><td style="padding:8px 10px;vertical-align:middle;white-space:nowrap;text-align:right;color:#64748b">384.1</td><td style="padding:8px 10px;vertical-align:middle;white-space:nowrap;color:#475569">photo_complex</td><td style="padding:8px 10px;vertical-align:middle;white-space:nowrap"><span style="display:inline-block;width:8px;height:8px;border-radius:50%;background:#f59e0b;margin-right:4px;vertical-align:middle"></span>colour</td><td style="padding:8px 10px;vertical-align:middle;white-space:nowrap;text-align:right;color:#64748b">2,480</td><td style="padding:8px 10px;vertical-align:middle;white-space:nowrap;text-align:right;color:#64748b">3,508</td><td style="padding:8px 10px;vertical-align:middle;white-space:nowrap;text-align:right"><span style="color:#9ca3af">—</span></td><td style="padding:8px 10px;vertical-align:middle;white-space:nowrap"><span style="display:inline-block;border-radius:4px;padding:2px 7px;font-size:11px;font-weight:600;background:#fef3c7;color:#92400e;white-space:nowrap">Upscale</span></td><td style="padding:8px 10px;vertical-align:middle;white-space:nowrap"><span style="display:inline-block;border-radius:4px;padding:2px 7px;font-size:11px;font-weight:600;background:#f1f5f9;color:#475569;white-space:nowrap;border:1px solid #47556933">Pending</span></td><td style="padding:8px 10px;vertical-align:middle;white-space:nowrap;text-align:right;color:#64748b;font-size:11px">—</td><td style="padding:8px 10px;vertical-align:middle;white-space:nowrap;text-align:right;color:#64748b;font-size:11px">—</td><td style="padding:8px 10px;vertical-align:middle;white-space:nowrap;color:#64748b;font-size:11px;max-width:220px;overflow:hidden;text-overflow:ellipsis" title="A4 210x297mm photo/complex">A4 210x297mm photo/complex</td><td style="padding:8px 10px;vertical-align:middle;white-space:nowrap"><button onclick="window.open('/artwork-assessor/?aa_id=8391d7cc&sku=BACKLA3-PRINTED&order=0001237828','_blank')" style="padding:4px 9px;border:none;border-radius:5px;font-size:11px;font-weight:600;cursor:pointer;background:#F47920;color:#fff;margin-right:4px">Assess</button><button onclick="window.open('/designer/?aa_id=8391d7cc&sku=BACKLA3-PRINTED&order=0001237828','_blank')" style="padding:4px 9px;border:none;border-radius:5px;font-size:11px;font-weight:600;cursor:pointer;background:#0f172a;color:#fff;margin-right:4px">Designer →</button><button onclick="openDelete('8391d7cc','The Sumner Collection')" style="padding:4px 8px;border:0.5px solid #F09595;border-radius:5px;font-size:11px;font-weight:600;cursor:pointer;background:#FCEBEB;color:#501313">✕</button></td></tr>
+<tr id="row-1239a6aa"><td style="padding:8px 10px;vertical-align:middle;white-space:nowrap;font-weight:600;max-width:150px;overflow:hidden;text-overflow:ellipsis" title="Spar Stores">Spar Stores</td><td style="padding:8px 10px;vertical-align:middle;white-space:nowrap;color:#475569;max-width:120px;overflow:hidden;text-overflow:ellipsis" title="Satminder Deo">Satminder Deo</td><td style="padding:8px 10px;vertical-align:middle;white-space:nowrap;font-family:monospace;font-size:11px;color:#475569">0001237860</td><td style="padding:8px 10px;vertical-align:middle;white-space:nowrap;font-family:monospace;font-size:11px;color:#94a3b8">100623688</td><td style="padding:8px 10px;vertical-align:middle;white-space:nowrap"><span style="font-family:monospace;font-size:11px;font-weight:600;color:#1e40af;background:#eff6ff;padding:2px 6px;border-radius:4px">BACKLA1-PRINTED</span></td><td style="padding:8px 10px;vertical-align:middle;white-space:nowrap;text-align:center;color:#dc2626;font-weight:700;font-size:14px">✗</td><td style="padding:8px 10px;vertical-align:middle;white-space:nowrap;font-family:monospace;font-size:11px;color:#374151;max-width:190px;overflow:hidden;text-overflow:ellipsis" title="asset-59947--1783875765.pdf">asset-59947--1783875765.pdf</td><td style="padding:8px 10px;vertical-align:middle;white-space:nowrap;text-align:center"><span style="background:#f1f5f9;color:#475569;border-radius:3px;padding:1px 5px;font-size:10px;font-family:monospace;font-weight:600">PDF</span></td><td style="padding:8px 10px;vertical-align:middle;white-space:nowrap;text-align:right;color:#64748b">84.5</td><td style="padding:8px 10px;vertical-align:middle;white-space:nowrap;color:#475569">mixed_graphic</td><td style="padding:8px 10px;vertical-align:middle;white-space:nowrap"><span style="display:inline-block;width:8px;height:8px;border-radius:50%;background:#f59e0b;margin-right:4px;vertical-align:middle"></span>colour</td><td style="padding:8px 10px;vertical-align:middle;white-space:nowrap;text-align:right;color:#64748b">—</td><td style="padding:8px 10px;vertical-align:middle;white-space:nowrap;text-align:right;color:#64748b">—</td><td style="padding:8px 10px;vertical-align:middle;white-space:nowrap;text-align:right"><span style="color:#9ca3af">—</span></td><td style="padding:8px 10px;vertical-align:middle;white-space:nowrap"><span style="display:inline-block;border-radius:4px;padding:2px 7px;font-size:11px;font-weight:600;background:#fef3c7;color:#92400e;white-space:nowrap">Upscale</span></td><td style="padding:8px 10px;vertical-align:middle;white-space:nowrap"><span style="display:inline-block;border-radius:4px;padding:2px 7px;font-size:11px;font-weight:600;background:#f1f5f9;color:#475569;white-space:nowrap;border:1px solid #47556933">Pending</span></td><td style="padding:8px 10px;vertical-align:middle;white-space:nowrap;text-align:right;color:#64748b;font-size:11px">—</td><td style="padding:8px 10px;vertical-align:middle;white-space:nowrap;text-align:right;color:#64748b;font-size:11px">—</td><td style="padding:8px 10px;vertical-align:middle;white-space:nowrap;color:#64748b;font-size:11px;max-width:220px;overflow:hidden;text-overflow:ellipsis" title="190x275mm mixed graphic">190x275mm mixed graphic</td><td style="padding:8px 10px;vertical-align:middle;white-space:nowrap"><button onclick="window.open('/artwork-assessor/?aa_id=1239a6aa&sku=BACKLA1-PRINTED&order=0001237860','_blank')" style="padding:4px 9px;border:none;border-radius:5px;font-size:11px;font-weight:600;cursor:pointer;background:#F47920;color:#fff;margin-right:4px">Assess</button><button onclick="window.open('/designer/?aa_id=1239a6aa&sku=BACKLA1-PRINTED&order=0001237860','_blank')" style="padding:4px 9px;border:none;border-radius:5px;font-size:11px;font-weight:600;cursor:pointer;background:#0f172a;color:#fff;margin-right:4px">Designer →</button><button onclick="openDelete('1239a6aa','Spar Stores')" style="padding:4px 8px;border:0.5px solid #F09595;border-radius:5px;font-size:11px;font-weight:600;cursor:pointer;background:#FCEBEB;color:#501313">✕</button></td></tr>
+<tr id="row-9f496a94"><td style="padding:8px 10px;vertical-align:middle;white-space:nowrap;font-weight:600;max-width:150px;overflow:hidden;text-overflow:ellipsis" title="Pontcanna Inn">Pontcanna Inn</td><td style="padding:8px 10px;vertical-align:middle;white-space:nowrap;color:#475569;max-width:120px;overflow:hidden;text-overflow:ellipsis" title="Adam Roach">Adam Roach</td><td style="padding:8px 10px;vertical-align:middle;white-space:nowrap;font-family:monospace;font-size:11px;color:#475569">0001237877</td><td style="padding:8px 10px;vertical-align:middle;white-space:nowrap;font-family:monospace;font-size:11px;color:#94a3b8">100623711</td><td style="padding:8px 10px;vertical-align:middle;white-space:nowrap"><span style="font-family:monospace;font-size:11px;font-weight:600;color:#1e40af;background:#eff6ff;padding:2px 6px;border-radius:4px">ABC7A1-BRANDED</span></td><td style="padding:8px 10px;vertical-align:middle;white-space:nowrap;text-align:center;color:#dc2626;font-weight:700;font-size:14px">✗</td><td style="padding:8px 10px;vertical-align:middle;white-space:nowrap;font-family:monospace;font-size:11px;color:#374151;max-width:190px;overflow:hidden;text-overflow:ellipsis" title="asset-59949--1783925409.pdf">asset-59949--1783925409.pdf</td><td style="padding:8px 10px;vertical-align:middle;white-space:nowrap;text-align:center"><span style="background:#f1f5f9;color:#475569;border-radius:3px;padding:1px 5px;font-size:10px;font-family:monospace;font-weight:600">PDF</span></td><td style="padding:8px 10px;vertical-align:middle;white-space:nowrap;text-align:right;color:#64748b">132.6</td><td style="padding:8px 10px;vertical-align:middle;white-space:nowrap;color:#475569">logo_flat_graphic</td><td style="padding:8px 10px;vertical-align:middle;white-space:nowrap"><span style="display:inline-block;width:8px;height:8px;border-radius:50%;background:#94a3b8;margin-right:4px;vertical-align:middle"></span>greyscale</td><td style="padding:8px 10px;vertical-align:middle;white-space:nowrap;text-align:right;color:#64748b">—</td><td style="padding:8px 10px;vertical-align:middle;white-space:nowrap;text-align:right;color:#64748b">—</td><td style="padding:8px 10px;vertical-align:middle;white-space:nowrap;text-align:right"><span style="color:#9ca3af">—</span></td><td style="padding:8px 10px;vertical-align:middle;white-space:nowrap"><span style="display:inline-block;border-radius:4px;padding:2px 7px;font-size:11px;font-weight:600;background:#dbeafe;color:#1e40af;white-space:nowrap">Vectorise</span></td><td style="padding:8px 10px;vertical-align:middle;white-space:nowrap"><span style="display:inline-block;border-radius:4px;padding:2px 7px;font-size:11px;font-weight:600;background:#f1f5f9;color:#475569;white-space:nowrap;border:1px solid #47556933">Pending</span></td><td style="padding:8px 10px;vertical-align:middle;white-space:nowrap;text-align:right;color:#64748b;font-size:11px">—</td><td style="padding:8px 10px;vertical-align:middle;white-space:nowrap;text-align:right;color:#64748b;font-size:11px">—</td><td style="padding:8px 10px;vertical-align:middle;white-space:nowrap;color:#64748b;font-size:11px;max-width:220px;overflow:hidden;text-overflow:ellipsis" title="176x85mm logo flat greyscale">176x85mm logo flat greyscale</td><td style="padding:8px 10px;vertical-align:middle;white-space:nowrap"><button onclick="window.open('/artwork-assessor/?aa_id=9f496a94&sku=ABC7A1-BRANDED&order=0001237877','_blank')" style="padding:4px 9px;border:none;border-radius:5px;font-size:11px;font-weight:600;cursor:pointer;background:#F47920;color:#fff;margin-right:4px">Assess</button><button onclick="window.open('/designer/?aa_id=9f496a94&sku=ABC7A1-BRANDED&order=0001237877','_blank')" style="padding:4px 9px;border:none;border-radius:5px;font-size:11px;font-weight:600;cursor:pointer;background:#0f172a;color:#fff;margin-right:4px">Designer →</button><button onclick="openDelete('9f496a94','Pontcanna Inn')" style="padding:4px 8px;border:0.5px solid #F09595;border-radius:5px;font-size:11px;font-weight:600;cursor:pointer;background:#FCEBEB;color:#501313">✕</button></td></tr>
+<tr id="row-cea26d1d"><td style="padding:8px 10px;vertical-align:middle;white-space:nowrap;font-weight:600;max-width:150px;overflow:hidden;text-overflow:ellipsis" title="DE Acquisitions Ltd">DE Acquisitions Ltd</td><td style="padding:8px 10px;vertical-align:middle;white-space:nowrap;color:#475569;max-width:120px;overflow:hidden;text-overflow:ellipsis" title="Craig Potter">Craig Potter</td><td style="padding:8px 10px;vertical-align:middle;white-space:nowrap;font-family:monospace;font-size:11px;color:#475569">0001237880</td><td style="padding:8px 10px;vertical-align:middle;white-space:nowrap;font-family:monospace;font-size:11px;color:#94a3b8">100623718</td><td style="padding:8px 10px;vertical-align:middle;white-space:nowrap"><span style="font-family:monospace;font-size:11px;font-weight:600;color:#1e40af;background:#eff6ff;padding:2px 6px;border-radius:4px">SWG776-BRANDED</span></td><td style="padding:8px 10px;vertical-align:middle;white-space:nowrap;text-align:center;color:#059669;font-weight:700;font-size:14px">✓</td><td style="padding:8px 10px;vertical-align:middle;white-space:nowrap;font-family:monospace;font-size:11px;color:#374151;max-width:190px;overflow:hidden;text-overflow:ellipsis" title="asset-59976--1783954429.png">asset-59976--1783954429.png</td><td style="padding:8px 10px;vertical-align:middle;white-space:nowrap;text-align:center"><span style="background:#f1f5f9;color:#475569;border-radius:3px;padding:1px 5px;font-size:10px;font-family:monospace;font-weight:600">PNG</span></td><td style="padding:8px 10px;vertical-align:middle;white-space:nowrap;text-align:right;color:#64748b">2,431.0</td><td style="padding:8px 10px;vertical-align:middle;white-space:nowrap;color:#475569">mixed_graphic</td><td style="padding:8px 10px;vertical-align:middle;white-space:nowrap"><span style="display:inline-block;width:8px;height:8px;border-radius:50%;background:#94a3b8;margin-right:4px;vertical-align:middle"></span>greyscale</td><td style="padding:8px 10px;vertical-align:middle;white-space:nowrap;text-align:right;color:#64748b">—</td><td style="padding:8px 10px;vertical-align:middle;white-space:nowrap;text-align:right;color:#64748b">—</td><td style="padding:8px 10px;vertical-align:middle;white-space:nowrap;text-align:right"><span style="color:#9ca3af">—</span></td><td style="padding:8px 10px;vertical-align:middle;white-space:nowrap"><span style="display:inline-block;border-radius:4px;padding:2px 7px;font-size:11px;font-weight:600;background:#fef3c7;color:#92400e;white-space:nowrap">Upscale</span></td><td style="padding:8px 10px;vertical-align:middle;white-space:nowrap"><span style="display:inline-block;border-radius:4px;padding:2px 7px;font-size:11px;font-weight:600;background:#f1f5f9;color:#475569;white-space:nowrap;border:1px solid #47556933">Pending</span></td><td style="padding:8px 10px;vertical-align:middle;white-space:nowrap;text-align:right;color:#64748b;font-size:11px">410.0</td><td style="padding:8px 10px;vertical-align:middle;white-space:nowrap;text-align:right;color:#64748b;font-size:11px">766.3</td><td style="padding:8px 10px;vertical-align:middle;white-space:nowrap;color:#64748b;font-size:11px;max-width:220px;overflow:hidden;text-overflow:ellipsis" title="421x808mm greyscale PNG 299dpi">421x808mm greyscale PNG 299dpi</td><td style="padding:8px 10px;vertical-align:middle;white-space:nowrap"><button onclick="window.open('/artwork-assessor/?aa_id=cea26d1d&sku=SWG776-BRANDED&order=0001237880','_blank')" style="padding:4px 9px;border:none;border-radius:5px;font-size:11px;font-weight:600;cursor:pointer;background:#F47920;color:#fff;margin-right:4px">Assess</button><button onclick="window.open('/designer/?aa_id=cea26d1d&sku=SWG776-BRANDED&order=0001237880','_blank')" style="padding:4px 9px;border:none;border-radius:5px;font-size:11px;font-weight:600;cursor:pointer;background:#0f172a;color:#fff;margin-right:4px">Designer →</button><button onclick="openDelete('cea26d1d','DE Acquisitions Ltd')" style="padding:4px 8px;border:0.5px solid #F09595;border-radius:5px;font-size:11px;font-weight:600;cursor:pointer;background:#FCEBEB;color:#501313">✕</button></td></tr>
+<tr id="row-f85c42c0"><td style="padding:8px 10px;vertical-align:middle;white-space:nowrap;font-weight:600;max-width:150px;overflow:hidden;text-overflow:ellipsis" title="Kiki Ltd">Kiki Ltd</td><td style="padding:8px 10px;vertical-align:middle;white-space:nowrap;color:#475569;max-width:120px;overflow:hidden;text-overflow:ellipsis" title="Louise Awcock">Louise Awcock</td><td style="padding:8px 10px;vertical-align:middle;white-space:nowrap;font-family:monospace;font-size:11px;color:#475569">0001237920</td><td style="padding:8px 10px;vertical-align:middle;white-space:nowrap;font-family:monospace;font-size:11px;color:#94a3b8">100623749</td><td style="padding:8px 10px;vertical-align:middle;white-space:nowrap"><span style="font-family:monospace;font-size:11px;font-weight:600;color:#1e40af;background:#eff6ff;padding:2px 6px;border-radius:4px">EAS06F-PRINTED</span></td><td style="padding:8px 10px;vertical-align:middle;white-space:nowrap;text-align:center;color:#dc2626;font-weight:700;font-size:14px">✗</td><td style="padding:8px 10px;vertical-align:middle;white-space:nowrap;font-family:monospace;font-size:11px;color:#374151;max-width:190px;overflow:hidden;text-overflow:ellipsis" title="asset-59963--1783939854.pdf">asset-59963--1783939854.pdf</td><td style="padding:8px 10px;vertical-align:middle;white-space:nowrap;text-align:center"><span style="background:#f1f5f9;color:#475569;border-radius:3px;padding:1px 5px;font-size:10px;font-family:monospace;font-weight:600">PDF</span></td><td style="padding:8px 10px;vertical-align:middle;white-space:nowrap;text-align:right;color:#64748b">4,554.7</td><td style="padding:8px 10px;vertical-align:middle;white-space:nowrap;color:#475569">photo_complex</td><td style="padding:8px 10px;vertical-align:middle;white-space:nowrap"><span style="display:inline-block;width:8px;height:8px;border-radius:50%;background:#f59e0b;margin-right:4px;vertical-align:middle"></span>colour</td><td style="padding:8px 10px;vertical-align:middle;white-space:nowrap;text-align:right;color:#64748b">—</td><td style="padding:8px 10px;vertical-align:middle;white-space:nowrap;text-align:right;color:#64748b">—</td><td style="padding:8px 10px;vertical-align:middle;white-space:nowrap;text-align:right"><span style="color:#9ca3af">—</span></td><td style="padding:8px 10px;vertical-align:middle;white-space:nowrap"><span style="display:inline-block;border-radius:4px;padding:2px 7px;font-size:11px;font-weight:600;background:#fee2e2;color:#991b1b;white-space:nowrap">Flag</span></td><td style="padding:8px 10px;vertical-align:middle;white-space:nowrap"><span style="display:inline-block;border-radius:4px;padding:2px 7px;font-size:11px;font-weight:600;background:#f1f5f9;color:#475569;white-space:nowrap;border:1px solid #47556933">Pending</span></td><td style="padding:8px 10px;vertical-align:middle;white-space:nowrap;text-align:right;color:#64748b;font-size:11px">—</td><td style="padding:8px 10px;vertical-align:middle;white-space:nowrap;text-align:right;color:#64748b;font-size:11px">—</td><td style="padding:8px 10px;vertical-align:middle;white-space:nowrap;color:#64748b;font-size:11px;max-width:220px;overflow:hidden;text-overflow:ellipsis" title="594x841mm photo - risky">594x841mm photo - risky</td><td style="padding:8px 10px;vertical-align:middle;white-space:nowrap"><button onclick="window.open('/artwork-assessor/?aa_id=f85c42c0&sku=EAS06F-PRINTED&order=0001237920','_blank')" style="padding:4px 9px;border:none;border-radius:5px;font-size:11px;font-weight:600;cursor:pointer;background:#F47920;color:#fff;margin-right:4px">Assess</button><button onclick="window.open('/designer/?aa_id=f85c42c0&sku=EAS06F-PRINTED&order=0001237920','_blank')" style="padding:4px 9px;border:none;border-radius:5px;font-size:11px;font-weight:600;cursor:pointer;background:#0f172a;color:#fff;margin-right:4px">Designer →</button><button onclick="openDelete('f85c42c0','Kiki Ltd')" style="padding:4px 8px;border:0.5px solid #F09595;border-radius:5px;font-size:11px;font-weight:600;cursor:pointer;background:#FCEBEB;color:#501313">✕</button></td></tr>
+<tr id="row-7c49e113"><td style="padding:8px 10px;vertical-align:middle;white-space:nowrap;font-weight:600;max-width:150px;overflow:hidden;text-overflow:ellipsis" title="Nupsala Ltd">Nupsala Ltd</td><td style="padding:8px 10px;vertical-align:middle;white-space:nowrap;color:#475569;max-width:120px;overflow:hidden;text-overflow:ellipsis" title="Andrea Makk">Andrea Makk</td><td style="padding:8px 10px;vertical-align:middle;white-space:nowrap;font-family:monospace;font-size:11px;color:#475569">0001237930</td><td style="padding:8px 10px;vertical-align:middle;white-space:nowrap;font-family:monospace;font-size:11px;color:#94a3b8">100623754</td><td style="padding:8px 10px;vertical-align:middle;white-space:nowrap"><span style="font-family:monospace;font-size:11px;font-weight:600;color:#1e40af;background:#eff6ff;padding:2px 6px;border-radius:4px">SPPA5-BRANDED</span></td><td style="padding:8px 10px;vertical-align:middle;white-space:nowrap;text-align:center;color:#dc2626;font-weight:700;font-size:14px">✗</td><td style="padding:8px 10px;vertical-align:middle;white-space:nowrap;font-family:monospace;font-size:11px;color:#374151;max-width:190px;overflow:hidden;text-overflow:ellipsis" title="asset-59960--1783938148.pdf">asset-59960--1783938148.pdf</td><td style="padding:8px 10px;vertical-align:middle;white-space:nowrap;text-align:center"><span style="background:#f1f5f9;color:#475569;border-radius:3px;padding:1px 5px;font-size:10px;font-family:monospace;font-weight:600">PDF</span></td><td style="padding:8px 10px;vertical-align:middle;white-space:nowrap;text-align:right;color:#64748b">330.7</td><td style="padding:8px 10px;vertical-align:middle;white-space:nowrap;color:#475569">mixed_graphic</td><td style="padding:8px 10px;vertical-align:middle;white-space:nowrap"><span style="display:inline-block;width:8px;height:8px;border-radius:50%;background:#f59e0b;margin-right:4px;vertical-align:middle"></span>colour</td><td style="padding:8px 10px;vertical-align:middle;white-space:nowrap;text-align:right;color:#64748b">—</td><td style="padding:8px 10px;vertical-align:middle;white-space:nowrap;text-align:right;color:#64748b">—</td><td style="padding:8px 10px;vertical-align:middle;white-space:nowrap;text-align:right"><span style="color:#9ca3af">—</span></td><td style="padding:8px 10px;vertical-align:middle;white-space:nowrap"><span style="display:inline-block;border-radius:4px;padding:2px 7px;font-size:11px;font-weight:600;background:#fef3c7;color:#92400e;white-space:nowrap">Upscale</span></td><td style="padding:8px 10px;vertical-align:middle;white-space:nowrap"><span style="display:inline-block;border-radius:4px;padding:2px 7px;font-size:11px;font-weight:600;background:#f1f5f9;color:#475569;white-space:nowrap;border:1px solid #47556933">Pending</span></td><td style="padding:8px 10px;vertical-align:middle;white-space:nowrap;text-align:right;color:#64748b;font-size:11px">—</td><td style="padding:8px 10px;vertical-align:middle;white-space:nowrap;text-align:right;color:#64748b;font-size:11px">—</td><td style="padding:8px 10px;vertical-align:middle;white-space:nowrap;color:#64748b;font-size:11px;max-width:220px;overflow:hidden;text-overflow:ellipsis" title="216x154mm mixed graphic">216x154mm mixed graphic</td><td style="padding:8px 10px;vertical-align:middle;white-space:nowrap"><button onclick="window.open('/artwork-assessor/?aa_id=7c49e113&sku=SPPA5-BRANDED&order=0001237930','_blank')" style="padding:4px 9px;border:none;border-radius:5px;font-size:11px;font-weight:600;cursor:pointer;background:#F47920;color:#fff;margin-right:4px">Assess</button><button onclick="window.open('/designer/?aa_id=7c49e113&sku=SPPA5-BRANDED&order=0001237930','_blank')" style="padding:4px 9px;border:none;border-radius:5px;font-size:11px;font-weight:600;cursor:pointer;background:#0f172a;color:#fff;margin-right:4px">Designer →</button><button onclick="openDelete('7c49e113','Nupsala Ltd')" style="padding:4px 8px;border:0.5px solid #F09595;border-radius:5px;font-size:11px;font-weight:600;cursor:pointer;background:#FCEBEB;color:#501313">✕</button></td></tr>
+<tr id="row-4da651a2"><td style="padding:8px 10px;vertical-align:middle;white-space:nowrap;font-weight:600;max-width:150px;overflow:hidden;text-overflow:ellipsis" title="Howarth Timber">Howarth Timber</td><td style="padding:8px 10px;vertical-align:middle;white-space:nowrap;color:#475569;max-width:120px;overflow:hidden;text-overflow:ellipsis" title="Gavin Knowles">Gavin Knowles</td><td style="padding:8px 10px;vertical-align:middle;white-space:nowrap;font-family:monospace;font-size:11px;color:#475569">0001237938</td><td style="padding:8px 10px;vertical-align:middle;white-space:nowrap;font-family:monospace;font-size:11px;color:#94a3b8">100623766</td><td style="padding:8px 10px;vertical-align:middle;white-space:nowrap"><span style="font-family:monospace;font-size:11px;font-weight:600;color:#1e40af;background:#eff6ff;padding:2px 6px;border-radius:4px">WPG9A1-PRINTED</span></td><td style="padding:8px 10px;vertical-align:middle;white-space:nowrap;text-align:center;color:#059669;font-weight:700;font-size:14px">✓</td><td style="padding:8px 10px;vertical-align:middle;white-space:nowrap;font-family:monospace;font-size:11px;color:#374151;max-width:190px;overflow:hidden;text-overflow:ellipsis" title="asset-59957--1783936809.pdf">asset-59957--1783936809.pdf</td><td style="padding:8px 10px;vertical-align:middle;white-space:nowrap;text-align:center"><span style="background:#f1f5f9;color:#475569;border-radius:3px;padding:1px 5px;font-size:10px;font-family:monospace;font-weight:600">PDF</span></td><td style="padding:8px 10px;vertical-align:middle;white-space:nowrap;text-align:right;color:#64748b">47.8</td><td style="padding:8px 10px;vertical-align:middle;white-space:nowrap;color:#475569">mixed_graphic</td><td style="padding:8px 10px;vertical-align:middle;white-space:nowrap"><span style="display:inline-block;width:8px;height:8px;border-radius:50%;background:#f59e0b;margin-right:4px;vertical-align:middle"></span>colour</td><td style="padding:8px 10px;vertical-align:middle;white-space:nowrap;text-align:right;color:#64748b">—</td><td style="padding:8px 10px;vertical-align:middle;white-space:nowrap;text-align:right;color:#64748b">—</td><td style="padding:8px 10px;vertical-align:middle;white-space:nowrap;text-align:right"><span style="color:#9ca3af">—</span></td><td style="padding:8px 10px;vertical-align:middle;white-space:nowrap"><span style="display:inline-block;border-radius:4px;padding:2px 7px;font-size:11px;font-weight:600;background:#dbeafe;color:#1e40af;white-space:nowrap">Vectorise</span></td><td style="padding:8px 10px;vertical-align:middle;white-space:nowrap"><span style="display:inline-block;border-radius:4px;padding:2px 7px;font-size:11px;font-weight:600;background:#f1f5f9;color:#475569;white-space:nowrap;border:1px solid #47556933">Pending</span></td><td style="padding:8px 10px;vertical-align:middle;white-space:nowrap;text-align:right;color:#64748b;font-size:11px">594.0</td><td style="padding:8px 10px;vertical-align:middle;white-space:nowrap;text-align:right;color:#64748b;font-size:11px">841.0</td><td style="padding:8px 10px;vertical-align:middle;white-space:nowrap;color:#64748b;font-size:11px;max-width:220px;overflow:hidden;text-overflow:ellipsis" title="1237x1750mm true vector PDF">1237x1750mm true vector PDF</td><td style="padding:8px 10px;vertical-align:middle;white-space:nowrap"><button onclick="window.open('/artwork-assessor/?aa_id=4da651a2&sku=WPG9A1-PRINTED&order=0001237938','_blank')" style="padding:4px 9px;border:none;border-radius:5px;font-size:11px;font-weight:600;cursor:pointer;background:#F47920;color:#fff;margin-right:4px">Assess</button><button onclick="window.open('/designer/?aa_id=4da651a2&sku=WPG9A1-PRINTED&order=0001237938','_blank')" style="padding:4px 9px;border:none;border-radius:5px;font-size:11px;font-weight:600;cursor:pointer;background:#0f172a;color:#fff;margin-right:4px">Designer →</button><button onclick="openDelete('4da651a2','Howarth Timber')" style="padding:4px 8px;border:0.5px solid #F09595;border-radius:5px;font-size:11px;font-weight:600;cursor:pointer;background:#FCEBEB;color:#501313">✕</button></td></tr>
+<tr id="row-64f1c727"><td style="padding:8px 10px;vertical-align:middle;white-space:nowrap;font-weight:600;max-width:150px;overflow:hidden;text-overflow:ellipsis" title="Wed2b">Wed2b</td><td style="padding:8px 10px;vertical-align:middle;white-space:nowrap;color:#475569;max-width:120px;overflow:hidden;text-overflow:ellipsis" title="Nisha Cairns">Nisha Cairns</td><td style="padding:8px 10px;vertical-align:middle;white-space:nowrap;font-family:monospace;font-size:11px;color:#475569">0001237961</td><td style="padding:8px 10px;vertical-align:middle;white-space:nowrap;font-family:monospace;font-size:11px;color:#94a3b8">100623783</td><td style="padding:8px 10px;vertical-align:middle;white-space:nowrap"><span style="font-family:monospace;font-size:11px;font-weight:600;color:#1e40af;background:#eff6ff;padding:2px 6px;border-radius:4px">WPG9A1-PRINTED</span></td><td style="padding:8px 10px;vertical-align:middle;white-space:nowrap;text-align:center;color:#059669;font-weight:700;font-size:14px">✓</td><td style="padding:8px 10px;vertical-align:middle;white-space:nowrap;font-family:monospace;font-size:11px;color:#374151;max-width:190px;overflow:hidden;text-overflow:ellipsis" title="asset-59965--1783941364.pdf">asset-59965--1783941364.pdf</td><td style="padding:8px 10px;vertical-align:middle;white-space:nowrap;text-align:center"><span style="background:#f1f5f9;color:#475569;border-radius:3px;padding:1px 5px;font-size:10px;font-family:monospace;font-weight:600">PDF</span></td><td style="padding:8px 10px;vertical-align:middle;white-space:nowrap;text-align:right;color:#64748b">5,584.1</td><td style="padding:8px 10px;vertical-align:middle;white-space:nowrap;color:#475569">mixed_graphic</td><td style="padding:8px 10px;vertical-align:middle;white-space:nowrap"><span style="display:inline-block;width:8px;height:8px;border-radius:50%;background:#f59e0b;margin-right:4px;vertical-align:middle"></span>colour</td><td style="padding:8px 10px;vertical-align:middle;white-space:nowrap;text-align:right;color:#64748b">—</td><td style="padding:8px 10px;vertical-align:middle;white-space:nowrap;text-align:right;color:#64748b">—</td><td style="padding:8px 10px;vertical-align:middle;white-space:nowrap;text-align:right"><span style="color:#9ca3af">—</span></td><td style="padding:8px 10px;vertical-align:middle;white-space:nowrap"><span style="display:inline-block;border-radius:4px;padding:2px 7px;font-size:11px;font-weight:600;background:#fee2e2;color:#991b1b;white-space:nowrap">Flag</span></td><td style="padding:8px 10px;vertical-align:middle;white-space:nowrap"><span style="display:inline-block;border-radius:4px;padding:2px 7px;font-size:11px;font-weight:600;background:#f1f5f9;color:#475569;white-space:nowrap;border:1px solid #47556933">Pending</span></td><td style="padding:8px 10px;vertical-align:middle;white-space:nowrap;text-align:right;color:#64748b;font-size:11px">594.0</td><td style="padding:8px 10px;vertical-align:middle;white-space:nowrap;text-align:right;color:#64748b;font-size:11px">841.0</td><td style="padding:8px 10px;vertical-align:middle;white-space:nowrap;color:#64748b;font-size:11px;max-width:220px;overflow:hidden;text-overflow:ellipsis" title="594x841mm A1 double-sided">594x841mm A1 double-sided</td><td style="padding:8px 10px;vertical-align:middle;white-space:nowrap"><button onclick="window.open('/artwork-assessor/?aa_id=64f1c727&sku=WPG9A1-PRINTED&order=0001237961','_blank')" style="padding:4px 9px;border:none;border-radius:5px;font-size:11px;font-weight:600;cursor:pointer;background:#F47920;color:#fff;margin-right:4px">Assess</button><button onclick="window.open('/designer/?aa_id=64f1c727&sku=WPG9A1-PRINTED&order=0001237961','_blank')" style="padding:4px 9px;border:none;border-radius:5px;font-size:11px;font-weight:600;cursor:pointer;background:#0f172a;color:#fff;margin-right:4px">Designer →</button><button onclick="openDelete('64f1c727','Wed2b')" style="padding:4px 8px;border:0.5px solid #F09595;border-radius:5px;font-size:11px;font-weight:600;cursor:pointer;background:#FCEBEB;color:#501313">✕</button></td></tr>
+<tr id="row-be8210da"><td style="padding:8px 10px;vertical-align:middle;white-space:nowrap;font-weight:600;max-width:150px;overflow:hidden;text-overflow:ellipsis" title="Bumbles &amp; Boo Ltd">Bumbles &amp; Boo Ltd</td><td style="padding:8px 10px;vertical-align:middle;white-space:nowrap;color:#475569;max-width:120px;overflow:hidden;text-overflow:ellipsis" title="Emma Weldon">Emma Weldon</td><td style="padding:8px 10px;vertical-align:middle;white-space:nowrap;font-family:monospace;font-size:11px;color:#475569">0001237977</td><td style="padding:8px 10px;vertical-align:middle;white-space:nowrap;font-family:monospace;font-size:11px;color:#94a3b8">100623794</td><td style="padding:8px 10px;vertical-align:middle;white-space:nowrap"><span style="font-family:monospace;font-size:11px;font-weight:600;color:#1e40af;background:#eff6ff;padding:2px 6px;border-radius:4px">WPG9A1-PRINTED</span></td><td style="padding:8px 10px;vertical-align:middle;white-space:nowrap;text-align:center;color:#059669;font-weight:700;font-size:14px">✓</td><td style="padding:8px 10px;vertical-align:middle;white-space:nowrap;font-family:monospace;font-size:11px;color:#374151;max-width:190px;overflow:hidden;text-overflow:ellipsis" title="asset-59993--1784032976.pdf">asset-59993--1784032976.pdf</td><td style="padding:8px 10px;vertical-align:middle;white-space:nowrap;text-align:center"><span style="background:#f1f5f9;color:#475569;border-radius:3px;padding:1px 5px;font-size:10px;font-family:monospace;font-weight:600">PDF</span></td><td style="padding:8px 10px;vertical-align:middle;white-space:nowrap;text-align:right;color:#64748b">7,969.2</td><td style="padding:8px 10px;vertical-align:middle;white-space:nowrap;color:#475569">mixed_graphic</td><td style="padding:8px 10px;vertical-align:middle;white-space:nowrap"><span style="display:inline-block;width:8px;height:8px;border-radius:50%;background:#f59e0b;margin-right:4px;vertical-align:middle"></span>colour</td><td style="padding:8px 10px;vertical-align:middle;white-space:nowrap;text-align:right;color:#64748b">—</td><td style="padding:8px 10px;vertical-align:middle;white-space:nowrap;text-align:right;color:#64748b">—</td><td style="padding:8px 10px;vertical-align:middle;white-space:nowrap;text-align:right"><span style="color:#9ca3af">—</span></td><td style="padding:8px 10px;vertical-align:middle;white-space:nowrap"><span style="display:inline-block;border-radius:4px;padding:2px 7px;font-size:11px;font-weight:600;background:#fee2e2;color:#991b1b;white-space:nowrap">Flag</span></td><td style="padding:8px 10px;vertical-align:middle;white-space:nowrap"><span style="display:inline-block;border-radius:4px;padding:2px 7px;font-size:11px;font-weight:600;background:#f1f5f9;color:#475569;white-space:nowrap;border:1px solid #47556933">Pending</span></td><td style="padding:8px 10px;vertical-align:middle;white-space:nowrap;text-align:right;color:#64748b;font-size:11px">594.0</td><td style="padding:8px 10px;vertical-align:middle;white-space:nowrap;text-align:right;color:#64748b;font-size:11px">841.0</td><td style="padding:8px 10px;vertical-align:middle;white-space:nowrap;color:#64748b;font-size:11px;max-width:220px;overflow:hidden;text-overflow:ellipsis" title="594x841mm A1 borderline">594x841mm A1 borderline</td><td style="padding:8px 10px;vertical-align:middle;white-space:nowrap"><button onclick="window.open('/artwork-assessor/?aa_id=be8210da&sku=WPG9A1-PRINTED&order=0001237977','_blank')" style="padding:4px 9px;border:none;border-radius:5px;font-size:11px;font-weight:600;cursor:pointer;background:#F47920;color:#fff;margin-right:4px">Assess</button><button onclick="window.open('/designer/?aa_id=be8210da&sku=WPG9A1-PRINTED&order=0001237977','_blank')" style="padding:4px 9px;border:none;border-radius:5px;font-size:11px;font-weight:600;cursor:pointer;background:#0f172a;color:#fff;margin-right:4px">Designer →</button><button onclick="openDelete('be8210da','Bumbles &amp; Boo Ltd')" style="padding:4px 8px;border:0.5px solid #F09595;border-radius:5px;font-size:11px;font-weight:600;cursor:pointer;background:#FCEBEB;color:#501313">✕</button></td></tr>
+          </tbody>
+        </table>
+      </div>
     </div>
   </div>
-  <input class="filter-input" id="f-search" placeholder="Search any column…" oninput="applyFilters()" />
-  <select class="filter-select" id="f-assessor" onchange="applyFilters()">
-    <option value="">All assessor statuses</option>
-    <option value="pending">Pending</option>
-    <option value="on_hold">On Hold</option>
-    <option value="approved">Approved</option>
-  </select>
-  <select class="filter-select" id="f-upscale" onchange="applyFilters()">
-    <option value="">All upscale statuses</option>
-    <option value="none">Ready</option>
-    <option value="raster">Upscale needed</option>
-    <option value="vector">Vectorise</option>
-    <option value="flag">Flagged</option>
-  </select>
-  <select class="filter-select" id="f-template" onchange="applyFilters()">
-    <option value="">All templates</option>
-    <option value="matched">Template matched</option>
-    <option value="missing">Template missing</option>
-  </select>
-  <select class="filter-select" id="f-sku" onchange="applyFilters()">
-    <option value="">All SKUs</option>
-  </select>
-  <span id="shown-count"></span>
 </div>
 
-<div id="loading">Loading artwork submissions…</div>
-<div id="error-msg" style="display:none"></div>
-<div id="table-wrap" style="display:none">
-  <table id="main-table">
-    <thead id="thead"></thead>
-    <tbody id="tbody"></tbody>
-  </table>
-  <div id="empty-msg" style="display:none;text-align:center;padding:64px 24px;color:#94a3b8">No rows match the current filters.</div>
+<div class="modal-overlay" id="deleteModal">
+  <div class="modal">
+    <h2>Remove from list</h2>
+    <p>Remove <strong id="deleteRef"></strong> from this view?</p>
+    <div class="modal-actions">
+      <button class="mbtn" onclick="closeDelete()">Cancel</button>
+      <button class="mbtn mbtn-danger" onclick="confirmDelete()">Remove</button>
+    </div>
+  </div>
 </div>
+<div class="toast" id="toast"></div>
 
 <script>
-const SUPA_URL = 'https://fqaxuhbcwoikeldnxuvv.supabase.co';
-const SUPA_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImZxYXh1aGJjd29pa2VsZG54dXZ2Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODExNjk2NTQsImV4cCI6MjA5Njc0NTY1NH0.0XtMq5p6L9pnRilG5GUI5j72zPNuhl4PnD9ihDxeT1c';
-
-const UPSCALE = {
-  none:   { bg:'#d1fae5', text:'#065f46', label:'Ready'     },
-  raster: { bg:'#fef3c7', text:'#92400e', label:'Upscale'   },
-  vector: { bg:'#dbeafe', text:'#1e40af', label:'Vectorise' },
-  flag:   { bg:'#fee2e2', text:'#991b1b', label:'Flag'       },
-};
-const ASSESSOR = {
-  pending:  { bg:'#f1f5f9', text:'#475569', label:'Pending'  },
-  on_hold:  { bg:'#fff7ed', text:'#c2410c', label:'On Hold'  },
-  approved: { bg:'#d1fae5', text:'#065f46', label:'Approved' },
-};
-const COLS = [
-  { key:'company',             label:'Company',   w:160 },
-  { key:'customer_name',       label:'Customer',  w:130 },
-  { key:'sage_order',          label:'Sage Order',w:112 },
-  { key:'magento_order',       label:'Magento',   w:100 },
-  { key:'sku',                 label:'SKU',       w:170 },
-  { key:'template_match',      label:'Tmpl',      w:52, center:true },
-  { key:'asset_filename',      label:'File',      w:200 },
-  { key:'file_ext',            label:'Ext',       w:46, center:true },
-  { key:'file_size_kb',        label:'KB',        w:70, right:true },
-  { key:'artwork_class',       label:'Class',     w:125 },
-  { key:'colour_mode',         label:'Colour',    w:70 },
-  { key:'width_px',            label:'W px',      w:62, right:true },
-  { key:'height_px',           label:'H px',      w:62, right:true },
-  { key:'dpi_reported',        label:'DPI',       w:50, right:true },
-  { key:'upscale_recommended', label:'Upscale',   w:86 },
-  { key:'assessor_status',     label:'Assessed',  w:88 },
-  { key:'finished_w_mm',       label:'Tmpl W',    w:60, right:true },
-  { key:'finished_h_mm',       label:'Tmpl H',    w:60, right:true },
-  { key:'notes',               label:'Notes',     w:240 },
-];
-
-let allRows = [], filteredRows = [], sortKey = 'sage_order', sortDir = 1;
-
-async function sf(path) {
-  const r = await fetch(SUPA_URL + path, { headers: { apikey: SUPA_KEY, Authorization: 'Bearer ' + SUPA_KEY } });
-  return r.json();
+var pendingDeleteId = null;
+function openDelete(id, name) {
+  pendingDeleteId = id;
+  document.getElementById('deleteRef').textContent = name;
+  document.getElementById('deleteModal').classList.add('show');
 }
-
-async function init() {
-  try {
-    const [aa, om, ss] = await Promise.all([
-      sf('/rest/v1/artwork_analysis?select=id,sage_order,magento_order,asset_filename,file_ext,file_size_kb,sku,artwork_class,upscale_recommended,colour_mode,width_px,height_px,dpi_reported,notes,assessor_status,assessor_note&limit=1000'),
-      sf('/rest/v1/order_manifest?select=sage_order,company,customer_name'),
-      sf('/rest/v1/sku_specs?select=sku_file,source_pdf,finished_w_mm,finished_h_mm&sku_file=not.ilike.ARCHIVED%25'),
-    ]);
-
-    const omMap = {};
-    om.forEach(o => { omMap[o.sage_order] = o; });
-
-    function findTmpl(sku) {
-      if (!sku) return null;
-      const u = sku.toUpperCase();
-      return ss.find(s => s.sku_file && (s.sku_file.toUpperCase().includes(u) || (s.source_pdf||'').toUpperCase().includes(u))) || null;
-    }
-
-    allRows = aa.map(row => {
-      const m = omMap[row.sage_order] || {};
-      const t = findTmpl(row.sku);
-      return Object.assign({}, row, {
-        company:       m.company       || '—',
-        customer_name: m.customer_name || '—',
-        _tmpl:         t,
-        template_match: t ? '✓' : (row.sku ? '✗' : '—'),
-        finished_w_mm:  t ? t.finished_w_mm : null,
-        finished_h_mm:  t ? t.finished_h_mm : null,
-        assessor_status: row.assessor_status || 'pending',
-      });
-    });
-
-    // Populate SKU dropdown
-    const skus = [...new Set(allRows.map(r => r.sku).filter(Boolean))].sort();
-    const skuSel = document.getElementById('f-sku');
-    skus.forEach(s => { const o = document.createElement('option'); o.value = s; o.textContent = s; skuSel.appendChild(o); });
-
-    // Build thead
-    const thead = document.getElementById('thead');
-    let thHtml = '<tr>';
-    COLS.forEach((c, i) => {
-      thHtml += `<th style="width:${c.w}px;min-width:${c.w}px" onclick="doSort('${c.key}')" id="th-${c.key}">
-        ${c.label} <span class="sort-icon" id="si-${c.key}">⇅</span></th>`;
-    });
-    thHtml += '<th style="width:200px;min-width:200px;position:sticky;top:56px;z-index:2;background:#f1f5f9;border-bottom:2px solid #e2e8f0">Actions</th></tr>';
-    thead.innerHTML = thHtml;
-
-    document.getElementById('loading').style.display = 'none';
-    document.getElementById('table-wrap').style.display = '';
-    applyFilters();
-  } catch(e) {
-    document.getElementById('loading').style.display = 'none';
-    const em = document.getElementById('error-msg');
-    em.style.display = 'flex';
-    em.textContent = 'Error: ' + e.message;
-  }
+function closeDelete() { document.getElementById('deleteModal').classList.remove('show'); pendingDeleteId = null; }
+function confirmDelete() {
+  if (!pendingDeleteId) return;
+  var row = document.getElementById('row-' + pendingDeleteId);
+  if (row) row.remove();
+  closeDelete();
+  showToast('Row removed from view');
 }
-
-function applyFilters() {
-  const search   = document.getElementById('f-search').value.toLowerCase();
-  const assessor = document.getElementById('f-assessor').value;
-  const upscale  = document.getElementById('f-upscale').value;
-  const template = document.getElementById('f-template').value;
-  const sku      = document.getElementById('f-sku').value;
-
-  filteredRows = allRows.filter(r => {
-    if (search   && !Object.values(r).some(v => v && String(v).toLowerCase().includes(search))) return false;
-    if (assessor && r.assessor_status !== assessor) return false;
-    if (upscale  && r.upscale_recommended !== upscale) return false;
-    if (template === 'matched' && !r._tmpl) return false;
-    if (template === 'missing' && (r._tmpl || !r.sku)) return false;
-    if (sku      && r.sku !== sku) return false;
-    return true;
-  });
-
-  doSort(sortKey, true);
-  updateCounts();
+function showToast(msg) {
+  var t = document.getElementById('toast');
+  t.textContent = msg; t.classList.add('show');
+  setTimeout(function(){ t.classList.remove('show'); }, 2500);
 }
-
-function doSort(key, keepDir) {
-  if (!keepDir) sortDir = (sortKey === key) ? -sortDir : 1;
-  sortKey = key;
-
-  filteredRows.sort((a, b) => {
-    let av = a[key] ?? '', bv = b[key] ?? '';
-    return String(av).localeCompare(String(bv), undefined, { numeric: true }) * sortDir;
-  });
-
-  // Update header indicators
-  document.querySelectorAll('thead th').forEach(th => th.classList.remove('sort-active'));
-  document.querySelectorAll('.sort-icon').forEach(si => si.textContent = '⇅');
-  const activeTh = document.getElementById('th-' + key);
-  const activeSi = document.getElementById('si-' + key);
-  if (activeTh) activeTh.classList.add('sort-active');
-  if (activeSi) activeSi.textContent = sortDir === 1 ? '↑' : '↓';
-
-  renderTable();
-}
-
-function badge(label, bg, text) {
-  return `<span class="badge" style="background:${bg};color:${text}">${label}</span>`;
-}
-
-function renderTable() {
-  const tbody = document.getElementById('tbody');
-  const empty = document.getElementById('empty-msg');
-
-  if (!filteredRows.length) {
-    tbody.innerHTML = '';
-    empty.style.display = '';
-    document.getElementById('shown-count').textContent = '0 shown';
-    return;
-  }
-  empty.style.display = 'none';
-  document.getElementById('shown-count').textContent = filteredRows.length + ' shown';
-
-  const colourDot = mode => {
-    const bg = mode === 'colour' ? '#f59e0b' : mode === 'greyscale' ? '#94a3b8' : '#e2e8f0';
-    return `<span class="colour-dot" style="background:${bg}"></span>${mode || '—'}`;
-  };
-
-  const rows = filteredRows.map(r => {
-    const as = r.assessor_status || 'pending';
-    const asCfg = ASSESSOR[as] || ASSESSOR.pending;
-    const upCfg = UPSCALE[r.upscale_recommended];
-    const upBadge = upCfg ? badge(upCfg.label, upCfg.bg, upCfg.text) : '<span class="muted">—</span>';
-    const asBadge = `<span class="badge" style="background:${asCfg.bg};color:${asCfg.text};border:1px solid ${asCfg.text}33">${asCfg.label}</span>`;
-    const dpiClass = !r.dpi_reported ? 'muted' : r.dpi_reported <= 72 ? 'dpi-bad' : 'dpi-ok';
-    const tmplClass = r.template_match === '✓' ? 'tmpl-yes' : r.template_match === '✗' ? 'tmpl-no' : 'tmpl-na';
-
-    // Actions
-    const assessUrl = `/artwork-assessor/?aa_id=${r.id}&sku=${encodeURIComponent(r.sku||'')}&order=${r.sage_order}`;
-    let actions = `<button class="btn btn-assess" onclick="window.open('${assessUrl}','_blank')">Assess</button>`;
-    if (as === 'approved' && r._tmpl) {
-      const designUrl = `/designer/?aa_id=${r.id}&sku=${encodeURIComponent(r.sku||'')}&order=${r.sage_order}`;
-      actions += ` <button class="btn btn-designer" onclick="window.open('${designUrl}','_blank')">Designer →</button>`;
-    } else if (as === 'approved' && !r._tmpl) {
-      actions += ` <span class="muted">No template</span>`;
-    }
-
-    return `<tr>
-      <td><span class="ellipsis" style="max-width:150px;font-weight:600" title="${esc(r.company)}">${esc(r.company)}</span></td>
-      <td><span class="ellipsis" style="max-width:120px;color:#475569" title="${esc(r.customer_name)}">${esc(r.customer_name)}</span></td>
-      <td><span class="mono color:#475569">${r.sage_order}</span></td>
-      <td><span class="mono muted">${r.magento_order||'—'}</span></td>
-      <td>${r.sku ? `<span class="badge-sku">${r.sku}</span>` : '<span class="muted">No SKU</span>'}</td>
-      <td class="center"><span class="${tmplClass}">${r.template_match}</span></td>
-      <td><span class="ellipsis mono" style="max-width:190px;color:#374151" title="${esc(r.asset_filename)}">${esc(r.asset_filename)}</span></td>
-      <td class="center"><span class="badge-ext">${(r.file_ext||'').replace('.','').toUpperCase()}</span></td>
-      <td class="right" style="color:#64748b">${r.file_size_kb ? Number(r.file_size_kb).toLocaleString() : '—'}</td>
-      <td style="color:#475569">${r.artwork_class||'—'}</td>
-      <td>${colourDot(r.colour_mode)}</td>
-      <td class="right" style="color:#64748b">${r.width_px ? r.width_px.toLocaleString() : '—'}</td>
-      <td class="right" style="color:#64748b">${r.height_px ? r.height_px.toLocaleString() : '—'}</td>
-      <td class="right"><span class="${dpiClass}">${r.dpi_reported||'—'}</span></td>
-      <td>${upBadge}</td>
-      <td>${asBadge}</td>
-      <td class="right" style="color:#64748b;font-size:11px">${r.finished_w_mm||'—'}</td>
-      <td class="right" style="color:#64748b;font-size:11px">${r.finished_h_mm||'—'}</td>
-      <td><span class="ellipsis" style="max-width:230px;color:#64748b;font-size:11px" title="${esc(r.notes||'')}">${esc(r.notes)||'—'}</span></td>
-      <td style="white-space:nowrap">${actions}</td>
-    </tr>`;
-  });
-
-  tbody.innerHTML = rows.join('');
-}
-
-function updateCounts() {
-  document.getElementById('cnt-total').textContent   = allRows.length;
-  document.getElementById('cnt-matched').textContent = allRows.filter(r => r._tmpl).length;
-  document.getElementById('cnt-pending').textContent = allRows.filter(r => r.assessor_status === 'pending').length + ' pending';
-  document.getElementById('cnt-hold').textContent    = allRows.filter(r => r.assessor_status === 'on_hold').length + ' on hold';
-  document.getElementById('cnt-approved').textContent= allRows.filter(r => r.assessor_status === 'approved').length + ' approved';
-}
-
-function esc(s) {
-  if (!s) return '';
-  return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
-}
-
-init();
+document.getElementById('deleteModal').addEventListener('click', function(e){ if(e.target===this) closeDelete(); });
+document.addEventListener('keydown', function(e){ if(e.key==='Escape') closeDelete(); });
 </script>
 </body>
 </html>
