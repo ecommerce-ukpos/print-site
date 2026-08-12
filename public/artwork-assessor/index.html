@@ -761,6 +761,158 @@ function renderResults(results, assessedAt) {
   document.getElementById('resultsArea').innerHTML = html;
   document.getElementById('runLabel').textContent = 'Re-assess';
   document.getElementById('runBtn').disabled = !S.b64;
+  renderActionPanel(overall ? overall.status : 'info');
+}
+
+// ── Post-assessment action panel ────────────────────────────────────────────
+const SUPA_URL = 'https://fqaxuhbcwoikeldnxuvv.supabase.co';
+const SUPA_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImZxYXh1aGJjd29pa2VsZG54dXZ2Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDMwNzQyMTEsImV4cCI6MjA1ODY1MDIxMX0.q0RHsNYE7OxNfv2qvNWQJl2wkqWk0bL2l_KlsXirKzM';
+
+// Read aa_id from URL: ?aa_id=UUID
+const _aaParams = new URLSearchParams(window.location.search);
+S.aaId = _aaParams.get('aa_id') || null;
+
+function renderActionPanel(overallStatus) {
+  const existing = document.getElementById('actionPanel');
+  if (existing) existing.remove();
+
+  const panel = document.createElement('div');
+  panel.id = 'actionPanel';
+  panel.style.cssText = 'background:#fff;border:0.5px solid #D3D1C7;border-radius:12px;padding:16px;margin-top:14px';
+
+  panel.innerHTML = `
+    <div style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:0.07em;color:#888780;margin-bottom:10px">Next Action</div>
+    <textarea id="actionNote" placeholder="Add a note (optional)…" rows="2"
+      style="width:100%;border:0.5px solid #D3D1C7;border-radius:7px;padding:8px 10px;font-size:12px;
+             font-family:inherit;resize:vertical;margin-bottom:10px;color:#2C2C2A;background:#FAFAF8"></textarea>
+    <div style="display:flex;gap:8px;flex-wrap:wrap">
+      <button id="approveBtn" onclick="handleApprove()"
+        style="flex:1;padding:10px 16px;background:#2E7D32;color:#fff;border:none;border-radius:8px;
+               font-size:13px;font-weight:600;cursor:pointer;font-family:inherit;min-width:160px">
+        ✓ Approve → Send to Print Queue
+      </button>
+      <button id="holdBtn" onclick="handleHold()"
+        style="flex:1;padding:10px 16px;background:#F47920;color:#fff;border:none;border-radius:8px;
+               font-size:13px;font-weight:600;cursor:pointer;font-family:inherit;min-width:120px">
+        ⏸ Put On Hold
+      </button>
+    </div>
+    <div id="actionStatus" style="margin-top:10px;font-size:12px;display:none"></div>
+  `;
+  document.getElementById('resultsArea').after(panel);
+}
+
+async function supaUpdate(table, id, data) {
+  const res = await fetch(`${SUPA_URL}/rest/v1/${table}?id=eq.${id}`, {
+    method: 'PATCH',
+    headers: {
+      'apikey': SUPA_KEY,
+      'Authorization': 'Bearer ' + SUPA_KEY,
+      'Content-Type': 'application/json',
+      'Prefer': 'return=minimal'
+    },
+    body: JSON.stringify(data)
+  });
+  if (!res.ok) throw new Error(await res.text());
+}
+
+async function supaInsert(table, data) {
+  const res = await fetch(`${SUPA_URL}/rest/v1/${table}`, {
+    method: 'POST',
+    headers: {
+      'apikey': SUPA_KEY,
+      'Authorization': 'Bearer ' + SUPA_KEY,
+      'Content-Type': 'application/json',
+      'Prefer': 'return=representation'
+    },
+    body: JSON.stringify(data)
+  });
+  if (!res.ok) throw new Error(await res.text());
+  return res.json();
+}
+
+function setActionStatus(msg, colour) {
+  const el = document.getElementById('actionStatus');
+  if (!el) return;
+  el.style.display = 'block';
+  el.style.color = colour || '#2C2C2A';
+  el.textContent = msg;
+}
+
+function disableActionBtns() {
+  const a = document.getElementById('approveBtn');
+  const h = document.getElementById('holdBtn');
+  if (a) { a.disabled = true; a.style.opacity = '0.5'; a.style.cursor = 'not-allowed'; }
+  if (h) { h.disabled = true; h.style.opacity = '0.5'; h.style.cursor = 'not-allowed'; }
+}
+
+async function handleApprove() {
+  const note = document.getElementById('actionNote')?.value.trim() || null;
+  disableActionBtns();
+  setActionStatus('Saving…', '#888780');
+  try {
+    // 1. Update artwork_analysis assessor_status
+    if (S.aaId) {
+      await supaUpdate('artwork_analysis', S.aaId, {
+        assessor_status: 'approved',
+        assessor_note: note,
+        assessed_at: new Date().toISOString()
+      });
+    }
+    // 2. Fetch artwork_analysis row to get sage/magento/sku
+    let aaRow = null;
+    if (S.aaId) {
+      const r = await fetch(
+        `${SUPA_URL}/rest/v1/artwork_analysis?id=eq.${S.aaId}&select=sage_order,magento_order,sku`,
+        { headers: { 'apikey': SUPA_KEY, 'Authorization': 'Bearer ' + SUPA_KEY } }
+      );
+      const rows = await r.json();
+      aaRow = rows[0] || null;
+    }
+    // 3. Insert into print_jobs
+    await supaInsert('print_jobs', {
+      artwork_analysis_id: S.aaId,
+      sage_order:    aaRow?.sage_order    || S.sku || '—',
+      magento_order: aaRow?.magento_order || null,
+      sku:           aaRow?.sku          || S.sku || null,
+      status:        'job_received',
+      status_note:   note
+    });
+    setActionStatus('✓ Approved — job added to print queue', '#2E7D32');
+    document.getElementById('actionPanel').style.borderColor = '#A5D6A7';
+    document.getElementById('actionPanel').style.background = '#F1F8F1';
+  } catch(e) {
+    setActionStatus('Error: ' + e.message, '#E24B4A');
+    // Re-enable on error
+    const a = document.getElementById('approveBtn');
+    const h = document.getElementById('holdBtn');
+    if (a) { a.disabled = false; a.style.opacity = '1'; a.style.cursor = 'pointer'; }
+    if (h) { h.disabled = false; h.style.opacity = '1'; h.style.cursor = 'pointer'; }
+  }
+}
+
+async function handleHold() {
+  const note = document.getElementById('actionNote')?.value.trim() || null;
+  disableActionBtns();
+  setActionStatus('Saving…', '#888780');
+  try {
+    if (S.aaId) {
+      await supaUpdate('artwork_analysis', S.aaId, {
+        assessor_status: 'on_hold',
+        assessor_note: note,
+        assessed_at: new Date().toISOString()
+      });
+    }
+    setActionStatus('⏸ Marked as on hold — customer resubmission needed', '#C75E0A');
+    document.getElementById('actionPanel').style.borderColor = '#FAC775';
+    document.getElementById('actionPanel').style.background = '#FFFBF0';
+  } catch(e) {
+    setActionStatus('Error: ' + e.message, '#E24B4A');
+    const a = document.getElementById('approveBtn');
+    const h = document.getElementById('holdBtn');
+    if (a) { a.disabled = false; a.style.opacity = '1'; a.style.cursor = 'pointer'; }
+    if (h) { h.disabled = false; h.style.opacity = '1'; h.style.cursor = 'pointer'; }
+  }
 }
 </script>
 </body>
