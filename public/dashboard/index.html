@@ -1,858 +1,319 @@
 <!DOCTYPE html>
-<!--
-  ╔══════════════════════════════════════════════════════╗
-  ║  FILE 1 OF 3 — public/dashboard/index.html          ║
-  ║  UKPOS PrintSite — Artwork List                      ║
-  ║  Redesigned shell; all JS transplanted unchanged.    ║
-  ╚══════════════════════════════════════════════════════╝
--->
 <html lang="en">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Artwork List — UKPOS Print Site</title>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
-<style>
-/* ── Reset & base ── */
-*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
-body{font-family:'Inter',-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;background:#F2F1F6;color:#2C2C2A;min-height:100vh;font-size:13px;display:flex}
-
-/* ── Sidebar ── */
-.sidebar{width:52px;background:#fff;border-right:0.5px solid #D3D1C7;display:flex;flex-direction:column;align-items:flex-start;padding:12px 0;gap:2px;flex-shrink:0;overflow:hidden;transition:width 0.2s ease;position:fixed;top:0;left:0;bottom:0;z-index:50}
-.sidebar:hover{width:184px}
-.sb-logo{width:52px;height:40px;display:flex;align-items:center;justify-content:center;flex-shrink:0;margin-bottom:8px}
-.sb-logo-inner{width:28px;height:28px;background:#F47920;border-radius:7px;display:flex;align-items:center;justify-content:center;flex-shrink:0}
-.sb-logo-inner svg{width:16px;height:16px;fill:#fff}
-.sb-item{height:36px;display:flex;align-items:center;gap:10px;padding:0 14px;cursor:pointer;width:100%;white-space:nowrap;overflow:hidden;border-left:3px solid transparent;text-decoration:none}
-.sb-item:hover{background:#F2F1F6}
-.sb-item.active{background:#FFF0E6;border-left-color:#F47920}
-.sb-item svg,.sb-item i{font-size:17px;flex-shrink:0;width:20px;text-align:center;display:flex;align-items:center;justify-content:center}
-.sb-item.active .sb-icon{color:#F47920}
-.sb-item:not(.active) .sb-icon{color:#888780}
-.sb-icon{font-size:17px;flex-shrink:0;width:20px;text-align:center;font-style:normal}
-.sb-label{font-size:12px;font-weight:500;color:#2C2C2A;opacity:0;white-space:nowrap;pointer-events:none}
-.sb-item.active .sb-label{color:#C75E0A}
-.sidebar:hover .sb-label{opacity:1;transition:opacity 0.15s ease 0.05s}
-.sb-spacer{flex:1}
-.sb-divider{height:0.5px;background:#E8E6DE;margin:6px 10px;flex-shrink:0;width:calc(100% - 20px)}
-
-/* ── Main content ── */
-.main{flex:1;margin-left:52px;display:flex;flex-direction:column;min-height:100vh;min-width:0}
-
-/* ── Topbar ── */
-.topbar{height:52px;background:#fff;border-bottom:0.5px solid #D3D1C7;display:flex;align-items:center;padding:0 20px;gap:10px;position:sticky;top:0;z-index:40;flex-shrink:0}
-.topbar-title{font-size:15px;font-weight:600;color:#2C2C2A;letter-spacing:-0.01em;flex-shrink:0}
-.topbar-search{position:relative;flex:1;max-width:300px}
-.topbar-search input{width:100%;height:32px;border:0.5px solid #D3D1C7;border-radius:8px;background:#F2F1F6;padding:0 10px 0 32px;font-size:12px;font-family:'Inter',sans-serif;color:#2C2C2A;outline:none}
-.topbar-search input:focus{border-color:#F47920;background:#fff}
-.search-icon{position:absolute;left:10px;top:50%;transform:translateY(-50%);color:#888780;font-size:13px;pointer-events:none}
-.tb-spacer{flex:1}
-.btn-new{height:32px;padding:0 14px;border-radius:8px;border:none;background:#F47920;color:#fff;font-size:12px;font-weight:600;font-family:'Inter',sans-serif;cursor:pointer;display:flex;align-items:center;gap:6px;flex-shrink:0}
-.btn-new:hover{opacity:0.9}
-.btn-refresh{height:32px;padding:0 12px;border-radius:8px;border:0.5px solid #D3D1C7;background:#fff;color:#5F5E5A;font-size:12px;font-weight:500;font-family:'Inter',sans-serif;cursor:pointer;flex-shrink:0}
-.btn-refresh:hover{background:#F2F1F6}
-.btn-csv{height:32px;padding:0 12px;border-radius:8px;border:0.5px solid #D3D1C7;background:#fff;color:#5F5E5A;font-size:12px;font-weight:500;font-family:'Inter',sans-serif;cursor:pointer;flex-shrink:0}
-.btn-csv:hover{background:#F2F1F6}
-
-/* ── Content padding ── */
-.content{padding:18px 20px;display:flex;flex-direction:column;gap:14px}
-
-/* ── Stats ── */
-.stats{display:grid;grid-template-columns:repeat(4,1fr);gap:10px}
-.stat{background:#fff;border-radius:12px;padding:14px 16px;border:0.5px solid #D3D1C7}
-.stat-label{font-size:10px;color:#888780;font-weight:600;text-transform:uppercase;letter-spacing:0.05em;margin-bottom:6px}
-.stat-value{font-size:22px;font-weight:600;letter-spacing:-0.02em;line-height:1;margin-bottom:4px}
-.stat-sub{font-size:10px;color:#888780;display:flex;align-items:center;gap:4px}
-.stat-dot{width:5px;height:5px;border-radius:50%;flex-shrink:0}
-
-/* ── Drop zone ── */
-.drop-banner{border:1.5px dashed #B4B2A9;border-radius:10px;padding:14px 18px;display:flex;align-items:center;gap:16px;cursor:pointer;background:#fff;transition:border-color 0.15s,background 0.15s;flex-shrink:0}
-.drop-banner:hover,.drop-banner.drag-over{border-color:#F47920;background:#FFF8F3}
-.drop-icon-wrap{width:40px;height:40px;border-radius:10px;background:#F2F1F6;display:flex;align-items:center;justify-content:center;flex-shrink:0;font-size:18px}
-.drop-banner.drag-over .drop-icon-wrap{background:#FFF0E6}
-.db-info{flex:1;text-align:center}
-.db-title{font-size:12px;font-weight:600;color:#2C2C2A;margin-bottom:3px}
-.db-sub{font-size:10px;color:#888780;margin-bottom:5px}
-.db-formats{display:flex;gap:4px;flex-wrap:wrap;justify-content:center}
-.fmt-pill{font-size:9px;font-weight:600;padding:2px 6px;border-radius:4px;background:#F2F1F6;color:#5F5E5A;border:0.5px solid #D3D1C7}
-.db-or{font-size:11px;color:#B4B2A9;flex-shrink:0}
-.db-browse{height:30px;padding:0 14px;border-radius:7px;border:0.5px solid #D3D1C7;background:#fff;font-size:11px;font-weight:600;color:#5F5E5A;cursor:pointer;font-family:'Inter',sans-serif;flex-shrink:0;white-space:nowrap}
-.db-browse:hover{background:#F2F1F6}
-
-/* ── Controls / filter bar ── */
-.controls-bar{display:flex;align-items:center;gap:8px;flex-wrap:wrap}
-.controls-label{font-size:10px;color:#888780;font-weight:700;text-transform:uppercase;letter-spacing:0.06em;margin-right:2px;flex-shrink:0}
-.col-pill{padding:3px 10px;font-size:11px;border-radius:20px;cursor:pointer;border:0.5px solid #D3D1C7;background:#fff;color:#5F5E5A;white-space:nowrap;font-family:'Inter',sans-serif;font-weight:500}
-.col-pill.on{background:#FFF0E6;color:#C75E0A;border-color:#FAC795}
-.col-pill:hover{background:#F2F1F6}
-.col-pill.on:hover{background:#FFE8D4}
-
-/* ── Date + score filter bar ── */
-.filter-bar{display:flex;align-items:center;gap:8px;flex-wrap:wrap;padding:10px 14px;background:#fff;border-radius:10px;border:0.5px solid #D3D1C7}
-.filter-group{display:flex;align-items:center;gap:5px;flex-shrink:0}
-.filter-group-label{font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:0.05em;color:#888780;white-space:nowrap}
-.filter-sep{width:1px;height:18px;background:#E8E6DE;flex-shrink:0}
-.date-preset{height:26px;padding:0 10px;border-radius:20px;border:0.5px solid #D3D1C7;background:#fff;font-size:11px;font-weight:500;color:#5F5E5A;cursor:pointer;font-family:'Inter',sans-serif;white-space:nowrap;transition:all 0.1s}
-.date-preset:hover{background:#F2F1F6}
-.date-preset.active{background:#F47920;color:#fff;border-color:#F47920;font-weight:600}
-.date-range-inputs{display:flex;align-items:center;gap:5px}
-.date-input{height:26px;padding:0 8px;border-radius:6px;border:0.5px solid #D3D1C7;background:#F2F1F6;font-size:11px;font-family:'Inter',sans-serif;color:#2C2C2A;outline:none;cursor:pointer}
-.date-input:focus{border-color:#F47920;background:#fff}
-.date-range-sep{font-size:10px;color:#888780}
-.score-filter{display:flex;align-items:center;gap:4px}
-.score-range-input{width:52px;height:26px;padding:0 7px;border-radius:6px;border:0.5px solid #D3D1C7;background:#F2F1F6;font-size:11px;font-family:'Inter',sans-serif;color:#2C2C2A;outline:none}
-.score-range-input:focus{border-color:#F47920;background:#fff}
-.filter-clear{height:26px;padding:0 10px;border-radius:20px;border:0.5px solid #F09595;background:#FCEBEB;font-size:11px;font-weight:600;color:#501313;cursor:pointer;font-family:'Inter',sans-serif;margin-left:auto;white-space:nowrap}
-.filter-clear:hover{background:#F7D0D0}
-.filter-clear.hidden{display:none}
-.filter-results{font-size:11px;color:#888780;flex-shrink:0;white-space:nowrap}
-
-/* ── Table ── */
-.table-card{background:#fff;border-radius:12px;border:0.5px solid #D3D1C7;overflow:hidden}
-.table-header{display:flex;align-items:center;justify-content:space-between;padding:12px 16px;border-bottom:0.5px solid #E8E6DE}
-.table-header-title{font-size:12px;font-weight:600;color:#2C2C2A}
-.table-wrap{overflow-x:auto}
-table{width:100%;border-collapse:collapse;min-width:900px}
-thead tr{border-bottom:0.5px solid #E8E6DE}
-th{padding:8px 10px;text-align:left;font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:0.06em;color:#888780;white-space:nowrap;background:#FAFAF8}
-td{padding:9px 10px;border-bottom:0.5px solid #F1EFE8;vertical-align:middle}
-tr:last-child td{border-bottom:none}
-tbody tr:hover td{background:#FAFAF8}
-
-/* ── Badges ── */
-.badge{display:inline-block;font-size:9px;font-weight:700;padding:2px 6px;border-radius:4px;text-transform:uppercase;letter-spacing:0.03em}
-.badge-pdf{background:#FCEBEB;color:#791F1F}
-.badge-eps{background:#F0EEFF;color:#4B35B0}
-.badge-png{background:#E1F5EE;color:#0F6E56}
-.badge-jpg,.badge-jpeg{background:#FAEEDA;color:#633806}
-.badge-manual,.badge-csv,.badge-api{background:#F2F1F6;color:#5F5E5A}
-.badge-designer{background:#FFF0E6;color:#C75E0A}
-.sku-badge{display:inline-flex;align-items:center;height:18px;padding:0 7px;background:#FFF0E6;border-radius:4px;font-size:9px;font-weight:600;color:#C75E0A}
-
-/* ── Score ring ── */
-.score-wrap{display:inline-flex;position:relative;width:34px;height:34px;flex-shrink:0}
-.score-wrap svg{transform:rotate(-90deg);width:34px;height:34px}
-.score-num{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;font-size:8px;font-weight:700;font-family:'Inter',sans-serif}
-
-/* ── Check dots ── */
-.check-cell{text-align:center}
-.ck{width:8px;height:8px;border-radius:50%;display:inline-block}
-.ck-pass{background:#639922}
-.ck-warn{background:#EF9F27}
-.ck-fail{background:#E24B4A}
-.ck-none{background:#D3D1C7}
-
-/* ── Status dot (reference column) ── */
-.status-dot{display:inline-block;width:7px;height:7px;border-radius:50%;margin-right:5px;flex-shrink:0}
-.dot-pass{background:#639922}
-.dot-warn{background:#EF9F27}
-.dot-fail{background:#E24B4A}
-.dot-pending{background:#B4B2A9}
-
-/* ── Ref / filename cells ── */
-.ref-cell{display:flex;align-items:center;max-width:150px}
-.ref-text{overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-weight:500;color:#2C2C2A;font-size:12px}
-.filename-cell{color:#5F5E5A;max-width:130px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-size:11px}
-.date-cell{color:#888780;white-space:nowrap;font-size:11px}
-.source-cell{font-size:10px;color:#888780}
-
-/* ── Score progress bar (legacy — kept for renderRow) ── */
-.score-cell{font-size:12px;font-weight:500}
-.score-high{color:#173404}.score-mid{color:#412402}.score-low{color:#501313}
-.progress-bar{height:3px;background:#E8E6DE;border-radius:2px;overflow:hidden;margin-top:3px;width:60px}
-.progress-fill{height:100%;border-radius:2px}
-.muted{color:#B4B2A9}
-.spinner-sm{display:inline-block;width:12px;height:12px;border:2px solid #D3D1C7;border-top-color:#F47920;border-radius:50%;animation:spin 0.6s linear infinite}
-@keyframes spin{to{transform:rotate(360deg)}}
-
-/* ── Action buttons ── */
-.actions-cell{display:flex;align-items:center;gap:4px;white-space:nowrap}
-.act-btn{width:26px;height:26px;border-radius:7px;display:inline-flex;align-items:center;justify-content:center;cursor:pointer;border:none;font-size:12px;flex-shrink:0;font-family:'Inter',sans-serif}
-/* keep legacy text button classes for renderRow compatibility */
-.view-btn{padding:4px 10px;font-size:11px;border-radius:6px;cursor:pointer;border:0.5px solid #D3D1C7;background:#F2F1F6;color:#2C2C2A;font-weight:500;font-family:'Inter',sans-serif}
-.view-btn:hover{background:#E8E6DE}
-.design-btn{padding:4px 10px;font-size:11px;border-radius:6px;cursor:pointer;border:none;background:#F47920;color:#fff;font-weight:600;font-family:'Inter',sans-serif}
-.design-btn:hover{opacity:0.9}
-.del-btn{padding:4px 8px;font-size:11px;border-radius:6px;cursor:pointer;border:0.5px solid #F09595;background:#FCEBEB;color:#501313;font-weight:500;font-family:'Inter',sans-serif}
-.del-btn:hover{background:#F7D0D0}
-
-/* ── Pagination ── */
-.pagination{display:flex;align-items:center;gap:8px;flex-wrap:wrap;padding:14px 16px;border-top:0.5px solid #E8E6DE}
-.pg-info{font-size:11px;color:#888780;margin-right:auto}
-.pg-size{display:flex;align-items:center;gap:6px;font-size:11px;color:#5F5E5A}
-.pg-size select{font-size:11px;padding:3px 7px;border:0.5px solid #D3D1C7;border-radius:6px;background:#fff;cursor:pointer;font-family:'Inter',sans-serif}
-.pg-btn{padding:4px 10px;font-size:11px;border-radius:6px;cursor:pointer;border:0.5px solid #D3D1C7;background:#fff;color:#2C2C2A;font-family:'Inter',sans-serif}
-.pg-btn:hover{background:#F2F1F6}
-.pg-btn:disabled{opacity:0.4;cursor:not-allowed}
-#pgPages{font-size:11px;color:#5F5E5A}
-
-/* ── Empty state ── */
-.empty-state{padding:48px 32px;text-align:center;color:#888780}
-.empty-state .es-icon{font-size:28px;margin-bottom:10px}
-.empty-state p{font-size:13px}
-
-/* ── Delete modal ── */
-.modal-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,0.45);z-index:100;align-items:center;justify-content:center}
-.modal-overlay.show{display:flex}
-.modal{background:#fff;border-radius:14px;padding:28px;width:380px;max-width:90vw;box-shadow:0 20px 60px rgba(0,0,0,0.15)}
-.modal h2{font-size:16px;font-weight:600;margin-bottom:8px;color:#2C2C2A}
-.modal p{font-size:13px;color:#5F5E5A;margin-bottom:16px;line-height:1.5}
-.modal-ref{font-weight:600;color:#2C2C2A}
-.modal input{width:100%;font-size:13px;padding:8px 10px;border:0.5px solid #D3D1C7;border-radius:8px;margin-bottom:16px;font-family:'Inter',sans-serif;outline:none}
-.modal input:focus{border-color:#F47920}
-.modal input.error{border-color:#E24B4A}
-.modal-actions{display:flex;gap:8px;justify-content:flex-end}
-.mbtn{padding:7px 14px;border-radius:8px;font-size:12px;font-weight:600;cursor:pointer;border:0.5px solid #D3D1C7;background:#fff;color:#2C2C2A;font-family:'Inter',sans-serif}
-.mbtn:hover{background:#F2F1F6}
-.mbtn-danger{background:#FCEBEB;color:#501313;border-color:#F09595}
-.mbtn-danger:hover{background:#F7D0D0}
-.mbtn-danger:disabled{background:#F2F1F6;color:#B4B2A9;border-color:#D3D1C7;cursor:not-allowed}
-
-/* ── Toast ── */
-.toast{position:fixed;bottom:24px;left:50%;transform:translateX(-50%);background:#2C2C2A;color:#fff;padding:9px 18px;border-radius:8px;font-size:12px;font-weight:500;opacity:0;transition:opacity 0.2s;pointer-events:none;z-index:999;white-space:nowrap}
-.toast.show{opacity:1}
-
-/* ── Hidden file inputs ── */
-input[type=file]{display:none}
-</style>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Artwork Submissions — PrintSite</title>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/react/18.2.0/umd/react.production.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/react-dom/18.2.0/umd/react-dom.production.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/babel-standalone/7.23.2/babel.min.js"></script>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; background: #f8fafc; color: #0f172a; }
+    ::-webkit-scrollbar { height: 6px; width: 6px; }
+    ::-webkit-scrollbar-track { background: #f1f5f9; }
+    ::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 3px; }
+  </style>
 </head>
 <body>
+  <div id="root"></div>
+  <script type="text/babel">
+    const { useState, useEffect, useMemo } = React;
 
-<!-- ══ SIDEBAR ══ -->
-<nav class="sidebar" id="sidebar">
-  <div class="sb-logo">
-    <div class="sb-logo-inner">
-      <svg viewBox="0 0 24 24"><path d="M3 6h18v2H3zm0 5h18v2H3zm0 5h18v2H3z"/></svg>
-    </div>
-  </div>
-  <a class="sb-item active" href="/dashboard">
-    <span class="sb-icon">☰</span>
-    <span class="sb-label">Artwork list</span>
-  </a>
-  <a class="sb-item" href="/designer">
-    <span class="sb-icon">✏️</span>
-    <span class="sb-label">Designer</span>
-  </a>
-  <a class="sb-item" href="/artwork-assessor">
-    <span class="sb-icon">✓</span>
-    <span class="sb-label">Assessor</span>
-  </a>
-  <div class="sb-spacer"></div>
-  <div class="sb-divider"></div>
-  <a class="sb-item" href="/">
-    <span class="sb-icon">⚙</span>
-    <span class="sb-label">Settings</span>
-  </a>
-</nav>
+    const SUPABASE_URL = "https://fqaxuhbcwoikeldnxuvv.supabase.co";
+    const SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImZxYXh1aGJjd29pa2VsZG54dXZ2Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDMwNzQyMTEsImV4cCI6MjA1ODY1MDIxMX0.q0RHsNYE7OxNfv2qvNWQJl2wkqWk0bL2l_KlsXirKzM";
 
-<!-- ══ MAIN ══ -->
-<div class="main">
+    const UPSCALE = {
+      none:   { bg: "#d1fae5", text: "#065f46", label: "Ready"     },
+      raster: { bg: "#fef3c7", text: "#92400e", label: "Upscale"   },
+      vector: { bg: "#dbeafe", text: "#1e40af", label: "Vectorise" },
+      flag:   { bg: "#fee2e2", text: "#991b1b", label: "Flag"      },
+    };
 
-  <!-- Topbar -->
-  <div class="topbar">
-    <span class="topbar-title">Artwork list</span>
-    <div class="topbar-search">
-      <span class="search-icon">🔍</span>
-      <input type="text" placeholder="Search reference or SKU…" />
-    </div>
-    <div class="tb-spacer"></div>
-    <button class="btn-refresh" onclick="loadJobs()">↻ Refresh</button>
-    <button class="btn-csv" onclick="document.getElementById('csvInput').click()">Upload CSV</button>
-    <input type="file" id="csvInput" accept=".csv" onchange="handleCSV(event)" />
-    <button class="btn-new" onclick="document.getElementById('fileInput').click()">+ Add files</button>
-    <input type="file" id="fileInput" accept=".pdf,.eps,.zip,.png,.jpg,.jpeg" multiple onchange="handleFiles(event)" />
-  </div>
+    const ASSESSOR_STATUS = {
+      pending:  { bg: "#f1f5f9", text: "#475569", label: "Pending"  },
+      on_hold:  { bg: "#fff7ed", text: "#c2410c", label: "On Hold"  },
+      approved: { bg: "#d1fae5", text: "#065f46", label: "Approved" },
+    };
 
-  <div class="content">
+    const COLS = [
+      { key: "company",             label: "Company",      w: 160 },
+      { key: "customer_name",       label: "Customer",     w: 130 },
+      { key: "sage_order",          label: "Sage Order",   w: 112 },
+      { key: "magento_order",       label: "Magento",      w: 100 },
+      { key: "sku",                 label: "SKU",          w: 170 },
+      { key: "template_match",      label: "Tmpl",         w: 52  },
+      { key: "asset_filename",      label: "File",         w: 200 },
+      { key: "file_ext",            label: "Ext",          w: 46  },
+      { key: "file_size_kb",        label: "KB",           w: 70  },
+      { key: "artwork_class",       label: "Class",        w: 125 },
+      { key: "colour_mode",         label: "Colour",       w: 70  },
+      { key: "width_px",            label: "W px",         w: 62  },
+      { key: "height_px",           label: "H px",         w: 62  },
+      { key: "dpi_reported",        label: "DPI",          w: 50  },
+      { key: "upscale_recommended", label: "Upscale",      w: 86  },
+      { key: "assessor_status",     label: "Assessed",     w: 88  },
+      { key: "finished_w_mm",       label: "Tmpl W",       w: 60  },
+      { key: "finished_h_mm",       label: "Tmpl H",       w: 60  },
+      { key: "notes",               label: "Notes",        w: 240 },
+    ];
 
-    <!-- Stats -->
-    <div class="stats" id="statsRow">
-      <div class="stat">
-        <div class="stat-label">Total jobs</div>
-        <div class="stat-value" style="color:#2C2C2A" id="statTotal">—</div>
-        <div class="stat-sub">This session</div>
-      </div>
-      <div class="stat">
-        <div class="stat-label">Passed</div>
-        <div class="stat-value" style="color:#3B6D11" id="statPass">—</div>
-        <div class="stat-sub"><span class="stat-dot" style="background:#639922"></span>Ready to print</div>
-      </div>
-      <div class="stat">
-        <div class="stat-label">Warnings</div>
-        <div class="stat-value" style="color:#854F0B" id="statWarn">—</div>
-        <div class="stat-sub"><span class="stat-dot" style="background:#EF9F27"></span>Need review</div>
-      </div>
-      <div class="stat">
-        <div class="stat-label">Failed</div>
-        <div class="stat-value" style="color:#A32D2D" id="statFail">—</div>
-        <div class="stat-sub"><span class="stat-dot" style="background:#E24B4A"></span>Action required</div>
-      </div>
-    </div>
-
-    <!-- Drop zone -->
-    <div class="drop-banner" id="dropBanner">
-      <div class="drop-icon-wrap">📂</div>
-      <div class="db-info">
-        <div class="db-title">Drop artwork files here to add to the list</div>
-        <div class="db-sub">Files are assessed automatically on upload</div>
-        <div class="db-formats">
-          <span class="fmt-pill">PDF</span>
-          <span class="fmt-pill">EPS</span>
-          <span class="fmt-pill">PNG</span>
-          <span class="fmt-pill">JPG</span>
-          <span class="fmt-pill">TIFF</span>
-          <span class="fmt-pill">ZIP</span>
-        </div>
-      </div>
-      <span class="db-or">or</span>
-      <button class="db-browse" onclick="event.stopPropagation();document.getElementById('fileInput').click()">Browse files</button>
-    </div>
-
-    <!-- Date + score filter bar -->
-    <div class="filter-bar" id="filterBar">
-      <div class="filter-group">
-        <span class="filter-group-label">Date</span>
-        <button class="date-preset active" data-preset="all" onclick="setDatePreset(this,'all')">All</button>
-        <button class="date-preset" data-preset="today" onclick="setDatePreset(this,'today')">Today</button>
-        <button class="date-preset" data-preset="yesterday" onclick="setDatePreset(this,'yesterday')">Yesterday</button>
-        <button class="date-preset" data-preset="7d" onclick="setDatePreset(this,'7d')">Last 7 days</button>
-        <button class="date-preset" data-preset="30d" onclick="setDatePreset(this,'30d')">Last 30 days</button>
-        <div class="date-range-inputs">
-          <input type="date" class="date-input" id="filterDateFrom" title="From date" onchange="onDateRangeChange()">
-          <span class="date-range-sep">→</span>
-          <input type="date" class="date-input" id="filterDateTo" title="To date" onchange="onDateRangeChange()">
-        </div>
-      </div>
-      <div class="filter-sep"></div>
-      <div class="filter-group">
-        <span class="filter-group-label">Score</span>
-        <input type="number" class="score-range-input" id="filterScoreMin" placeholder="0" min="0" max="100" title="Min score %" oninput="applyFilters()">
-        <span class="date-range-sep">–</span>
-        <input type="number" class="score-range-input" id="filterScoreMax" placeholder="100" min="0" max="100" title="Max score %" oninput="applyFilters()">
-        <span style="font-size:10px;color:#888780">%</span>
-      </div>
-      <span class="filter-results" id="filterResults"></span>
-      <button class="filter-clear hidden" id="filterClearBtn" onclick="clearFilters()">✕ Clear filters</button>
-    </div>
-
-    <!-- Column toggle pills -->
-    <div class="controls-bar">
-      <span class="controls-label">Checks:</span>
-      <button class="col-pill on" data-col="dpi"          onclick="toggleCol(this)">DPI</button>
-      <button class="col-pill on" data-col="pixelation"   onclick="toggleCol(this)">Pixelation</button>
-      <button class="col-pill on" data-col="bleed"        onclick="toggleCol(this)">Bleed</button>
-      <button class="col-pill on" data-col="colour"       onclick="toggleCol(this)">Colour</button>
-      <button class="col-pill on" data-col="white_edge"   onclick="toggleCol(this)">White edge</button>
-      <button class="col-pill on" data-col="safe_zone"    onclick="toggleCol(this)">Safe zone</button>
-      <button class="col-pill on" data-col="fonts"        onclick="toggleCol(this)">Fonts</button>
-      <button class="col-pill on" data-col="transparency" onclick="toggleCol(this)">Transparency</button>
-    </div>
-
-    <!-- Table -->
-    <div class="table-card">
-      <div class="table-wrap">
-        <table id="jobTable">
-          <thead>
-            <tr>
-              <th>Reference</th>
-              <th>Customer</th>
-              <th>Order</th>
-              <th>File</th>
-              <th>Type</th>
-              <th>Source</th>
-              <th>Uploaded</th>
-              <th>Assessed</th>
-              <th>Score</th>
-              <th class="check-col check-cell" data-col="dpi">DPI</th>
-              <th class="check-col check-cell" data-col="pixelation">Pixelation</th>
-              <th class="check-col check-cell" data-col="bleed">Bleed</th>
-              <th class="check-col check-cell" data-col="colour">Colour</th>
-              <th class="check-col check-cell" data-col="white_edge">White edge</th>
-              <th class="check-col check-cell" data-col="safe_zone">Safe zone</th>
-              <th class="check-col check-cell" data-col="fonts">Fonts</th>
-              <th class="check-col check-cell" data-col="transparency">Transparency</th>
-              <th></th>
-            </tr>
-          </thead>
-          <tbody id="jobBody">
-            <tr><td colspan="19"><div class="empty-state"><div class="es-icon">⏳</div><p>Loading…</p></div></td></tr>
-          </tbody>
-        </table>
-      </div>
-      <div class="pagination" id="paginationBar">
-        <span class="pg-info" id="pgInfo"></span>
-        <div class="pg-size">
-          <span>Show</span>
-          <select id="pgSize" onchange="changePageSize(this.value)">
-            <option value="50">50</option>
-            <option value="100">100</option>
-            <option value="250">250</option>
-          </select>
-          <span>per page</span>
-        </div>
-        <button class="pg-btn" id="pgPrev" onclick="changePage(-1)" disabled>← Prev</button>
-        <span id="pgPages"></span>
-        <button class="pg-btn" id="pgNext" onclick="changePage(1)">Next →</button>
-      </div>
-    </div>
-
-  </div><!-- end .content -->
-</div><!-- end .main -->
-
-<!-- Delete modal -->
-<div class="modal-overlay" id="deleteModal">
-  <div class="modal">
-    <h2>Delete job</h2>
-    <p>This will permanently remove <span class="modal-ref" id="deleteRef"></span> from the queue. Type <strong>DELETE</strong> to confirm.</p>
-    <input type="text" id="deleteConfirmInput" placeholder="Type DELETE to confirm" oninput="validateDeleteInput(this)" />
-    <div class="modal-actions">
-      <button class="mbtn" onclick="closeDeleteModal()">Cancel</button>
-      <button class="mbtn mbtn-danger" id="deleteConfirmBtn" onclick="confirmDelete()" disabled>Delete</button>
-    </div>
-  </div>
-</div>
-
-<div class="toast" id="toast"></div>
-
-<script>
-/* ══════════════════════════════════════════════════
-   ALL JS BELOW IS TRANSPLANTED UNCHANGED FROM THE
-   ORIGINAL public/dashboard/index.html
-   ══════════════════════════════════════════════════ */
-
-const CHECK_COLS = ['dpi','pixelation','bleed','colour','white_edge','safe_zone','fonts','transparency'];
-let allJobs = [];
-let hiddenCols = new Set();
-let currentPage = 1;
-let pageSize = 50;
-let pendingDeleteId = null;
-
-function toggleCol(btn) {
-  const col = btn.dataset.col;
-  btn.classList.toggle('on');
-  hiddenCols.has(col) ? hiddenCols.delete(col) : hiddenCols.add(col);
-  applyColVisibility();
-}
-
-function applyColVisibility() {
-  document.querySelectorAll('.check-col').forEach(th => { th.style.display = hiddenCols.has(th.dataset.col) ? 'none' : ''; });
-  document.querySelectorAll('.check-td').forEach(td => { td.style.display = hiddenCols.has(td.dataset.col) ? 'none' : ''; });
-}
-
-function fmtDate(iso) {
-  if (!iso) return '—';
-  const d = new Date(iso);
-  return d.toLocaleDateString('en-GB', {day:'2-digit',month:'short'}) + ' ' + d.toLocaleTimeString('en-GB', {hour:'2-digit',minute:'2-digit'});
-}
-
-function checkIcon(results, id) {
-  if (!results) return '<span class="muted">—</span>';
-  const r = results.find(r => r.id === id || r.id === id.replace('_',''));
-  if (!r) return '<span class="muted">—</span>';
-  if (r.status === 'pass') return '<span class="ck ck-pass" title="Pass"></span>';
-  if (r.status === 'fail') return '<span class="ck ck-fail" title="Fail"></span>';
-  if (r.status === 'warn') return '<span class="ck ck-warn" title="Warning"></span>';
-  return '<span class="ck ck-none" title="Info"></span>';
-}
-
-function renderRow(job) {
-  const results = job.results || null;
-  const statusDot = {pass:'dot-pass',fail:'dot-fail',warn:'dot-warn'}[job.overall_status] || 'dot-pending';
-  const pct = job.score_pct;
-  const ringColor = pct >= 80 ? '#639922' : pct >= 50 ? '#EF9F27' : '#E24B4A';
-  const ringNumColor = pct >= 80 ? '#3B6D11' : pct >= 50 ? '#854F0B' : '#A32D2D';
-  const circ = 81.7;
-  const offset = pct !== null && pct !== undefined ? circ * (1 - pct/100) : circ;
-  const scoreHtml = pct !== null && pct !== undefined
-    ? `<div class="score-wrap">
-         <svg width="34" height="34" viewBox="0 0 34 34" style="transform:rotate(-90deg)">
-           <circle cx="17" cy="17" r="13" fill="none" stroke="#F2F1F6" stroke-width="2.5"/>
-           <circle cx="17" cy="17" r="13" fill="none" stroke="${ringColor}" stroke-width="2.5" stroke-linecap="round" stroke-dasharray="${circ}" stroke-dashoffset="${offset.toFixed(1)}"/>
-         </svg>
-         <div class="score-num" style="color:${ringNumColor}">${pct}</div>
-       </div>`
-    : job.assessed_at ? '<span class="muted">—</span>' : '<span class="spinner-sm"></span>';
-
-  const badgeType = 'badge-' + (job.file_type||'').toLowerCase();
-  const badgeSrc  = 'badge-' + (job.source||'manual').toLowerCase().replace(/\s/g,'');
-  const ref = (job.reference||'').replace(/</g,'&lt;');
-  const fname = (job.file_name||'').replace(/</g,'&lt;');
-
-  const checkCells = CHECK_COLS.map(col => {
-    const hidden = hiddenCols.has(col) ? ' style="display:none"' : '';
-    return `<td class="check-cell check-td" data-col="${col}"${hidden}>${checkIcon(results, col)}</td>`;
-  }).join('');
-
-  return `<tr data-id="${job.id}">
-    <td><div class="ref-cell"><span class="status-dot ${statusDot}"></span><span class="ref-text" title="${ref}">${ref}</span></div></td>
-    <td>${job.customer_name || '<span class="muted">—</span>'}</td>
-    <td>${job.order_number  || '<span class="muted">—</span>'}</td>
-    <td><div class="filename-cell" title="${fname}">${fname}</div></td>
-    <td><span class="badge ${badgeType}">${job.file_type||'?'}</span></td>
-    <td class="source-cell">${job.source||'manual'}</td>
-    <td class="date-cell">${fmtDate(job.uploaded_at)}</td>
-    <td class="date-cell">${fmtDate(job.assessed_at)}</td>
-    <td>${scoreHtml}</td>
-    ${checkCells}
-    <td><div class="actions-cell">
-      <button class="view-btn" onclick="openJob('${job.id}')">Assess →</button>
-      <button class="design-btn" onclick="openDesigner('${job.id}','${ref}','${encodeURIComponent(job.file_name||'')}','${job.sku||''}')">Design →</button>
-      <button class="del-btn" onclick="openDeleteModal('${job.id}','${ref}')">✕</button>
-    </div></td>
-  </tr>`;
-}
-
-function updateStats() {
-  document.getElementById('statTotal').textContent = allJobs.length;
-  document.getElementById('statPass').textContent  = allJobs.filter(j=>j.overall_status==='pass').length;
-  document.getElementById('statWarn').textContent  = allJobs.filter(j=>j.overall_status==='warn').length;
-  document.getElementById('statFail').textContent  = allJobs.filter(j=>j.overall_status==='fail').length;
-}
-
-function renderTable() {
-  // Reapply current filters, then delegate
-  applyFilters();
-}
-
-function changePage(dir) { currentPage += dir; renderTableFromSource(filteredJobs.length && filteredJobs.length < allJobs.length ? filteredJobs : allJobs); window.scrollTo(0,0); }
-function changePageSize(val) { pageSize = parseInt(val); currentPage = 1; renderTable(); }
-
-async function loadJobs() {
-  document.getElementById('jobBody').innerHTML =
-    `<tr><td colspan="19"><div class="empty-state"><div class="es-icon">⏳</div><p>Loading…</p></div></td></tr>`;
-  try {
-    const r = await fetch('/api/jobs');
-    const data = await r.json();
-    allJobs = Array.isArray(data) ? data : [];
-    currentPage = 1;
-    renderTable();
-  } catch(e) { console.error('loadJobs failed', e); }
-}
-
-function openJob(id) { window.location.href = `/artwork-assessor?job=${id}`; }
-function openDesigner(id, ref, fileName, sku) {
-  const params = new URLSearchParams({ job: id });
-  if (sku) params.set('sku', sku);
-  window.location.href = `/designer?${params.toString()}`;
-}
-
-function openDeleteModal(id, ref) {
-  pendingDeleteId = id;
-  document.getElementById('deleteRef').textContent = ref;
-  document.getElementById('deleteConfirmInput').value = '';
-  document.getElementById('deleteConfirmInput').classList.remove('error');
-  document.getElementById('deleteConfirmBtn').disabled = true;
-  document.getElementById('deleteModal').classList.add('show');
-  setTimeout(() => document.getElementById('deleteConfirmInput').focus(), 50);
-}
-
-function closeDeleteModal() { document.getElementById('deleteModal').classList.remove('show'); pendingDeleteId = null; }
-
-function validateDeleteInput(inp) {
-  const ok = inp.value.trim() === 'DELETE';
-  document.getElementById('deleteConfirmBtn').disabled = !ok;
-  inp.classList.toggle('error', inp.value.length > 0 && !ok);
-}
-
-async function confirmDelete() {
-  if (!pendingDeleteId) return;
-  const id = pendingDeleteId;
-  closeDeleteModal();
-  try {
-    const r = await fetch(`/api/job?id=${id}`, { method: 'DELETE' });
-    if (r.ok) { allJobs = allJobs.filter(j => j.id !== id); renderTable(); showToast('Job deleted'); }
-    else showToast('Delete failed — try again');
-  } catch(e) { showToast('Delete failed: ' + e.message); }
-}
-
-document.getElementById('deleteModal').addEventListener('click', function(e) { if (e.target === this) closeDeleteModal(); });
-document.addEventListener('keydown', e => {
-  if (e.key === 'Escape') closeDeleteModal();
-  if (e.key === 'Enter' && !document.getElementById('deleteConfirmBtn').disabled) confirmDelete();
-});
-
-function bufToB64(buf) {
-  const bytes = new Uint8Array(buf);
-  let binary = '';
-  const chunk = 8192;
-  for (let i = 0; i < bytes.length; i += chunk) binary += String.fromCharCode(...bytes.subarray(i, i + chunk));
-  return btoa(binary);
-}
-
-function getFileType(name) { return name.split('.').pop().toUpperCase(); }
-function makeReference(fileName) { return fileName.replace(/\.[^.]+$/, '').substring(0, 40); }
-
-async function encodeFile(f) {
-  const ext = f.name.split('.').pop().toLowerCase();
-  if (ext === 'pdf')  return { b64: bufToB64(await f.arrayBuffer()), mediaType: 'application/pdf', fileType: 'PDF', fileName: f.name };
-  if (ext === 'png')  return { b64: bufToB64(await f.arrayBuffer()), mediaType: 'image/png',        fileType: 'PNG', fileName: f.name };
-  if (ext === 'jpg' || ext === 'jpeg') return { b64: bufToB64(await f.arrayBuffer()), mediaType: 'image/jpeg', fileType: 'JPG', fileName: f.name };
-  if (ext === 'eps')  { const text = await f.text(); return { b64: btoa(unescape(encodeURIComponent(text))), mediaType: 'text/plain', fileType: 'EPS', fileName: f.name }; }
-  if (ext === 'zip' && typeof JSZip !== 'undefined') {
-    const zip = await JSZip.loadAsync(f);
-    const entry = Object.values(zip.files).find(e => e.name.toLowerCase().endsWith('.eps') && !e.name.startsWith('__MACOSX'));
-    if (!entry) throw new Error('No EPS found in ZIP');
-    const text = await entry.async('text');
-    return { b64: btoa(unescape(encodeURIComponent(text))), mediaType: 'text/plain', fileType: 'EPS', fileName: entry.name.split('/').pop() };
-  }
-  throw new Error('Unsupported file type: ' + ext);
-}
-
-function buildAssessmentPrompt(fileType) {
-  const isPDF = fileType === 'PDF';
-  const isImage = ['PNG','JPG','JPEG'].includes(fileType);
-  const fileDesc = isPDF ? 'PDF artwork file' : isImage ? `${fileType} image file` : 'EPS PostScript file';
-  const checks = [
-    isPDF  ? `IMAGE RESOLUTION: Check all embedded raster images. Minimum DPI is 300. Report actual DPI and pass/fail. If purely vector mark pass. id: "dpi"`
-    : isImage ? `IMAGE RESOLUTION: Assess pixel dimensions relative to expected print output. Minimum 300 DPI. id: "dpi"`
-    : `IMAGE RESOLUTION: Check embedded raster images meet 300 DPI minimum via image dictionary entries. If entirely vector mark pass. id: "dpi"`,
-    `PIXELATION / UPSAMPLING: Inspect for blocky pixel grid, jagged staircase edges, or blurry areas suggesting upsampling from a low-res original. id: "pixelation"`,
-    `BLEED: Expected 3mm bleed on all sides beyond trim. Does the artwork include sufficient bleed? id: "bleed"`,
-    isPDF  ? `COLOUR MODE: Inspect embedded images and colour spaces. Flag if RGB found (CMYK expected for print). id: "colour"`
-    : isImage ? `COLOUR MODE: PNG/JPG are typically RGB — flag this as a warning since CMYK is expected for print. id: "colour"`
-    : `COLOUR MODE: Check for setcmykcolor/DeviceCMYK vs setrgbcolor/DeviceRGB. Flag if RGB found. id: "colour"`,
-    isPDF  ? `WHITE EDGE: Visually inspect all four edges for any thin white or light strip — artwork not extended to the bleed line. Even 1–3mm is a FAIL. id: "white_edge"`
-    : isImage ? `WHITE EDGE: Inspect all four edges for any thin white or light strip not extending to the bleed line. id: "white_edge"`
-    : `WHITE EDGE: Do PostScript drawing commands fill to the BoundingBox edges, or stop short leaving implied white space? id: "white_edge"`,
-    `SAFE ZONE: Are any text, logos, or important elements within ~5mm of the trim edge, risking being cut off? id: "safe_zone"`,
-    isPDF  ? `FONTS: Are all fonts fully embedded or outlined in this PDF? Any missing fonts = FAIL. id: "fonts"`
-    : isImage ? `FONTS: Does visible text appear sharp and clean, or show rasterisation artefacts? Note embedding cannot be checked in raster files. id: "fonts"`
-    : `FONTS: Are fonts fully embedded or outlined in the EPS? Any unembedded non-outlined fonts = FAIL. id: "fonts"`,
-    isImage ? `TRANSPARENCY: Does this image contain transparent areas (alpha channel)? Transparency can cause unexpected backgrounds on press. id: "transparency"`
-    : `TRANSPARENCY / OVERPRINT: Any unflattened transparency or overprint settings that could cause unexpected results at print? id: "transparency"`,
-  ];
-  return `You are a professional print production specialist reviewing a ${fileDesc} for print readiness. Analyse it thoroughly and respond ONLY as a JSON array — no markdown, no preamble.\n\nEach object must have: "id" (from check), "label" (human-readable name), "status" (pass/fail/warn/info), "headline" (≤12 words), "detail" (1–3 sentences of specific findings).\n\nChecks:\n${checks.map((c,i) => `${i+1}. ${c}`).join('\n')}\n\nAdd a final object: id "overall", label "Overall verdict", status based on any fails present, headline and brief detail summary.\n\nJSON array only.`;
-}
-
-async function saveJob(jobData) {
-  try {
-    const r = await fetch('/api/jobs', { method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify(jobData) });
-    const data = await r.json();
-    if (!r.ok) { console.error('saveJob error', data); return null; }
-    return Array.isArray(data) ? data[0] : data;
-  } catch(e) { console.error('saveJob failed', e); return null; }
-}
-
-async function assessAndPatch(jobId, encoded) {
-  try {
-    const isImage = ['PNG','JPG','JPEG'].includes(encoded.fileType);
-    const contentBlock = isImage
-      ? { type:'image',    source:{ type:'base64', media_type:encoded.mediaType, data:encoded.b64 } }
-      : { type:'document', source:{ type:'base64', media_type:encoded.mediaType, data:encoded.b64 } };
-    const resp = await fetch('/api/assess', {
-      method:'POST', headers:{'Content-Type':'application/json'},
-      body: JSON.stringify({ model:'claude-sonnet-4-5', max_tokens:1500, messages:[{ role:'user', content:[contentBlock,{type:'text',text:buildAssessmentPrompt(encoded.fileType)}] }] })
-    });
-    const data = await resp.json();
-    if (data.error) throw new Error(data.error.message || JSON.stringify(data.error));
-    const raw = (data.content||[]).filter(b=>b.type==='text').map(b=>b.text).join('');
-    const results = JSON.parse(raw.replace(/```json|```/g,'').trim());
-    const overall = results.find(r=>r.id==='overall');
-    const checks  = results.filter(r=>r.id!=='overall');
-    const scorePct = checks.length ? Math.round(checks.filter(r=>r.status==='pass').length/checks.length*100) : null;
-    await fetch(`/api/job?id=${jobId}`, {
-      method:'PATCH', headers:{'Content-Type':'application/json'},
-      body:JSON.stringify({ assessed_at:new Date().toISOString(), results, score_pct:scorePct, overall_status:overall?overall.status:null, file_name:encoded.fileName, file_type:encoded.fileType })
-    });
-    return { results, scorePct, overallStatus: overall ? overall.status : null };
-  } catch(e) { console.error('assessAndPatch failed', e); return null; }
-}
-
-async function uploadToStorage(encoded, jobId) {
-  const extMap = {PDF:'pdf',PNG:'png',JPG:'jpg',JPEG:'jpg',EPS:'eps'};
-  const path = `${jobId}.${extMap[encoded.fileType]||'bin'}`;
-  try {
-    const r = await fetch('/api/upload', { method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify({ path, mediaType:encoded.mediaType, data:encoded.b64 }) });
-    const data = await r.json();
-    if (!r.ok) { console.error('upload failed', data); return null; }
-    await fetch(`/api/job?id=${jobId}`, { method:'PATCH', headers:{'Content-Type':'application/json'}, body:JSON.stringify({ storage_path:path }) });
-    return path;
-  } catch(e) { console.error('uploadToStorage failed', e); return null; }
-}
-
-async function addFilesToQueue(files) {
-  const validFiles = Array.from(files).filter(f => ['pdf','eps','zip','png','jpg','jpeg'].includes(f.name.split('.').pop().toLowerCase()));
-  if (!validFiles.length) { showToast('No supported files found'); return; }
-  showToast(`Adding ${validFiles.length} file${validFiles.length > 1 ? 's' : ''}…`);
-  const encodedFiles = await Promise.all(validFiles.map(async f => { try { return await encodeFile(f); } catch(e) { console.error('encodeFile failed', f.name, e); return null; } }));
-  const jobRecords = await Promise.all(encodedFiles.map(enc => enc ? saveJob({ reference:makeReference(enc.fileName), file_name:enc.fileName, file_type:enc.fileType, source:'Manual', customer_name:null, order_number:null }) : null));
-  const pairs = jobRecords.map((job,i) => ({job, enc:encodedFiles[i]})).filter(p => p.job && p.job.id && p.enc);
-  pairs.forEach(({job}) => allJobs.unshift(job));
-  renderTable();
-  showToast(`Uploading and assessing ${pairs.length} file${pairs.length!==1?'s':''}…`);
-  await Promise.all(pairs.map(async ({job,enc}) => {
-    uploadToStorage(enc, job.id).catch(e => console.error('storage upload error', e));
-    const assessment = await assessAndPatch(job.id, enc);
-    if (assessment) {
-      const idx = allJobs.findIndex(j => j.id === job.id);
-      if (idx !== -1) { allJobs[idx] = {...allJobs[idx], results:assessment.results, score_pct:assessment.scorePct, overall_status:assessment.overallStatus, assessed_at:new Date().toISOString()}; renderTable(); }
+    function UpscaleBadge({ value }) {
+      if (!value) return <span style={{ color: "#9ca3af", fontSize: 11 }}>—</span>;
+      const c = UPSCALE[value] || { bg: "#f3f4f6", text: "#374151", label: value };
+      return <span style={{ background: c.bg, color: c.text, borderRadius: 4, padding: "2px 7px", fontSize: 11, fontWeight: 600, whiteSpace: "nowrap" }}>{c.label}</span>;
     }
-  }));
-  showToast(`${pairs.length} file${pairs.length!==1?'s':''} assessed`);
-}
 
-async function handleCSV(e) {
-  const f = e.target.files[0]; if (!f) return;
-  const text = await f.text();
-  const lines = text.trim().split('\n');
-  if (lines.length < 2) { showToast('CSV appears empty'); return; }
-  const headers = lines[0].split(',').map(h => h.trim().toLowerCase().replace(/[^a-z_]/g,''));
-  const promises = lines.slice(1).map(async line => {
-    const vals = line.split(',').map(v => v.trim().replace(/^"|"$/g,''));
-    const row = {}; headers.forEach((h,i) => row[h] = vals[i]||'');
-    const fileName = row['file_name']||row['filename']||row['file']||''; if (!fileName) return null;
-    return saveJob({ reference:row['reference']||row['ref']||makeReference(fileName), file_name:fileName, file_type:getFileType(fileName), source:'CSV', customer_name:row['customer_name']||row['customer']||null, order_number:row['order_number']||row['order']||row['order_no']||null });
-  });
-  const results = await Promise.all(promises);
-  const saved = results.filter(j => j && j.id);
-  saved.forEach(job => allJobs.unshift(job));
-  renderTable();
-  showToast(`${saved.length} job${saved.length!==1?'s':''} added from CSV`);
-  e.target.value = '';
-}
-
-function handleFiles(e) { addFilesToQueue(Array.from(e.target.files)); e.target.value = ''; }
-
-function showToast(msg) {
-  const t = document.getElementById('toast');
-  t.textContent = msg; t.classList.add('show');
-  setTimeout(() => t.classList.remove('show'), 2500);
-}
-
-const banner = document.getElementById('dropBanner');
-banner.addEventListener('dragover', e => { e.preventDefault(); banner.classList.add('drag-over'); });
-banner.addEventListener('dragleave', () => banner.classList.remove('drag-over'));
-banner.addEventListener('drop', e => { e.preventDefault(); banner.classList.remove('drag-over'); addFilesToQueue(Array.from(e.dataTransfer.files)); });
-banner.addEventListener('click', e => { if (!e.target.closest('.db-browse')) document.getElementById('fileInput').click(); });
-
-// ── Date + score filter ────────────────────────────────────
-let activePreset = 'all';
-let filteredJobs = [];
-
-function localDateStr(date) {
-  // Returns YYYY-MM-DD in local time
-  const y = date.getFullYear();
-  const m = String(date.getMonth()+1).padStart(2,'0');
-  const d = String(date.getDate()).padStart(2,'0');
-  return `${y}-${m}-${d}`;
-}
-
-function setDatePreset(btn, preset) {
-  activePreset = preset;
-  document.querySelectorAll('.date-preset').forEach(b => b.classList.remove('active'));
-  btn.classList.add('active');
-  // Clear custom date inputs when preset chosen
-  document.getElementById('filterDateFrom').value = '';
-  document.getElementById('filterDateTo').value = '';
-  applyFilters();
-}
-
-function onDateRangeChange() {
-  // Deactivate presets when custom range is entered
-  activePreset = 'custom';
-  document.querySelectorAll('.date-preset').forEach(b => b.classList.remove('active'));
-  applyFilters();
-}
-
-function clearFilters() {
-  activePreset = 'all';
-  document.querySelectorAll('.date-preset').forEach(b => b.classList.remove('active'));
-  document.querySelector('.date-preset[data-preset="all"]').classList.add('active');
-  document.getElementById('filterDateFrom').value = '';
-  document.getElementById('filterDateTo').value = '';
-  document.getElementById('filterScoreMin').value = '';
-  document.getElementById('filterScoreMax').value = '';
-  applyFilters();
-}
-
-function applyFilters() {
-  const now = new Date();
-  const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
-
-  let fromDate = null, toDate = null;
-
-  if (activePreset === 'today') {
-    fromDate = today;
-    toDate = new Date(today.getTime() + 86400000); // end of today
-  } else if (activePreset === 'yesterday') {
-    fromDate = new Date(today.getTime() - 86400000);
-    toDate = today;
-  } else if (activePreset === '7d') {
-    fromDate = new Date(today.getTime() - 7*86400000);
-    toDate = new Date(today.getTime() + 86400000);
-  } else if (activePreset === '30d') {
-    fromDate = new Date(today.getTime() - 30*86400000);
-    toDate = new Date(today.getTime() + 86400000);
-  } else if (activePreset === 'custom' || activePreset === 'all') {
-    const fromVal = document.getElementById('filterDateFrom').value;
-    const toVal   = document.getElementById('filterDateTo').value;
-    if (fromVal) fromDate = new Date(fromVal + 'T00:00:00');
-    if (toVal)   toDate   = new Date(toVal   + 'T23:59:59');
-  }
-
-  const scoreMinStr = document.getElementById('filterScoreMin').value;
-  const scoreMaxStr = document.getElementById('filterScoreMax').value;
-  const scoreMin = scoreMinStr !== '' ? parseInt(scoreMinStr) : null;
-  const scoreMax = scoreMaxStr !== '' ? parseInt(scoreMaxStr) : null;
-
-  const isFiltered = activePreset !== 'all' || fromDate || toDate || scoreMin !== null || scoreMax !== null;
-
-  filteredJobs = allJobs.filter(job => {
-    // Date filter — use uploaded_at
-    if (fromDate || toDate) {
-      const uploaded = job.uploaded_at ? new Date(job.uploaded_at) : null;
-      if (!uploaded) return false;
-      if (fromDate && uploaded < fromDate) return false;
-      if (toDate   && uploaded > toDate)   return false;
+    function AssessorBadge({ value }) {
+      const s = ASSESSOR_STATUS[value] || ASSESSOR_STATUS.pending;
+      return <span style={{ background: s.bg, color: s.text, borderRadius: 4, padding: "2px 7px", fontSize: 11, fontWeight: 600, whiteSpace: "nowrap", border: `1px solid ${s.text}33` }}>{s.label}</span>;
     }
-    // Score filter
-    if (scoreMin !== null && (job.score_pct === null || job.score_pct === undefined || job.score_pct < scoreMin)) return false;
-    if (scoreMax !== null && (job.score_pct === null || job.score_pct === undefined || job.score_pct > scoreMax)) return false;
-    return true;
-  });
 
-  // Update clear button
-  document.getElementById('filterClearBtn').classList.toggle('hidden', !isFiltered);
+    function Th({ col, sort, onSort }) {
+      const active = sort.key === col.key;
+      return (
+        <th onClick={() => onSort(col.key)} style={{
+          padding: "10px 10px", textAlign: "left", whiteSpace: "nowrap",
+          fontWeight: 600, fontSize: 11, color: active ? "#1e40af" : "#475569",
+          letterSpacing: "0.05em", textTransform: "uppercase", cursor: "pointer",
+          userSelect: "none", width: col.w, minWidth: col.w,
+          background: active ? "#e8eef5" : "#f1f5f9",
+          position: "sticky", top: 56, zIndex: 2, borderBottom: "2px solid #e2e8f0",
+        }}>
+          {col.label}&nbsp;
+          <span style={{ opacity: active ? 1 : 0.3, fontSize: 10 }}>
+            {active ? (sort.dir === "asc" ? "↑" : "↓") : "⇅"}
+          </span>
+        </th>
+      );
+    }
 
-  // Show result count when filtered
-  const resultsEl = document.getElementById('filterResults');
-  if (isFiltered && filteredJobs.length !== allJobs.length) {
-    resultsEl.textContent = `${filteredJobs.length} of ${allJobs.length} jobs`;
-  } else {
-    resultsEl.textContent = '';
-  }
+    async function supaFetch(path) {
+      const r = await fetch(SUPABASE_URL + path, {
+        headers: { apikey: SUPABASE_KEY, Authorization: "Bearer " + SUPABASE_KEY }
+      });
+      return r.json();
+    }
 
-  currentPage = 1;
-  renderTableFromSource(filteredJobs.length < allJobs.length ? filteredJobs : allJobs);
-}
+    export default function ArtworkList() {
+      const [rows, setRows]         = useState([]);
+      const [loading, setLoading]   = useState(true);
+      const [error, setError]       = useState(null);
+      const [sort, setSort]         = useState({ key: "sage_order", dir: "asc" });
+      const [search, setSearch]     = useState("");
+      const [fUpscale, setFUpscale]         = useState("all");
+      const [fTemplate, setFTemplate]       = useState("all");
+      const [fSku, setFSku]                 = useState("all");
+      const [fAssessor, setFAssessor]       = useState("all");
 
-// Override renderTable to accept a jobs source
-function renderTableFromSource(jobs) {
-  const tbody = document.getElementById('jobBody');
-  const total = jobs.length;
-  const totalPages = Math.max(1, Math.ceil(total / pageSize));
-  if (currentPage > totalPages) currentPage = totalPages;
-  const start = (currentPage - 1) * pageSize;
-  const pageJobs = jobs.slice(start, start + pageSize);
+      useEffect(() => {
+        async function load() {
+          try {
+            const [aa, om, ss] = await Promise.all([
+              supaFetch("/rest/v1/artwork_analysis?select=id,sage_order,magento_order,asset_filename,file_ext,file_size_kb,sku,artwork_class,upscale_recommended,colour_mode,width_px,height_px,dpi_reported,notes,assessor_status,assessor_note&limit=1000"),
+              supaFetch("/rest/v1/order_manifest?select=sage_order,magento_order,company,customer_name"),
+              supaFetch("/rest/v1/sku_specs?select=sku_file,source_pdf,finished_w_mm,finished_h_mm&sku_file=not.ilike.ARCHIVED*"),
+            ]);
+            const omMap = {};
+            om.forEach(o => { omMap[o.sage_order] = o; });
+            function findTemplate(sku) {
+              if (!sku) return null;
+              const u = sku.toUpperCase();
+              return ss.find(s => s.sku_file && (s.sku_file.toUpperCase().includes(u) || (s.source_pdf||"").toUpperCase().includes(u))) || null;
+            }
+            const merged = aa.map(row => {
+              const m = omMap[row.sage_order] || {};
+              const t = findTemplate(row.sku);
+              return {
+                ...row,
+                company:       m.company       || "—",
+                customer_name: m.customer_name || "—",
+                _tmpl: t,
+                template_match: t ? "✓" : (row.sku ? "✗" : "—"),
+                finished_w_mm:  t ? t.finished_w_mm : null,
+                finished_h_mm:  t ? t.finished_h_mm : null,
+              };
+            });
+            setRows(merged);
+          } catch(e) { setError(e.message); }
+          finally { setLoading(false); }
+        }
+        load();
+      }, []);
 
-  if (!total) {
-    tbody.innerHTML = `<tr><td colspan="19"><div class="empty-state"><div class="es-icon">🔍</div><p>No jobs match the current filters</p></div></td></tr>`;
-  } else {
-    tbody.innerHTML = pageJobs.map(renderRow).join('');
-  }
-  applyColVisibility();
-  updateStats();
+      const skuOptions = useMemo(() => {
+        const s = new Set(rows.map(r => r.sku).filter(Boolean));
+        return ["all", ...Array.from(s).sort()];
+      }, [rows]);
 
-  const showing = total ? `${start + 1}–${Math.min(start + pageSize, total)} of ${total} jobs` : '0 jobs';
-  document.getElementById('pgInfo').textContent = showing;
-  document.getElementById('pgPages').textContent = `Page ${currentPage} of ${totalPages}`;
-  document.getElementById('pgPrev').disabled = currentPage <= 1;
-  document.getElementById('pgNext').disabled = currentPage >= totalPages;
-}
+      const sorted = useMemo(() => {
+        let data = [...rows];
+        if (search) { const q = search.toLowerCase(); data = data.filter(r => Object.values(r).some(v => v && String(v).toLowerCase().includes(q))); }
+        if (fUpscale !== "all")  data = data.filter(r => r.upscale_recommended === fUpscale);
+        if (fTemplate === "matched") data = data.filter(r => r._tmpl);
+        if (fTemplate === "missing") data = data.filter(r => !r._tmpl && r.sku);
+        if (fSku !== "all")      data = data.filter(r => r.sku === fSku);
+        if (fAssessor !== "all") data = data.filter(r => (r.assessor_status || "pending") === fAssessor);
+        data.sort((a, b) => {
+          let av = a[sort.key] ?? "", bv = b[sort.key] ?? "";
+          const cmp = String(av).localeCompare(String(bv), undefined, { numeric: true });
+          return sort.dir === "asc" ? cmp : -cmp;
+        });
+        return data;
+      }, [rows, sort, search, fUpscale, fTemplate, fSku, fAssessor]);
 
-loadJobs();
-</script>
+      function toggleSort(key) {
+        setSort(s => s.key === key ? { key, dir: s.dir === "asc" ? "desc" : "asc" } : { key, dir: "asc" });
+      }
+
+      const counts = useMemo(() => ({
+        total:    rows.length,
+        matched:  rows.filter(r => r._tmpl).length,
+        pending:  rows.filter(r => !r.assessor_status || r.assessor_status === "pending").length,
+        on_hold:  rows.filter(r => r.assessor_status === "on_hold").length,
+        approved: rows.filter(r => r.assessor_status === "approved").length,
+      }), [rows]);
+
+      const sel = { padding: "7px 10px", border: "1px solid #e2e8f0", borderRadius: 6, fontSize: 12, background: "#fff", color: "#374151", cursor: "pointer" };
+
+      if (loading) return <div style={{ display:"flex", alignItems:"center", justifyContent:"center", height:"100vh", color:"#94a3b8", fontSize:14 }}>Loading artwork submissions…</div>;
+      if (error)   return <div style={{ padding:32, color:"#dc2626", fontSize:13 }}>Error: {error}</div>;
+
+      return (
+        <div style={{ minHeight: "100vh" }}>
+          {/* Sticky header */}
+          <div style={{ background: "#fff", borderBottom: "1px solid #e2e8f0", padding: "12px 20px", position: "sticky", top: 0, zIndex: 10, display: "flex", alignItems: "center", gap: 12, flexWrap: "wrap" }}>
+            <div style={{ marginRight: 8 }}>
+              <div style={{ fontSize: 16, fontWeight: 700, color: "#0f172a", letterSpacing: "-0.02em" }}>Artwork Submissions</div>
+              <div style={{ fontSize: 11, color: "#64748b", marginTop: 1 }}>
+                {counts.total} files &middot; {counts.matched} template matched &middot;&nbsp;
+                <span style={{ color: "#475569" }}>{counts.pending} pending</span> &middot;&nbsp;
+                <span style={{ color: "#c2410c" }}>{counts.on_hold} on hold</span> &middot;&nbsp;
+                <span style={{ color: "#065f46" }}>{counts.approved} approved</span>
+              </div>
+            </div>
+
+            <input value={search} onChange={e => setSearch(e.target.value)} placeholder="Search any column…" style={{ ...sel, width: 190, padding: "7px 12px" }} />
+
+            <select value={fAssessor} onChange={e => setFAssessor(e.target.value)} style={sel}>
+              <option value="all">All assessor statuses</option>
+              <option value="pending">Pending</option>
+              <option value="on_hold">On Hold</option>
+              <option value="approved">Approved</option>
+            </select>
+
+            <select value={fUpscale} onChange={e => setFUpscale(e.target.value)} style={sel}>
+              <option value="all">All upscale statuses</option>
+              <option value="none">Ready</option>
+              <option value="raster">Upscale needed</option>
+              <option value="vector">Vectorise</option>
+              <option value="flag">Flagged</option>
+            </select>
+
+            <select value={fTemplate} onChange={e => setFTemplate(e.target.value)} style={sel}>
+              <option value="all">All templates</option>
+              <option value="matched">Template matched</option>
+              <option value="missing">Template missing</option>
+            </select>
+
+            <select value={fSku} onChange={e => setFSku(e.target.value)} style={{ ...sel, maxWidth: 190 }}>
+              {skuOptions.map(s => <option key={s} value={s}>{s === "all" ? "All SKUs" : s}</option>)}
+            </select>
+
+            <span style={{ marginLeft: "auto", fontSize: 12, color: "#94a3b8" }}>{sorted.length} shown</span>
+          </div>
+
+          {/* Table */}
+          <div style={{ overflowX: "auto" }}>
+            <table style={{ borderCollapse: "collapse", width: "max-content", minWidth: "100%", fontSize: 12 }}>
+              <thead>
+                <tr>
+                  {COLS.map(col => <Th key={col.key} col={col} sort={sort} onSort={toggleSort} />)}
+                  <th style={{ padding: "10px 10px", textAlign: "left", fontWeight: 600, fontSize: 11, color: "#475569", letterSpacing: "0.05em", textTransform: "uppercase", background: "#f1f5f9", position: "sticky", top: 56, zIndex: 2, borderBottom: "2px solid #e2e8f0", whiteSpace: "nowrap", width: 200, minWidth: 200 }}>
+                    Actions
+                  </th>
+                </tr>
+              </thead>
+              <tbody>
+                {sorted.map((row, i) => {
+                  const bg = i % 2 === 0 ? "#fff" : "#f8fafc";
+                  const td = (content, extra = {}) => (
+                    <td style={{ padding: "7px 10px", borderBottom: "1px solid #f1f5f9", whiteSpace: "nowrap", background: bg, ...extra }}>{content}</td>
+                  );
+                  const assessorStatus = row.assessor_status || "pending";
+                  return (
+                    <tr key={row.id}
+                      onMouseEnter={e => Array.from(e.currentTarget.cells).forEach(c => c.style.background = "#eff6ff")}
+                      onMouseLeave={e => Array.from(e.currentTarget.cells).forEach(c => c.style.background = bg)}>
+
+                      {td(<span title={row.company} style={{ fontWeight:600, color:"#0f172a", display:"block", overflow:"hidden", textOverflow:"ellipsis", maxWidth:150 }}>{row.company}</span>)}
+                      {td(<span title={row.customer_name} style={{ color:"#475569", display:"block", overflow:"hidden", textOverflow:"ellipsis", maxWidth:120 }}>{row.customer_name}</span>)}
+                      {td(<span style={{ fontFamily:"monospace", fontSize:11, color:"#475569" }}>{row.sage_order}</span>)}
+                      {td(<span style={{ fontFamily:"monospace", fontSize:11, color:"#94a3b8" }}>{row.magento_order || "—"}</span>)}
+                      {td(row.sku
+                        ? <span style={{ fontFamily:"monospace", fontSize:11, fontWeight:600, color:"#1e40af", background:"#eff6ff", padding:"2px 6px", borderRadius:4 }}>{row.sku}</span>
+                        : <span style={{ color:"#9ca3af", fontSize:11 }}>No SKU</span>
+                      )}
+                      {td(<span style={{ fontWeight:700, fontSize:14, color: row.template_match==="✓"?"#059669":row.template_match==="✗"?"#dc2626":"#9ca3af" }}>{row.template_match}</span>, { textAlign:"center" })}
+                      {td(<span title={row.asset_filename} style={{ fontFamily:"monospace", fontSize:11, color:"#374151", display:"block", overflow:"hidden", textOverflow:"ellipsis", maxWidth:190 }}>{row.asset_filename}</span>)}
+                      {td(<span style={{ background:"#f1f5f9", color:"#475569", borderRadius:3, padding:"1px 5px", fontSize:10, fontFamily:"monospace", fontWeight:600 }}>{(row.file_ext||"").replace(".","").toUpperCase()}</span>, { textAlign:"center" })}
+                      {td(<span style={{ color:"#64748b" }}>{row.file_size_kb ? Number(row.file_size_kb).toLocaleString() : "—"}</span>, { textAlign:"right" })}
+                      {td(<span style={{ color:"#475569" }}>{row.artwork_class || "—"}</span>)}
+                      {td(<span style={{ display:"flex", alignItems:"center", gap:4 }}>
+                        <span style={{ width:8, height:8, borderRadius:"50%", flexShrink:0, background: row.colour_mode==="colour"?"#f59e0b":row.colour_mode==="greyscale"?"#94a3b8":"#e2e8f0" }} />
+                        <span style={{ fontSize:11, color:"#64748b" }}>{row.colour_mode||"—"}</span>
+                      </span>)}
+                      {td(<span style={{ color:"#64748b" }}>{row.width_px ? row.width_px.toLocaleString() : "—"}</span>, { textAlign:"right" })}
+                      {td(<span style={{ color:"#64748b" }}>{row.height_px ? row.height_px.toLocaleString() : "—"}</span>, { textAlign:"right" })}
+                      {td(<span style={{ fontWeight:600, color: !row.dpi_reported?"#9ca3af":row.dpi_reported<=72?"#dc2626":"#059669" }}>{row.dpi_reported||"—"}</span>, { textAlign:"right" })}
+                      {td(<UpscaleBadge value={row.upscale_recommended} />)}
+                      {td(<AssessorBadge value={assessorStatus} />)}
+                      {td(<span style={{ color:"#64748b", fontSize:11 }}>{row.finished_w_mm||"—"}</span>, { textAlign:"right" })}
+                      {td(<span style={{ color:"#64748b", fontSize:11 }}>{row.finished_h_mm||"—"}</span>, { textAlign:"right" })}
+                      {td(<span title={row.notes||""} style={{ color:"#64748b", fontSize:11, display:"block", overflow:"hidden", textOverflow:"ellipsis", maxWidth:230 }}>{row.notes||"—"}</span>)}
+
+                      {/* Actions */}
+                      <td style={{ padding:"7px 10px", borderBottom:"1px solid #f1f5f9", background:bg, whiteSpace:"nowrap" }}>
+                        <div style={{ display:"flex", gap:6, alignItems:"center" }}>
+                          {/* Assess button — always available */}
+                          <button
+                            onClick={() => {
+                              const p = new URLSearchParams({ aa_id: row.id, sku: row.sku||"", order: row.sage_order });
+                              window.open("/artwork-assessor/?" + p.toString(), "_blank");
+                            }}
+                            style={{ background:"#F47920", color:"#fff", border:"none", borderRadius:5, padding:"4px 10px", fontSize:11, fontWeight:600, cursor:"pointer", whiteSpace:"nowrap" }}>
+                            Assess
+                          </button>
+                          {/* Designer — only if approved and template matched */}
+                          {assessorStatus === "approved" && row._tmpl ? (
+                            <button
+                              onClick={() => {
+                                const p = new URLSearchParams({ aa_id: row.id, sku: row.sku||"", order: row.sage_order });
+                                window.open("/designer/?" + p.toString(), "_blank");
+                              }}
+                              style={{ background:"#0f172a", color:"#fff", border:"none", borderRadius:5, padding:"4px 10px", fontSize:11, fontWeight:600, cursor:"pointer", whiteSpace:"nowrap" }}>
+                              Designer →
+                            </button>
+                          ) : assessorStatus === "approved" && !row._tmpl ? (
+                            <span style={{ fontSize:11, color:"#94a3b8" }}>No template</span>
+                          ) : null}
+                        </div>
+                      </td>
+                    </tr>
+                  );
+                })}
+              </tbody>
+            </table>
+            {sorted.length === 0 && (
+              <div style={{ textAlign:"center", padding:"64px 24px", color:"#94a3b8", fontSize:13 }}>No rows match the current filters.</div>
+            )}
+          </div>
+        </div>
+      );
+    }
+
+    const root = ReactDOM.createRoot(document.getElementById("root"));
+    root.render(<ArtworkList />);
+  </script>
 </body>
 </html>
