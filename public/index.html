@@ -1,3 +1,7 @@
+/* ─────────────────────────────────────────
+  Overall home page with links to each stage
+   ───────────────────────────────────────── */
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -8,44 +12,116 @@
   *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
   body {
     font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", system-ui, sans-serif;
-    background: #FAFAF8;
-    color: #2C2C2A;
-    min-height: 100vh;
+    background: #FAFAF8; color: #2C2C2A; min-height: 100vh;
   }
+
+  /* Header */
   header {
-    border-bottom: 1px solid #E8E6DE;
-    padding: 20px 40px;
-    background: #fff;
-    display: flex;
-    align-items: center;
-    gap: 12px;
+    border-bottom: 1px solid #E8E6DE; padding: 16px 40px;
+    background: #fff; display: flex; align-items: center; gap: 12px;
   }
-  header .wordmark { font-size: 15px; font-weight: 500; color: #2C2C2A; letter-spacing: -0.01em; }
-  header .divider { color: #D3D1C7; }
-  header .subtitle { font-size: 14px; color: #888780; }
-  main { max-width: 860px; margin: 0 auto; padding: 56px 40px 80px; }
-  h1 { font-size: 28px; font-weight: 500; margin-bottom: 8px; letter-spacing: -0.02em; }
-  .intro { font-size: 15px; color: #5F5E5A; margin-bottom: 48px; line-height: 1.6; }
-  .section-label { font-size: 11px; font-weight: 500; text-transform: uppercase; letter-spacing: 0.08em; color: #888780; margin-bottom: 16px; }
-  .tools-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap: 16px; margin-bottom: 48px; }
-  .tool-card {
-    background: #fff; border: 1px solid #E8E6DE; border-radius: 10px; padding: 20px 22px;
-    text-decoration: none; color: inherit; display: block; transition: border-color 0.15s, box-shadow 0.15s;
+  .wordmark { font-size: 15px; font-weight: 600; color: #2C2C2A; letter-spacing: -0.01em; }
+  .divider { color: #D3D1C7; }
+  .subtitle { font-size: 14px; color: #888780; }
+
+  /* Main */
+  main { max-width: 920px; margin: 0 auto; padding: 48px 40px 80px; }
+  h1 { font-size: 26px; font-weight: 600; margin-bottom: 6px; letter-spacing: -0.02em; }
+  .intro { font-size: 14px; color: #5F5E5A; margin-bottom: 44px; line-height: 1.6; }
+
+  /* Flow */
+  .flow { display: flex; flex-direction: column; gap: 0; }
+
+  /* Stage block */
+  .stage { display: flex; gap: 0; margin-bottom: 0; }
+
+  /* Step number column */
+  .step-col {
+    display: flex; flex-direction: column; align-items: center;
+    width: 48px; flex-shrink: 0; padding-top: 2px;
   }
-  .tool-card:hover { border-color: #AFA9EC; box-shadow: 0 2px 12px rgba(83,74,183,0.08); }
-  .tool-card .icon {
-    width: 36px; height: 36px; border-radius: 8px; background: #EEEDFE;
-    display: flex; align-items: center; justify-content: center; margin-bottom: 14px; font-size: 18px;
+  .step-num {
+    width: 32px; height: 32px; border-radius: 50%;
+    background: #F47920; color: #fff;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 13px; font-weight: 700; flex-shrink: 0; position: relative; z-index: 1;
   }
-  .tool-card .name { font-size: 15px; font-weight: 500; margin-bottom: 4px; }
-  .tool-card .desc { font-size: 13px; color: #5F5E5A; line-height: 1.5; }
-  .tool-card .badge {
-    display: inline-block; font-size: 10px; font-weight: 500; padding: 2px 7px;
-    border-radius: 20px; background: #EAF3DE; color: #3B6D11; margin-top: 10px;
+  .step-num.coming { background: #D3D1C7; }
+  .step-line {
+    width: 2px; background: #E8E6DE; flex: 1; min-height: 24px; margin: 4px 0;
   }
-  .tool-card .badge.wip { background: #FAEEDA; color: #854F0B; }
-  .tool-card .badge.internal { background: #E6F1FB; color: #185FA5; }
-  .coming-soon { opacity: 0.5; pointer-events: none; cursor: default; }
+  .step-line.last { display: none; }
+
+  /* Card */
+  .stage-body { flex: 1; padding-bottom: 32px; }
+  .stage-label {
+    font-size: 10px; font-weight: 700; text-transform: uppercase;
+    letter-spacing: 0.1em; color: #888780; margin-bottom: 10px; margin-top: 6px;
+  }
+  .card {
+    background: #fff; border: 1px solid #E8E6DE; border-radius: 12px;
+    padding: 20px 22px; text-decoration: none; color: inherit;
+    display: block; transition: border-color 0.15s, box-shadow 0.15s;
+    position: relative;
+  }
+  .card:hover { border-color: #F47920; box-shadow: 0 2px 14px rgba(244,121,32,0.1); }
+  .card.coming { opacity: 0.5; pointer-events: none; }
+  .card-head { display: flex; align-items: flex-start; gap: 14px; margin-bottom: 10px; }
+  .card-icon {
+    width: 38px; height: 38px; border-radius: 9px; flex-shrink: 0;
+    display: flex; align-items: center; justify-content: center; font-size: 20px;
+  }
+  .icon-orange { background: #FFF0E6; }
+  .icon-purple { background: #EEEDFE; }
+  .icon-blue   { background: #E6F1FB; }
+  .icon-green  { background: #EAF3DE; }
+  .icon-grey   { background: #F2F1F6; }
+  .card-titles { flex: 1; }
+  .card-name { font-size: 15px; font-weight: 600; margin-bottom: 2px; }
+  .card-desc { font-size: 13px; color: #5F5E5A; line-height: 1.55; }
+
+  /* Live stats bar */
+  .stats-bar {
+    display: flex; gap: 16px; flex-wrap: wrap;
+    border-top: 1px solid #F2F1F6; margin-top: 14px; padding-top: 12px;
+  }
+  .stat { display: flex; flex-direction: column; gap: 2px; }
+  .stat-val { font-size: 18px; font-weight: 700; color: #2C2C2A; line-height: 1; }
+  .stat-label { font-size: 10px; color: #888780; text-transform: uppercase; letter-spacing: 0.06em; }
+
+  /* Badges */
+  .badge {
+    display: inline-block; font-size: 10px; font-weight: 600; padding: 2px 8px;
+    border-radius: 20px; margin-left: 8px; vertical-align: middle;
+  }
+  .badge-live    { background: #EAF3DE; color: #3B6D11; }
+  .badge-wip     { background: #FAEEDA; color: #854F0B; }
+  .badge-internal{ background: #E6F1FB; color: #185FA5; }
+
+  /* Arrow connectors between stages */
+  .flow-arrow {
+    display: flex; align-items: center; gap: 8px;
+    font-size: 11px; color: #B4B2A9; margin: 0 0 0 48px; padding-bottom: 8px;
+  }
+  .flow-arrow::before { content: "↓"; font-size: 16px; color: #D3D1C7; }
+
+  /* Sub-tools row */
+  .sub-tools { display: flex; gap: 10px; flex-wrap: wrap; margin-top: 10px; }
+  .sub-card {
+    flex: 1; min-width: 180px; background: #FAFAF8; border: 1px solid #E8E6DE;
+    border-radius: 8px; padding: 12px 14px; text-decoration: none; color: inherit;
+    font-size: 12px; transition: border-color 0.15s;
+  }
+  .sub-card:hover { border-color: #F47920; }
+  .sub-card.coming { opacity: 0.45; pointer-events: none; }
+  .sub-card-name { font-weight: 600; margin-bottom: 3px; font-size: 12px; }
+  .sub-card-desc { font-size: 11px; color: #888780; line-height: 1.4; }
+
+  @media (max-width: 600px) {
+    main { padding: 32px 20px 60px; }
+    header { padding: 16px 20px; }
+    .step-col { width: 36px; }
+  }
 </style>
 </head>
 <body>
@@ -54,74 +130,192 @@
   <span class="wordmark">UKPOS</span>
   <span class="divider">/</span>
   <span class="subtitle">Print Site</span>
-  <span style="flex:1"></span>
-  <a href="/designer" style="font-size:13px;color:#534AB7;text-decoration:none;font-weight:500">Go to Designer →</a>
 </header>
 
 <main>
   <h1>Print Site</h1>
-  <p class="intro">Internal tools for the print workflow — artwork validation, specification reference, and production utilities.</p>
+  <p class="intro">The end-to-end print workflow — from customer artwork submission through assessment, designer review, and production handoff to the print team.</p>
 
-  <div class="section-label">Stage 1 — Artwork capture &amp; validation</div>
-  <div class="tools-grid">
-    <a href="/artwork-assessor" class="tool-card">
-      <div class="icon">🔍</div>
-      <div class="name">Artwork assessor</div>
-      <div class="desc">Upload an EPS or ZIP and check it against print standards — DPI, bleed, colour mode, pixelation, white edges, and more.</div>
-      <span class="badge">Live</span>
-    </a>
-    <a href="/designer" class="tool-card">
-      <div class="icon">🎛️</div>
-      <div class="name">Designer</div>
-      <div class="desc">Position and validate customer artwork against the SKU template with live bleed guides, scale controls, and layer compositing.</div>
-      <span class="badge internal">Internal tool</span>
-    </a>
-    <div class="tool-card coming-soon">
-      <div class="icon">✏️</div>
-      <div class="name">AI artwork generator</div>
-      <div class="desc">Option A — generate print-ready artwork from a customer prompt, constrained to SKU template dimensions.</div>
-      <span class="badge wip">Coming soon</span>
-    </div>
-    <div class="tool-card coming-soon">
-      <div class="icon">🖼️</div>
-      <div class="name">AI artwork composer</div>
-      <div class="desc">Option B — compose artwork from customer-uploaded assets, fitted and validated against the SKU template.</div>
-      <span class="badge wip">Coming soon</span>
-    </div>
-  </div>
+  <div class="flow">
 
-  <div class="section-label">Stage 2 — Validation &amp; order processing</div>
-  <div class="tools-grid">
-    <div class="tool-card coming-soon">
-      <div class="icon">📋</div>
-      <div class="name">SKU specification lookup</div>
-      <div class="desc">Browse or search the full SKU print specification database — dimensions, DPI, pixel sizes, colour profiles, bleed requirements.</div>
-      <span class="badge wip">Coming soon</span>
+    <!-- STEP 1: Artwork List -->
+    <div class="stage">
+      <div class="step-col">
+        <div class="step-num">1</div>
+        <div class="step-line"></div>
+      </div>
+      <div class="stage-body">
+        <div class="stage-label">Intake &amp; Overview</div>
+        <a href="/dashboard" class="card">
+          <div class="card-head">
+            <div class="card-icon icon-orange">📥</div>
+            <div class="card-titles">
+              <div class="card-name">Artwork Submissions <span class="badge badge-live">Live</span></div>
+              <div class="card-desc">All customer artwork submissions in one view. Shows file details, SKU, template match, upscale status, and assessment progress. Steve picks jobs from here to assess and process.</div>
+            </div>
+          </div>
+          <div class="stats-bar" id="stats-submissions">
+            <div class="stat"><div class="stat-val" id="s-total">—</div><div class="stat-label">Total files</div></div>
+            <div class="stat"><div class="stat-val" id="s-pending">—</div><div class="stat-label">Pending</div></div>
+            <div class="stat"><div class="stat-val" id="s-hold">—</div><div class="stat-label">On hold</div></div>
+            <div class="stat"><div class="stat-val" id="s-approved">—</div><div class="stat-label">Approved</div></div>
+            <div class="stat"><div class="stat-val" id="s-tmpl">—</div><div class="stat-label">Template matched</div></div>
+          </div>
+        </a>
+      </div>
     </div>
-    <div class="tool-card coming-soon">
-      <div class="icon">📄</div>
-      <div class="name">Workflow specification</div>
-      <div class="desc">The four-stage print workflow specification document — process design, validation rules, and stage definitions.</div>
-      <span class="badge wip">Coming soon</span>
-    </div>
-  </div>
 
-  <div class="section-label">Stage 3 — Pre-production</div>
-  <div class="tools-grid">
-    <div class="tool-card coming-soon">
-      <div class="icon">🎨</div>
-      <div class="name">Vinyl pink converter</div>
-      <div class="desc">Apply the white-to-pink conversion for vinyl print jobs, where the RIP treats pure white as no-ink.</div>
-      <span class="badge wip">Coming soon</span>
+    <!-- STEP 2: Assessor -->
+    <div class="stage">
+      <div class="step-col">
+        <div class="step-num">2</div>
+        <div class="step-line"></div>
+      </div>
+      <div class="stage-body">
+        <div class="stage-label">Assessment</div>
+        <a href="/artwork-assessor" class="card">
+          <div class="card-head">
+            <div class="card-icon icon-purple">🔍</div>
+            <div class="card-titles">
+              <div class="card-name">Artwork Assessor <span class="badge badge-live">Live</span></div>
+              <div class="card-desc">AI-powered scorecard for each artwork file — checks DPI, bleed, colour mode, pixelation, white edges, and SKU fit. Steve approves or puts on hold from here. Jobs scoring 100% may pass through automatically.</div>
+            </div>
+          </div>
+        </a>
+      </div>
     </div>
-    <div class="tool-card coming-soon">
-      <div class="icon">✂️</div>
-      <div class="name">Cut line tool</div>
-      <div class="desc">Add cut lines to artwork for applicable SKUs, with per-SKU offset and colour rules applied automatically.</div>
-      <span class="badge wip">Coming soon</span>
+
+    <!-- STEP 3: Designer -->
+    <div class="stage">
+      <div class="step-col">
+        <div class="step-num">3</div>
+        <div class="step-line"></div>
+      </div>
+      <div class="stage-body">
+        <div class="stage-label">Review &amp; Edit</div>
+        <a href="/designer" class="card">
+          <div class="card-head">
+            <div class="card-icon icon-blue">🎛️</div>
+            <div class="card-titles">
+              <div class="card-name">Designer <span class="badge badge-internal">Internal</span></div>
+              <div class="card-desc">View and edit approved artwork against the SKU template with live bleed guides. Steve can reposition, scale, and adjust layers. From here: generate Customer PNG (flat proof) and Print PNG (with guides), put on hold for customer resubmission, or send directly to the print queue.</div>
+            </div>
+          </div>
+          <div class="sub-tools">
+            <div style="flex:1;min-width:140px;background:#F0FDF4;border:1px solid #A7F3D0;border-radius:7px;padding:10px 12px">
+              <div style="font-size:11px;font-weight:700;color:#065f46;margin-bottom:2px">→ Customer PNG</div>
+              <div style="font-size:11px;color:#047857">Flat proof sent to customer for sign-off</div>
+            </div>
+            <div style="flex:1;min-width:140px;background:#EFF6FF;border:1px solid #BFDBFE;border-radius:7px;padding:10px 12px">
+              <div style="font-size:11px;font-weight:700;color:#1e40af;margin-bottom:2px">→ Print PNG</div>
+              <div style="font-size:11px;color:#1d4ed8">With bleed guides — goes to print team</div>
+            </div>
+            <div style="flex:1;min-width:140px;background:#FFF7ED;border:1px solid #FED7AA;border-radius:7px;padding:10px 12px">
+              <div style="font-size:11px;font-weight:700;color:#c2410c;margin-bottom:2px">→ On Hold</div>
+              <div style="font-size:11px;color:#9a3412">Flag for customer resubmission</div>
+            </div>
+          </div>
+        </a>
+      </div>
     </div>
-  </div>
+
+    <!-- STEP 4: Print Jobs -->
+    <div class="stage">
+      <div class="step-col">
+        <div class="step-num">4</div>
+        <div class="step-line last"></div>
+      </div>
+      <div class="stage-body">
+        <div class="stage-label">Production</div>
+        <a href="/print-jobs" class="card">
+          <div class="card-head">
+            <div class="card-icon icon-green">🖨️</div>
+            <div class="card-titles">
+              <div class="card-name">Print Jobs <span class="badge badge-live">Live</span></div>
+              <div class="card-desc">The production queue. Steve and the print team view approved jobs, track status through to RIP and completion. Print team can mark jobs as Sent to RIP and Complete; Steve can update any status.</div>
+            </div>
+          </div>
+          <div class="stats-bar" id="stats-jobs">
+            <div class="stat"><div class="stat-val" id="j-total">—</div><div class="stat-label">Total jobs</div></div>
+            <div class="stat"><div class="stat-val" id="j-received">—</div><div class="stat-label">Job received</div></div>
+            <div class="stat"><div class="stat-val" id="j-rip">—</div><div class="stat-label">Sent to RIP</div></div>
+            <div class="stat"><div class="stat-val" id="j-done">—</div><div class="stat-label">Complete</div></div>
+          </div>
+        </a>
+
+        <!-- Coming soon pre-production sub-tools -->
+        <div class="sub-tools" style="margin-top:12px">
+          <div class="sub-card coming">
+            <div class="sub-card-name">🎨 Vinyl pink converter</div>
+            <div class="sub-card-desc">White-to-pink conversion for vinyl RIP jobs</div>
+            <span class="badge badge-wip" style="margin-left:0;margin-top:6px;display:inline-block">Coming soon</span>
+          </div>
+          <div class="sub-card coming">
+            <div class="sub-card-name">✂️ Cut line tool</div>
+            <div class="sub-card-desc">Auto cut lines per SKU for pre-production</div>
+            <span class="badge badge-wip" style="margin-left:0;margin-top:6px;display:inline-block">Coming soon</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </div><!-- end flow -->
 </main>
 
+<script>
+const SUPA_URL = 'https://fqaxuhbcwoikeldnxuvv.supabase.co';
+const SUPA_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImZxYXh1aGJjd29pa2VsZG54dXZ2Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDMwNzQyMTEsImV4cCI6MjA1ODY1MDIxMX0.q0RHsNYE7OxNfv2qvNWQJl2wkqWk0bL2l_KlsXirKzM';
+
+async function sf(path) {
+  const r = await fetch(SUPA_URL + path, {
+    headers: { apikey: SUPA_KEY, Authorization: 'Bearer ' + SUPA_KEY }
+  });
+  return r.json();
+}
+
+async function loadStats() {
+  try {
+    const [aa, ss, jobs] = await Promise.all([
+      sf('/rest/v1/artwork_analysis?select=id,sku,assessor_status&limit=1000'),
+      sf('/rest/v1/sku_specs?select=sku_file,source_pdf&sku_file=not.ilike.ARCHIVED*'),
+      sf('/rest/v1/print_jobs?select=id,status&limit=1000'),
+    ]);
+
+    // Submissions stats
+    function hasTmpl(sku) {
+      if (!sku) return false;
+      const u = sku.toUpperCase();
+      return ss.some(s => s.sku_file && (s.sku_file.toUpperCase().includes(u) || (s.source_pdf||'').toUpperCase().includes(u)));
+    }
+    const total    = aa.length;
+    const pending  = aa.filter(r => !r.assessor_status || r.assessor_status === 'pending').length;
+    const onHold   = aa.filter(r => r.assessor_status === 'on_hold').length;
+    const approved = aa.filter(r => r.assessor_status === 'approved').length;
+    const matched  = aa.filter(r => hasTmpl(r.sku)).length;
+
+    document.getElementById('s-total').textContent   = total;
+    document.getElementById('s-pending').textContent = pending;
+    document.getElementById('s-hold').textContent    = onHold;
+    document.getElementById('s-approved').textContent= approved;
+    document.getElementById('s-tmpl').textContent    = matched;
+
+    // Print jobs stats
+    const jTotal    = jobs.length;
+    const jReceived = jobs.filter(j => j.status === 'job_received').length;
+    const jRip      = jobs.filter(j => j.status === 'sent_to_rip').length;
+    const jDone     = jobs.filter(j => j.status === 'complete').length;
+
+    document.getElementById('j-total').textContent   = jTotal;
+    document.getElementById('j-received').textContent= jReceived;
+    document.getElementById('j-rip').textContent     = jRip;
+    document.getElementById('j-done').textContent    = jDone;
+
+  } catch(e) {
+    console.warn('Stats load failed:', e.message);
+  }
+}
+
+loadStats();
+</script>
 </body>
 </html>
