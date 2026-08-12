@@ -273,7 +273,7 @@ async function loadStats() {
   try {
     const [aa, ss, jobs] = await Promise.all([
       sf('/rest/v1/artwork_analysis?select=id,sku,assessor_status&limit=1000'),
-      sf('/rest/v1/sku_specs?select=sku_file,source_pdf&sku_file=not.ilike.ARCHIVED*'),
+      sf('/rest/v1/sku_specs?select=sku_file,source_pdf&sku_file=not.ilike.ARCHIVED%25'),
       sf('/rest/v1/print_jobs?select=id,status&limit=1000'),
     ]);
 
