@@ -194,7 +194,7 @@ async function init() {
     const [aa, om, ss] = await Promise.all([
       sf('/rest/v1/artwork_analysis?select=id,sage_order,magento_order,asset_filename,file_ext,file_size_kb,sku,artwork_class,upscale_recommended,colour_mode,width_px,height_px,dpi_reported,notes,assessor_status,assessor_note&limit=1000'),
       sf('/rest/v1/order_manifest?select=sage_order,company,customer_name'),
-      sf('/rest/v1/sku_specs?select=sku_file,source_pdf,finished_w_mm,finished_h_mm&sku_file=not.ilike.ARCHIVED*'),
+      sf('/rest/v1/sku_specs?select=sku_file,source_pdf,finished_w_mm,finished_h_mm&sku_file=not.ilike.ARCHIVED%25'),
     ]);
 
     const omMap = {};
