@@ -4,506 +4,375 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Print Jobs — PrintSite</title>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/react/18.2.0/umd/react.production.min.js"></script>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/react-dom/18.2.0/umd/react-dom.production.min.js"></script>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/babel-standalone/7.23.2/babel.min.js"></script>
   <style>
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-    body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; background: #f8fafc; color: #0f172a; }
+    body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; background: #f8fafc; color: #0f172a; font-size: 12px; }
     ::-webkit-scrollbar { height: 6px; width: 6px; }
     ::-webkit-scrollbar-track { background: #f1f5f9; }
     ::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 3px; }
-    select, input, button { font-family: inherit; }
+
+    #header {
+      background: #fff; border-bottom: 1px solid #e2e8f0;
+      padding: 12px 20px; position: sticky; top: 0; z-index: 10;
+      display: flex; align-items: center; gap: 12px; flex-wrap: wrap;
+    }
+    #header-title { font-size: 16px; font-weight: 700; color: #0f172a; letter-spacing: -0.02em; }
+    #header-sub { font-size: 11px; color: #64748b; margin-top: 2px; }
+    .filter-input { padding: 7px 12px; border: 1px solid #e2e8f0; border-radius: 6px; font-size: 12px; width: 170px; background: #f8fafc; font-family: inherit; outline: none; }
+    .filter-select { padding: 7px 10px; border: 1px solid #e2e8f0; border-radius: 6px; font-size: 12px; background: #fff; color: #374151; cursor: pointer; font-family: inherit; }
+    #role-select { font-weight: 600; }
+    #shown-count { font-size: 12px; color: #94a3b8; }
+
+    #table-wrap { overflow-x: auto; }
+    table { border-collapse: collapse; width: max-content; min-width: 100%; }
+    thead th {
+      padding: 10px 10px; text-align: left; white-space: nowrap;
+      font-weight: 600; font-size: 11px; color: #475569;
+      letter-spacing: 0.05em; text-transform: uppercase; cursor: pointer;
+      user-select: none; background: #f1f5f9;
+      position: sticky; top: 56px; z-index: 2; border-bottom: 2px solid #e2e8f0;
+    }
+    thead th.sort-active { color: #1e40af; background: #e8eef5; }
+    .sort-icon { opacity: 0.25; font-size: 10px; }
+    thead th.sort-active .sort-icon { opacity: 1; }
+    tbody tr { border-bottom: 1px solid #f1f5f9; }
+    tbody tr:nth-child(even) td { background: #f8fafc; }
+    tbody tr:nth-child(odd)  td { background: #fff; }
+    tbody tr:hover td { background: #eff6ff !important; }
+    tbody tr.complete td { opacity: 0.6; }
+    td { padding: 7px 10px; white-space: nowrap; }
+    td.right { text-align: right; }
+
+    .badge { display: inline-block; border-radius: 4px; padding: 3px 8px; font-size: 11px; font-weight: 600; white-space: nowrap; }
+    .badge-sku { font-family: monospace; font-size: 11px; font-weight: 600; color: #1e40af; background: #eff6ff; padding: 2px 6px; border-radius: 4px; }
+    .mono { font-family: monospace; font-size: 11px; }
+    .muted { color: #9ca3af; }
+    .ellipsis { overflow: hidden; text-overflow: ellipsis; display: block; }
+    .badge-ext { background: #f1f5f9; color: #475569; border-radius: 3px; padding: 1px 5px; font-size: 10px; font-family: monospace; font-weight: 600; }
+
+    .btn { display: inline-block; padding: 4px 10px; border: none; border-radius: 5px; font-size: 11px; font-weight: 600; cursor: pointer; font-family: inherit; white-space: nowrap; }
+    .btn-status   { background: #f1f5f9; color: #374151; border: 1px solid #e2e8f0; }
+    .btn-designer { background: #0f172a; color: #fff; }
+
+    /* Modal */
+    #modal-bg { display:none; position:fixed; inset:0; background:rgba(0,0,0,0.4); z-index:100; align-items:center; justify-content:center; }
+    #modal-bg.open { display:flex; }
+    #modal { background:#fff; border-radius:10px; padding:28px; width:420px; box-shadow:0 20px 60px rgba(0,0,0,0.2); }
+    #modal h3 { font-size:15px; font-weight:700; margin-bottom:4px; }
+    #modal-sub { font-size:12px; color:#64748b; margin-bottom:18px; }
+    .modal-label { font-size:11px; font-weight:600; color:#475569; text-transform:uppercase; letter-spacing:0.05em; margin-bottom:6px; }
+    #status-buttons { display:flex; flex-wrap:wrap; gap:8px; margin-bottom:18px; }
+    .status-btn { padding:5px 11px; border-radius:5px; font-size:11px; font-weight:600; cursor:pointer; border:1.5px solid; font-family:inherit; transition:all 0.15s; }
+    .status-btn.selected { color:#fff !important; }
+    .status-btn:disabled { opacity:0.35; cursor:not-allowed; }
+    #modal-note { width:100%; border:1px solid #e2e8f0; border-radius:6px; padding:8px 10px; font-size:12px; font-family:inherit; resize:vertical; margin-top:4px; outline:none; }
+    #modal-actions { display:flex; gap:8px; justify-content:flex-end; margin-top:18px; }
+    .mbtn { padding:7px 16px; border-radius:6px; font-size:12px; font-weight:600; cursor:pointer; border:1px solid #e2e8f0; background:#fff; color:#2C2C2A; font-family:inherit; }
+    .mbtn:hover { background:#f2f1f6; }
+    .mbtn-save { background:#0f172a; color:#fff; border-color:#0f172a; }
+    .mbtn-save:disabled { background:#e2e8f0; border-color:#e2e8f0; color:#9ca3af; cursor:not-allowed; }
+
+    #loading, #error-msg { display:flex; align-items:center; justify-content:center; height:60vh; font-size:14px; color:#94a3b8; }
+    #error-msg { color:#dc2626; }
   </style>
 </head>
 <body>
-  <div id="root"></div>
-  <script type="text/babel">
-    const { useState, useEffect, useMemo, useCallback } = React;
 
-    const SUPABASE_URL = "https://fqaxuhbcwoikeldnxuvv.supabase.co";
-    const SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImZxYXh1aGJjd29pa2VsZG54dXZ2Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDMwNzQyMTEsImV4cCI6MjA1ODY1MDIxMX0.q0RHsNYE7OxNfv2qvNWQJl2wkqWk0bL2l_KlsXirKzM";
+<div id="header">
+  <div>
+    <div id="header-title">Print Jobs</div>
+    <div id="header-sub" id="status-counts"></div>
+  </div>
+  <input class="filter-input" id="f-search" placeholder="Search…" oninput="applyFilters()" />
+  <select class="filter-select" id="f-status" onchange="applyFilters()">
+    <option value="">All statuses</option>
+    <option value="job_received">Job Received</option>
+    <option value="awaiting_resubmission">Awaiting Resubmission</option>
+    <option value="artwork_checked">Artwork Checked</option>
+    <option value="in_designer">In Designer</option>
+    <option value="sent_to_rip">Sent to RIP</option>
+    <option value="complete">Complete</option>
+  </select>
+  <select class="filter-select" id="f-sku" onchange="applyFilters()">
+    <option value="">All SKUs</option>
+  </select>
+  <div style="margin-left:auto;display:flex;align-items:center;gap:8px">
+    <span style="font-size:11px;color:#94a3b8">Viewing as:</span>
+    <select class="filter-select" id="role-select" onchange="applyRole()" style="font-weight:600;color:#1e40af;background:#eff6ff">
+      <option value="steve">Steve (Artwork)</option>
+      <option value="print">Print Team</option>
+    </select>
+    <span id="shown-count" style="font-size:12px;color:#94a3b8"></span>
+  </div>
+</div>
 
-    // ── Role simulation (replace with real auth later) ──────────────────────
-    const ROLES = { steve: "steve", print: "print" };
-    const ROLE_LABELS = { steve: "Steve (Artwork)", print: "Print Team" };
+<div id="loading">Loading print jobs…</div>
+<div id="error-msg" style="display:none"></div>
+<div id="table-wrap" style="display:none">
+  <table id="main-table">
+    <thead id="thead"></thead>
+    <tbody id="tbody"></tbody>
+  </table>
+  <div id="empty-msg" style="display:none;text-align:center;padding:64px 24px;color:#94a3b8">No jobs match the current filters.</div>
+</div>
 
-    // ── Status config ────────────────────────────────────────────────────────
-    const STATUSES = {
-      job_received:           { label: "Job Received",         colour: "#6366f1", bg: "#eef2ff" },
-      awaiting_resubmission:  { label: "Awaiting Resubmission",colour: "#f59e0b", bg: "#fef3c7" },
-      artwork_checked:        { label: "Artwork Checked",      colour: "#0ea5e9", bg: "#e0f2fe" },
-      in_designer:            { label: "In Designer",          colour: "#8b5cf6", bg: "#f3e8ff" },
-      sent_to_rip:            { label: "Sent to RIP",          colour: "#f97316", bg: "#fff7ed" },
-      complete:               { label: "Complete",             colour: "#059669", bg: "#d1fae5" },
-    };
+<!-- Status modal -->
+<div id="modal-bg" onclick="if(event.target===this)closeModal()">
+  <div id="modal">
+    <h3>Update Job Status</h3>
+    <div id="modal-sub"></div>
+    <div class="modal-label">Current status</div>
+    <div id="modal-current" style="margin-bottom:16px"></div>
+    <div class="modal-label">New status</div>
+    <div id="status-buttons"></div>
+    <div class="modal-label">Note (optional)</div>
+    <textarea id="modal-note" rows="3" placeholder="Add a note about this status change…"></textarea>
+    <div id="modal-actions">
+      <button class="mbtn" onclick="closeModal()">Cancel</button>
+      <button class="mbtn mbtn-save" id="modal-save" onclick="saveStatus()">Save</button>
+    </div>
+  </div>
+</div>
 
-    // Transitions each role is allowed to trigger
-    const ALLOWED_TRANSITIONS = {
-      steve: ["job_received","awaiting_resubmission","artwork_checked","in_designer","sent_to_rip","complete"],
-      print: ["sent_to_rip","complete"],
-    };
+<script>
+const SUPA_URL = 'https://fqaxuhbcwoikeldnxuvv.supabase.co';
+const SUPA_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImZxYXh1aGJjd29pa2VsZG54dXZ2Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDMwNzQyMTEsImV4cCI6MjA1ODY1MDIxMX0.q0RHsNYE7OxNfv2qvNWQJl2wkqWk0bL2l_KlsXirKzM';
 
-    const UPSCALE = {
-      none:   { label: "Ready",      bg: "#d1fae5", text: "#065f46" },
-      raster: { label: "Upscale",    bg: "#fef3c7", text: "#92400e" },
-      vector: { label: "Vectorise",  bg: "#dbeafe", text: "#1e40af" },
-      flag:   { label: "Flag",       bg: "#fee2e2", text: "#991b1b" },
-    };
+const STATUSES = {
+  job_received:          { label:'Job Received',          colour:'#6366f1', bg:'#eef2ff' },
+  awaiting_resubmission: { label:'Awaiting Resubmission', colour:'#f59e0b', bg:'#fef3c7' },
+  artwork_checked:       { label:'Artwork Checked',       colour:'#0ea5e9', bg:'#e0f2fe' },
+  in_designer:           { label:'In Designer',           colour:'#8b5cf6', bg:'#f3e8ff' },
+  sent_to_rip:           { label:'Sent to RIP',           colour:'#f97316', bg:'#fff7ed' },
+  complete:              { label:'Complete',              colour:'#059669', bg:'#d1fae5' },
+};
+const ROLE_TRANSITIONS = {
+  steve: Object.keys(STATUSES),
+  print: ['sent_to_rip','complete'],
+};
+const UPSCALE = {
+  none:'Ready', raster:'Upscale', vector:'Vectorise', flag:'Flag',
+};
 
-    const COLS = [
-      { key: "sage_order",         label: "Sage Order",  w: 112 },
-      { key: "magento_order",      label: "Magento",     w: 100 },
-      { key: "company",            label: "Company",     w: 170 },
-      { key: "customer_name",      label: "Customer",    w: 130 },
-      { key: "sku",                label: "SKU",         w: 170 },
-      { key: "asset_filename",     label: "File",        w: 200 },
-      { key: "file_ext",           label: "Ext",         w: 48  },
-      { key: "upscale_recommended",label: "Upscale",     w: 88  },
-      { key: "status",             label: "Status",      w: 180 },
-      { key: "updated_at",         label: "Updated",     w: 130 },
-      { key: "status_note",        label: "Note",        w: 200 },
-    ];
+let allRows = [], filteredRows = [], sortKey = 'updated_at', sortDir = -1;
+let currentRole = 'steve', modalJob = null, modalNewStatus = null;
 
-    async function supaFetch(path, opts = {}) {
-      const res = await fetch(SUPABASE_URL + path, {
-        ...opts,
-        headers: {
-          apikey: SUPABASE_KEY,
-          Authorization: "Bearer " + SUPABASE_KEY,
-          "Content-Type": "application/json",
-          Prefer: "return=representation",
-          ...(opts.headers || {}),
-        },
+async function sf(path, opts) {
+  const r = await fetch(SUPA_URL + path, Object.assign({ headers: { apikey: SUPA_KEY, Authorization: 'Bearer ' + SUPA_KEY, 'Content-Type':'application/json' } }, opts||{}));
+  if (!r.ok) throw new Error(await r.text());
+  const t = await r.text(); return t ? JSON.parse(t) : null;
+}
+
+function fmtDate(d) {
+  if (!d) return '—';
+  const dt = new Date(d);
+  return dt.toLocaleDateString('en-GB',{day:'2-digit',month:'short'}) + ' ' + dt.toLocaleTimeString('en-GB',{hour:'2-digit',minute:'2-digit'});
+}
+
+async function init() {
+  try {
+    const [jobs, aa, om] = await Promise.all([
+      sf('/rest/v1/print_jobs?select=id,artwork_analysis_id,sage_order,magento_order,sku,status,status_note,updated_at&order=updated_at.desc&limit=1000'),
+      sf('/rest/v1/artwork_analysis?select=id,asset_filename,file_ext,upscale_recommended&limit=1000'),
+      sf('/rest/v1/order_manifest?select=sage_order,company,customer_name'),
+    ]);
+    const aaMap = {}, omMap = {};
+    aa.forEach(a => { aaMap[a.id] = a; });
+    om.forEach(o => { omMap[o.sage_order] = o; });
+
+    allRows = jobs.map(j => {
+      const a = aaMap[j.artwork_analysis_id] || {};
+      const m = omMap[j.sage_order] || {};
+      return Object.assign({}, j, {
+        asset_filename:      a.asset_filename      || '—',
+        file_ext:            a.file_ext            || '',
+        upscale_recommended: a.upscale_recommended || null,
+        company:             m.company             || '—',
+        customer_name:       m.customer_name       || '—',
       });
-      if (!res.ok) throw new Error(await res.text());
-      const text = await res.text();
-      return text ? JSON.parse(text) : null;
-    }
+    });
 
-    function fmtDate(d) {
-      if (!d) return "—";
-      const dt = new Date(d);
-      return dt.toLocaleDateString("en-GB", { day: "2-digit", month: "short" }) + " " +
-             dt.toLocaleTimeString("en-GB", { hour: "2-digit", minute: "2-digit" });
-    }
+    const skus = [...new Set(allRows.map(r => r.sku).filter(Boolean))].sort();
+    const skuSel = document.getElementById('f-sku');
+    skus.forEach(s => { const o = document.createElement('option'); o.value = s; o.textContent = s; skuSel.appendChild(o); });
 
-    function StatusBadge({ value }) {
-      const s = STATUSES[value] || { label: value, colour: "#475569", bg: "#f1f5f9" };
-      return (
-        <span style={{ background: s.bg, color: s.colour, borderRadius: 4,
-          padding: "3px 8px", fontSize: 11, fontWeight: 600, whiteSpace: "nowrap",
-          border: `1px solid ${s.colour}22` }}>
-          {s.label}
-        </span>
-      );
-    }
+    buildThead();
+    document.getElementById('loading').style.display = 'none';
+    document.getElementById('table-wrap').style.display = '';
+    applyFilters();
+  } catch(e) {
+    document.getElementById('loading').style.display = 'none';
+    const em = document.getElementById('error-msg');
+    em.style.display = 'flex'; em.textContent = 'Error: ' + e.message;
+  }
+}
 
-    function UpscaleBadge({ value }) {
-      if (!value) return <span style={{ color: "#9ca3af", fontSize: 11 }}>—</span>;
-      const u = UPSCALE[value] || { label: value, bg: "#f3f4f6", text: "#374151" };
-      return (
-        <span style={{ background: u.bg, color: u.text, borderRadius: 4,
-          padding: "2px 7px", fontSize: 11, fontWeight: 600, whiteSpace: "nowrap" }}>
-          {u.label}
-        </span>
-      );
-    }
+function buildThead() {
+  const COLS = [
+    { key:'sage_order',    label:'Sage Order', w:112 },
+    { key:'magento_order', label:'Magento',    w:100 },
+    { key:'company',       label:'Company',    w:160 },
+    { key:'customer_name', label:'Customer',   w:130 },
+    { key:'sku',           label:'SKU',        w:170 },
+    { key:'asset_filename',label:'File',       w:200 },
+    { key:'file_ext',      label:'Ext',        w:46  },
+    { key:'upscale_recommended', label:'Upscale', w:80, steveOnly:true },
+    { key:'status',        label:'Status',     w:180 },
+    { key:'updated_at',    label:'Updated',    w:130 },
+    { key:'status_note',   label:'Note',       w:200 },
+  ];
+  window._cols = COLS;
+  let html = '<tr>';
+  COLS.forEach(c => {
+    if (c.steveOnly) html += `<th class="steve-col" style="width:${c.w}px;min-width:${c.w}px" onclick="doSort('${c.key}')" id="th-${c.key}">${c.label} <span class="sort-icon" id="si-${c.key}">⇅</span></th>`;
+    else html += `<th style="width:${c.w}px;min-width:${c.w}px" onclick="doSort('${c.key}')" id="th-${c.key}">${c.label} <span class="sort-icon" id="si-${c.key}">⇅</span></th>`;
+  });
+  html += '<th style="width:160px;min-width:160px;position:sticky;top:56px;z-index:2;background:#f1f5f9;border-bottom:2px solid #e2e8f0">Actions</th></tr>';
+  document.getElementById('thead').innerHTML = html;
+  applyRole();
+}
 
-    function SortTh({ col, sort, onSort, role }) {
-      // Hide designer-facing cols from print role
-      if (role === ROLES.print && ["upscale_recommended"].includes(col.key)) return null;
-      const active = sort.key === col.key;
-      return (
-        <th onClick={() => onSort(col.key)} style={{
-          padding: "10px 10px", textAlign: "left", whiteSpace: "nowrap",
-          fontWeight: 600, fontSize: 11, color: active ? "#1e40af" : "#475569",
-          letterSpacing: "0.05em", textTransform: "uppercase", cursor: "pointer",
-          userSelect: "none", width: col.w, minWidth: col.w,
-          background: active ? "#e8eef5" : "#f1f5f9",
-          position: "sticky", top: 56, zIndex: 2,
-          borderBottom: "2px solid #e2e8f0",
-        }}>
-          {col.label}&nbsp;
-          <span style={{ opacity: active ? 1 : 0.3, fontSize: 10 }}>
-            {active ? (sort.dir === "asc" ? "↑" : "↓") : "⇅"}
-          </span>
-        </th>
-      );
-    }
+function applyRole() {
+  currentRole = document.getElementById('role-select').value;
+  const roleEl = document.getElementById('role-select');
+  roleEl.style.color = currentRole === 'steve' ? '#1e40af' : '#059669';
+  roleEl.style.background = currentRole === 'steve' ? '#eff6ff' : '#f0fdf4';
+  document.querySelectorAll('.steve-col').forEach(el => { el.style.display = currentRole === 'steve' ? '' : 'none'; });
+  renderTable();
+}
 
-    // ── Status change modal ──────────────────────────────────────────────────
-    function StatusModal({ job, role, onSave, onClose }) {
-      const allowed = ALLOWED_TRANSITIONS[role];
-      const [newStatus, setNewStatus] = useState(job.status);
-      const [note, setNote] = useState("");
-      const [saving, setSaving] = useState(false);
+function applyFilters() {
+  const search = document.getElementById('f-search').value.toLowerCase();
+  const status = document.getElementById('f-status').value;
+  const sku    = document.getElementById('f-sku').value;
+  filteredRows = allRows.filter(r => {
+    if (search && !Object.values(r).some(v => v && String(v).toLowerCase().includes(search))) return false;
+    if (status && r.status !== status) return false;
+    if (sku    && r.sku !== sku) return false;
+    return true;
+  });
+  doSort(sortKey, true);
+  updateCounts();
+}
 
-      async function save() {
-        setSaving(true);
-        try {
-          await onSave(job.id, newStatus, note);
-          onClose();
-        } catch(e) {
-          alert("Save failed: " + e.message);
-        } finally {
-          setSaving(false);
-        }
-      }
+function doSort(key, keepDir) {
+  if (!keepDir) sortDir = (sortKey === key) ? -sortDir : 1;
+  sortKey = key;
+  filteredRows.sort((a,b) => String(a[key]??'').localeCompare(String(b[key]??''), undefined, {numeric:true}) * sortDir);
+  document.querySelectorAll('thead th').forEach(t => t.classList.remove('sort-active'));
+  document.querySelectorAll('.sort-icon').forEach(s => s.textContent = '⇅');
+  const at = document.getElementById('th-'+key), as = document.getElementById('si-'+key);
+  if (at) at.classList.add('sort-active');
+  if (as) as.textContent = sortDir === 1 ? '↑' : '↓';
+  renderTable();
+}
 
-      return (
-        <div style={{ position: "fixed", inset: 0, background: "rgba(0,0,0,0.4)", zIndex: 100,
-          display: "flex", alignItems: "center", justifyContent: "center" }}
-          onClick={e => e.target === e.currentTarget && onClose()}>
-          <div style={{ background: "#fff", borderRadius: 10, padding: 28, width: 420,
-            boxShadow: "0 20px 60px rgba(0,0,0,0.2)" }}>
-            <div style={{ fontSize: 15, fontWeight: 700, color: "#0f172a", marginBottom: 4 }}>
-              Update Job Status
-            </div>
-            <div style={{ fontSize: 12, color: "#64748b", marginBottom: 20 }}>
-              {job.sage_order} · {job.magento_order || "Sage only"} · {job.company}
-            </div>
-            <div style={{ fontSize: 11, fontWeight: 600, color: "#475569", marginBottom: 6, textTransform: "uppercase", letterSpacing: "0.05em" }}>
-              Current status
-            </div>
-            <div style={{ marginBottom: 16 }}><StatusBadge value={job.status} /></div>
+function renderTable() {
+  const tbody = document.getElementById('tbody');
+  const empty = document.getElementById('empty-msg');
+  if (!filteredRows.length) { tbody.innerHTML=''; empty.style.display=''; document.getElementById('shown-count').textContent='0 shown'; return; }
+  empty.style.display = 'none';
+  document.getElementById('shown-count').textContent = filteredRows.length + ' shown';
 
-            <div style={{ fontSize: 11, fontWeight: 600, color: "#475569", marginBottom: 6, textTransform: "uppercase", letterSpacing: "0.05em" }}>
-              New status
-            </div>
-            <div style={{ display: "flex", flexWrap: "wrap", gap: 8, marginBottom: 20 }}>
-              {Object.entries(STATUSES).map(([key, s]) => {
-                const canSet = allowed.includes(key);
-                const isSelected = newStatus === key;
-                return (
-                  <button key={key} onClick={() => canSet && setNewStatus(key)}
-                    disabled={!canSet}
-                    style={{
-                      background: isSelected ? s.colour : s.bg,
-                      color: isSelected ? "#fff" : s.colour,
-                      border: `1.5px solid ${s.colour}`,
-                      borderRadius: 5, padding: "5px 11px", fontSize: 11,
-                      fontWeight: 600, cursor: canSet ? "pointer" : "not-allowed",
-                      opacity: canSet ? 1 : 0.35, transition: "all 0.15s",
-                    }}>
-                    {s.label}
-                  </button>
-                );
-              })}
-            </div>
+  const rows = filteredRows.map(r => {
+    const st = STATUSES[r.status] || { label:r.status, colour:'#475569', bg:'#f1f5f9' };
+    const stBadge = `<span class="badge" style="background:${st.bg};color:${st.colour};border:1px solid ${st.colour}22">${st.label}</span>`;
+    const upLabel = UPSCALE[r.upscale_recommended] || '—';
+    const designUrl = `/designer/?sku=${encodeURIComponent(r.sku||'')}&order=${r.sage_order}`;
+    let actions = `<button class="btn btn-status" onclick="openModal(${JSON.stringify(r).replace(/"/g,'&quot;')})">Update Status</button>`;
+    if (currentRole === 'steve') actions += ` <button class="btn btn-designer" onclick="window.open('${designUrl}','_blank')">Designer →</button>`;
 
-            <div style={{ fontSize: 11, fontWeight: 600, color: "#475569", marginBottom: 6, textTransform: "uppercase", letterSpacing: "0.05em" }}>
-              Note (optional)
-            </div>
-            <textarea value={note} onChange={e => setNote(e.target.value)}
-              placeholder="Add a note about this status change…"
-              rows={3}
-              style={{ width: "100%", border: "1px solid #e2e8f0", borderRadius: 6,
-                padding: "8px 10px", fontSize: 12, resize: "vertical",
-                outline: "none", color: "#374151" }} />
+    return `<tr class="${r.status==='complete'?'complete':''}">
+      <td><span class="mono" style="color:#475569">${r.sage_order}</span></td>
+      <td><span class="mono muted">${r.magento_order||'—'}</span></td>
+      <td><span class="ellipsis" style="max-width:150px;font-weight:600" title="${esc(r.company)}">${esc(r.company)}</span></td>
+      <td><span class="ellipsis" style="max-width:120px;color:#475569" title="${esc(r.customer_name)}">${esc(r.customer_name)}</span></td>
+      <td>${r.sku?`<span class="badge-sku">${r.sku}</span>`:'<span class="muted">—</span>'}</td>
+      <td><span class="ellipsis mono" style="max-width:190px;color:#374151" title="${esc(r.asset_filename)}">${esc(r.asset_filename)}</span></td>
+      <td style="text-align:center"><span class="badge-ext">${(r.file_ext||'').replace('.','').toUpperCase()}</span></td>
+      <td class="steve-col" style="display:${currentRole==='steve'?'':'none'};color:#64748b">${upLabel}</td>
+      <td>${stBadge}</td>
+      <td style="color:#94a3b8;font-size:11px">${fmtDate(r.updated_at)}</td>
+      <td><span class="ellipsis" style="max-width:190px;color:#64748b;font-size:11px" title="${esc(r.status_note||'')}">${esc(r.status_note)||'—'}</span></td>
+      <td style="white-space:nowrap">${actions}</td>
+    </tr>`;
+  });
+  tbody.innerHTML = rows.join('');
+}
 
-            <div style={{ display: "flex", gap: 8, marginTop: 18, justifyContent: "flex-end" }}>
-              <button onClick={onClose}
-                style={{ padding: "7px 16px", border: "1px solid #e2e8f0", borderRadius: 6,
-                  background: "#fff", fontSize: 12, cursor: "pointer", color: "#475569" }}>
-                Cancel
-              </button>
-              <button onClick={save} disabled={saving || newStatus === job.status}
-                style={{ padding: "7px 16px", border: "none", borderRadius: 6,
-                  background: newStatus === job.status ? "#e2e8f0" : "#0f172a",
-                  color: newStatus === job.status ? "#9ca3af" : "#fff",
-                  fontSize: 12, fontWeight: 600, cursor: newStatus === job.status ? "not-allowed" : "pointer" }}>
-                {saving ? "Saving…" : "Save"}
-              </button>
-            </div>
-          </div>
-        </div>
-      );
-    }
+function updateCounts() {
+  const counts = {};
+  Object.keys(STATUSES).forEach(k => counts[k] = 0);
+  allRows.forEach(r => { if (counts[r.status]!==undefined) counts[r.status]++; });
+  document.getElementById('header-sub').innerHTML = Object.entries(STATUSES)
+    .map(([k,s]) => `<span style="color:${s.colour};margin-right:10px">${s.label}: <strong>${counts[k]}</strong></span>`)
+    .join('');
+}
 
-    // ── Main component ───────────────────────────────────────────────────────
-    export default function PrintJobs() {
-      const [role, setRole]         = useState(ROLES.steve);
-      const [rows, setRows]         = useState([]);
-      const [loading, setLoading]   = useState(true);
-      const [error, setError]       = useState(null);
-      const [sort, setSort]         = useState({ key: "updated_at", dir: "desc" });
-      const [search, setSearch]     = useState("");
-      const [fStatus, setFStatus]   = useState("all");
-      const [fSku, setFSku]         = useState("all");
-      const [modal, setModal]       = useState(null); // job row
+function openModal(job) {
+  modalJob = job; modalNewStatus = job.status;
+  const st = STATUSES[job.status] || {};
+  document.getElementById('modal-sub').textContent = job.sage_order + ' · ' + (job.magento_order||'Sage only') + ' · ' + job.company;
+  document.getElementById('modal-current').innerHTML = `<span class="badge" style="background:${st.bg||'#f1f5f9'};color:${st.colour||'#475569'};border:1px solid ${st.colour||'#475569'}22">${st.label||job.status}</span>`;
+  document.getElementById('modal-note').value = '';
+  const allowed = ROLE_TRANSITIONS[currentRole];
+  const btns = Object.entries(STATUSES).map(([k,s]) => {
+    const canSet = allowed.includes(k);
+    const isSelected = k === job.status;
+    return `<button class="status-btn${isSelected?' selected':''}" 
+      style="background:${isSelected?s.colour:s.bg};color:${isSelected?'#fff':s.colour};border-color:${s.colour}"
+      ${!canSet?'disabled':''} onclick="selectStatus('${k}')">${s.label}</button>`;
+  }).join('');
+  document.getElementById('status-buttons').innerHTML = btns;
+  updateSaveBtn();
+  document.getElementById('modal-bg').classList.add('open');
+}
 
-      async function loadJobs() {
-        try {
-          const [jobs, aa, om] = await Promise.all([
-            supaFetch("/rest/v1/print_jobs?select=id,artwork_analysis_id,sage_order,magento_order,sku,status,status_note,updated_at,status_changed_at&order=updated_at.desc&limit=1000"),
-            supaFetch("/rest/v1/artwork_analysis?select=id,asset_filename,file_ext,upscale_recommended,colour_mode,notes&limit=1000"),
-            supaFetch("/rest/v1/order_manifest?select=sage_order,company,customer_name"),
-          ]);
+function selectStatus(key) {
+  modalNewStatus = key;
+  const allowed = ROLE_TRANSITIONS[currentRole];
+  Object.entries(STATUSES).forEach(([k,s]) => {
+    const btn = document.querySelector(`.status-btn[onclick="selectStatus(\'${k}\')"]`);
+    if (!btn) return;
+    if (k === key) { btn.classList.add('selected'); btn.style.background=s.colour; btn.style.color='#fff'; }
+    else { btn.classList.remove('selected'); btn.style.background=s.bg; btn.style.color=s.colour; }
+  });
+  updateSaveBtn();
+}
 
-          const aaMap = {}, omMap = {};
-          aa.forEach(a => { aaMap[a.id] = a; });
-          om.forEach(o => { omMap[o.sage_order] = o; });
+function updateSaveBtn() {
+  document.getElementById('modal-save').disabled = (modalNewStatus === modalJob.status);
+}
 
-          const merged = jobs.map(j => {
-            const a = aaMap[j.artwork_analysis_id] || {};
-            const m = omMap[j.sage_order] || {};
-            return {
-              ...j,
-              asset_filename:      a.asset_filename      || "—",
-              file_ext:            a.file_ext            || "",
-              upscale_recommended: a.upscale_recommended || null,
-              colour_mode:         a.colour_mode         || null,
-              company:             m.company             || "—",
-              customer_name:       m.customer_name       || "—",
-            };
-          });
-          setRows(merged);
-          setError(null);
-        } catch(e) {
-          setError(e.message);
-        } finally {
-          setLoading(false);
-        }
-      }
+function closeModal() { document.getElementById('modal-bg').classList.remove('open'); modalJob=null; }
 
-      useEffect(() => { loadJobs(); }, []);
+async function saveStatus() {
+  if (!modalJob || modalNewStatus === modalJob.status) return;
+  const note = document.getElementById('modal-note').value.trim() || null;
+  document.getElementById('modal-save').disabled = true;
+  document.getElementById('modal-save').textContent = 'Saving…';
+  try {
+    await sf(`/rest/v1/print_jobs?id=eq.${modalJob.id}`, {
+      method:'PATCH',
+      body: JSON.stringify({ status: modalNewStatus, status_note: note }),
+    });
+    const row = allRows.find(r => r.id === modalJob.id);
+    if (row) { row.status = modalNewStatus; row.status_note = note; row.updated_at = new Date().toISOString(); }
+    closeModal();
+    applyFilters();
+  } catch(e) {
+    alert('Save failed: ' + e.message);
+    document.getElementById('modal-save').disabled = false;
+    document.getElementById('modal-save').textContent = 'Save';
+  }
+}
 
-      async function handleStatusSave(jobId, newStatus, note) {
-        await supaFetch(`/rest/v1/print_jobs?id=eq.${jobId}`, {
-          method: "PATCH",
-          body: JSON.stringify({
-            status: newStatus,
-            status_note: note || null,
-          }),
-        });
-        setRows(prev => prev.map(r => r.id === jobId
-          ? { ...r, status: newStatus, status_note: note || null, updated_at: new Date().toISOString() }
-          : r
-        ));
-      }
+function esc(s) {
+  if (!s) return '';
+  return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+}
 
-      const skuOptions = useMemo(() => {
-        const s = new Set(rows.map(r => r.sku).filter(Boolean));
-        return ["all", ...Array.from(s).sort()];
-      }, [rows]);
-
-      const sorted = useMemo(() => {
-        let data = [...rows];
-        if (search) {
-          const q = search.toLowerCase();
-          data = data.filter(r => Object.values(r).some(v => v && String(v).toLowerCase().includes(q)));
-        }
-        if (fStatus !== "all") data = data.filter(r => r.status === fStatus);
-        if (fSku !== "all") data = data.filter(r => r.sku === fSku);
-        data.sort((a, b) => {
-          let av = a[sort.key] ?? "", bv = b[sort.key] ?? "";
-          const cmp = String(av).localeCompare(String(bv), undefined, { numeric: true });
-          return sort.dir === "asc" ? cmp : -cmp;
-        });
-        return data;
-      }, [rows, sort, search, fStatus, fSku]);
-
-      function toggleSort(key) {
-        setSort(s => s.key === key ? { key, dir: s.dir === "asc" ? "desc" : "asc" } : { key, dir: "asc" });
-      }
-
-      const counts = useMemo(() => {
-        const byStatus = {};
-        Object.keys(STATUSES).forEach(k => { byStatus[k] = 0; });
-        rows.forEach(r => { if (byStatus[r.status] !== undefined) byStatus[r.status]++; });
-        return byStatus;
-      }, [rows]);
-
-      const sel = { padding: "7px 10px", border: "1px solid #e2e8f0", borderRadius: 6,
-        fontSize: 12, background: "#fff", color: "#374151", cursor: "pointer" };
-
-      if (loading) return (
-        <div style={{ display: "flex", alignItems: "center", justifyContent: "center",
-          height: "100vh", color: "#94a3b8", fontSize: 14 }}>
-          Loading print jobs…
-        </div>
-      );
-      if (error) return (
-        <div style={{ padding: 32, color: "#dc2626", fontSize: 13 }}>Error: {error}</div>
-      );
-
-      return (
-        <div style={{ minHeight: "100vh" }}>
-          {modal && (
-            <StatusModal
-              job={modal}
-              role={role}
-              onSave={handleStatusSave}
-              onClose={() => setModal(null)}
-            />
-          )}
-
-          {/* Header */}
-          <div style={{ background: "#fff", borderBottom: "1px solid #e2e8f0",
-            padding: "12px 20px", position: "sticky", top: 0, zIndex: 10 }}>
-            <div style={{ display: "flex", alignItems: "center", gap: 12, flexWrap: "wrap" }}>
-
-              <div style={{ marginRight: 8 }}>
-                <div style={{ fontSize: 16, fontWeight: 700, color: "#0f172a", letterSpacing: "-0.02em" }}>
-                  Print Jobs
-                </div>
-                <div style={{ fontSize: 11, color: "#64748b", marginTop: 1, display: "flex", gap: 10 }}>
-                  {Object.entries(STATUSES).map(([k, s]) => (
-                    <span key={k} style={{ color: s.colour }}>
-                      {s.label}: <strong>{counts[k]}</strong>
-                    </span>
-                  ))}
-                </div>
-              </div>
-
-              <input value={search} onChange={e => setSearch(e.target.value)}
-                placeholder="Search…"
-                style={{ ...sel, width: 180, padding: "7px 12px" }} />
-
-              <select value={fStatus} onChange={e => setFStatus(e.target.value)} style={sel}>
-                <option value="all">All statuses</option>
-                {Object.entries(STATUSES).map(([k, s]) =>
-                  <option key={k} value={k}>{s.label}</option>
-                )}
-              </select>
-
-              <select value={fSku} onChange={e => setFSku(e.target.value)} style={{ ...sel, maxWidth: 190 }}>
-                {skuOptions.map(s => <option key={s} value={s}>{s === "all" ? "All SKUs" : s}</option>)}
-              </select>
-
-              {/* Role switcher — placeholder until real auth */}
-              <div style={{ marginLeft: "auto", display: "flex", alignItems: "center", gap: 8 }}>
-                <span style={{ fontSize: 11, color: "#94a3b8" }}>Viewing as:</span>
-                <select value={role} onChange={e => setRole(e.target.value)}
-                  style={{ ...sel, fontSize: 11, fontWeight: 600,
-                    color: role === ROLES.steve ? "#1e40af" : "#059669",
-                    background: role === ROLES.steve ? "#eff6ff" : "#f0fdf4" }}>
-                  {Object.entries(ROLE_LABELS).map(([k, v]) =>
-                    <option key={k} value={k}>{v}</option>
-                  )}
-                </select>
-                <span style={{ fontSize: 11, color: "#94a3b8" }}>{sorted.length} shown</span>
-              </div>
-            </div>
-          </div>
-
-          {/* Table */}
-          <div style={{ overflowX: "auto" }}>
-            <table style={{ borderCollapse: "collapse", width: "max-content", minWidth: "100%", fontSize: 12 }}>
-              <thead>
-                <tr>
-                  {COLS.map(col => {
-                    if (role === ROLES.print && col.key === "upscale_recommended") return null;
-                    return <SortTh key={col.key} col={col} sort={sort} onSort={toggleSort} role={role} />;
-                  })}
-                  <th style={{ padding: "10px 10px", textAlign: "left", fontWeight: 600,
-                    fontSize: 11, color: "#475569", letterSpacing: "0.05em", textTransform: "uppercase",
-                    background: "#f1f5f9", position: "sticky", top: 56, zIndex: 2,
-                    borderBottom: "2px solid #e2e8f0", whiteSpace: "nowrap", width: 160, minWidth: 160 }}>
-                    Actions
-                  </th>
-                </tr>
-              </thead>
-              <tbody>
-                {sorted.map((row, i) => {
-                  const bg = i % 2 === 0 ? "#fff" : "#f8fafc";
-                  const isComplete = row.status === "complete";
-                  const td = (content, extra = {}) => (
-                    <td style={{ padding: "7px 10px", borderBottom: "1px solid #f1f5f9",
-                      whiteSpace: "nowrap", background: bg,
-                      opacity: isComplete ? 0.6 : 1, ...extra }}>
-                      {content}
-                    </td>
-                  );
-                  return (
-                    <tr key={row.id}
-                      onMouseEnter={e => Array.from(e.currentTarget.cells).forEach(c => c.style.background = "#eff6ff")}
-                      onMouseLeave={e => Array.from(e.currentTarget.cells).forEach(c => c.style.background = bg)}>
-
-                      {/* Sage */}
-                      {td(<span style={{ fontFamily: "monospace", fontSize: 11, color: "#475569" }}>{row.sage_order}</span>)}
-                      {/* Magento */}
-                      {td(<span style={{ fontFamily: "monospace", fontSize: 11, color: "#94a3b8" }}>{row.magento_order || "—"}</span>)}
-                      {/* Company */}
-                      {td(<span title={row.company} style={{ fontWeight: 600, color: "#0f172a",
-                        display: "block", overflow: "hidden", textOverflow: "ellipsis", maxWidth: 160 }}>
-                        {row.company}
-                      </span>)}
-                      {/* Customer */}
-                      {td(<span title={row.customer_name} style={{ color: "#475569",
-                        display: "block", overflow: "hidden", textOverflow: "ellipsis", maxWidth: 120 }}>
-                        {row.customer_name}
-                      </span>)}
-                      {/* SKU */}
-                      {td(row.sku
-                        ? <span style={{ fontFamily: "monospace", fontSize: 11, fontWeight: 600,
-                            color: "#1e40af", background: "#eff6ff", padding: "2px 6px", borderRadius: 4 }}>
-                            {row.sku}
-                          </span>
-                        : <span style={{ color: "#9ca3af", fontSize: 11 }}>No SKU</span>
-                      )}
-                      {/* File */}
-                      {td(<span title={row.asset_filename} style={{ fontFamily: "monospace", fontSize: 11,
-                        color: "#374151", display: "block", overflow: "hidden", textOverflow: "ellipsis", maxWidth: 190 }}>
-                        {row.asset_filename}
-                      </span>)}
-                      {/* Ext */}
-                      {td(<span style={{ background: "#f1f5f9", color: "#475569", borderRadius: 3,
-                        padding: "1px 5px", fontSize: 10, fontFamily: "monospace", fontWeight: 600 }}>
-                        {(row.file_ext || "").replace(".", "").toUpperCase()}
-                      </span>, { textAlign: "center" })}
-                      {/* Upscale (steve only) */}
-                      {role === ROLES.steve && td(<UpscaleBadge value={row.upscale_recommended} />)}
-                      {/* Status */}
-                      {td(<StatusBadge value={row.status} />)}
-                      {/* Updated */}
-                      {td(<span style={{ color: "#94a3b8", fontSize: 11 }}>{fmtDate(row.updated_at)}</span>)}
-                      {/* Note */}
-                      {td(<span title={row.status_note || ""} style={{ color: "#64748b", fontSize: 11,
-                        display: "block", overflow: "hidden", textOverflow: "ellipsis", maxWidth: 190 }}>
-                        {row.status_note || "—"}
-                      </span>)}
-                      {/* Actions */}
-                      <td style={{ padding: "7px 10px", borderBottom: "1px solid #f1f5f9",
-                        background: bg, whiteSpace: "nowrap" }}>
-                        <div style={{ display: "flex", gap: 6, alignItems: "center" }}>
-                          <button onClick={() => setModal(row)}
-                            style={{ background: "#f1f5f9", color: "#374151", border: "1px solid #e2e8f0",
-                              borderRadius: 5, padding: "4px 10px", fontSize: 11,
-                              fontWeight: 600, cursor: "pointer", whiteSpace: "nowrap" }}>
-                            Update Status
-                          </button>
-                          {role === ROLES.steve && (
-                            <button onClick={() => {
-                              const p = new URLSearchParams({ sku: row.sku || "", asset: row.asset_filename, order: row.sage_order });
-                              window.open("/designer/?" + p.toString(), "_blank");
-                            }}
-                              style={{ background: "#0f172a", color: "#fff", border: "none",
-                                borderRadius: 5, padding: "4px 10px", fontSize: 11,
-                                fontWeight: 600, cursor: "pointer", whiteSpace: "nowrap" }}>
-                              Designer →
-                            </button>
-                          )}
-                        </div>
-                      </td>
-                    </tr>
-                  );
-                })}
-              </tbody>
-            </table>
-            {sorted.length === 0 && (
-              <div style={{ textAlign: "center", padding: "64px 24px", color: "#94a3b8", fontSize: 13 }}>
-                No jobs match the current filters.
-              </div>
-            )}
-          </div>
-        </div>
-      );
-    }
-
-    const root = ReactDOM.createRoot(document.getElementById("root"));
-    root.render(<PrintJobs />);
-  </script>
+init();
+</script>
 </body>
 </html>
