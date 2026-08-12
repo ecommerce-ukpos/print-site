@@ -725,6 +725,7 @@ canvas{display:block}
     <button class="rp-btn rp-btn-blue"  id="btnAssessor" disabled onclick="goToAssessor()">Run checks in assessor</button>
     <button class="rp-btn" id="btnExportCustomer" disabled onclick="exportCustomerPNG()" style="background:#F2F1F6;color:#2C2C2A;border-color:#D3D1C7">↓ Customer PNG (flat)</button>
     <button class="rp-btn" id="btnExportPrint"    disabled onclick="exportPrintPNG()"    style="background:#F2F1F6;color:#2C2C2A;border-color:#D3D1C7">↓ Print PNG (with guides)</button>
+    <button class="rp-btn" id="btnSendQueue" disabled onclick="sendToPrintQueue()" style="background:#2E7D32;color:#fff;border-color:#2E7D32;opacity:0.4">✓ Send to Print Queue</button>
     <a class="rp-btn" href="/dashboard">← Artwork list</a>
   </div>
 </div><!-- end right-panel -->
@@ -2023,8 +2024,12 @@ function exportCustomerPNG(){
   cropCanvas.getContext('2d').drawImage(offscreen,bx,by,bw,bh,0,0,bw,bh);
   const link=document.createElement('a');
   link.download=(jobId||'artwork')+'_customer.png';
-  link.href=cropCanvas.toDataURL('image/png');
+  const customerDataUrl=cropCanvas.toDataURL('image/png');
+  link.href=customerDataUrl;
   link.click();
+  S().customerPngData=customerDataUrl;
+  S().customerPngName=(jobId||'artwork')+'_customer.png';
+  updateQueueBtn();
   showToast('Customer PNG downloaded');
 }
 
@@ -2055,9 +2060,116 @@ function exportPrintPNG(){
   cropCanvas.getContext('2d').drawImage(offscreen,bx,by,bw,bh,0,0,bw,bh);
   const link=document.createElement('a');
   link.download=(jobId||'artwork')+'_print.png';
-  link.href=cropCanvas.toDataURL('image/png');
+  const printDataUrl=cropCanvas.toDataURL('image/png');
+  link.href=printDataUrl;
   link.click();
+  S().printPngData=printDataUrl;
+  S().printPngName=(jobId||'artwork')+'_print.png';
+  updateQueueBtn();
   showToast('Print PNG downloaded');
+}
+
+function updateQueueBtn(){
+  const st=S();
+  const btn=document.getElementById('btnSendQueue');
+  if(!btn)return;
+  const ready=!!(st.customerPngData && st.printPngData);
+  btn.disabled=!ready;
+  btn.style.opacity=ready?'1':'0.4';
+}
+
+const SUPA_URL_D='https://fqaxuhbcwoikeldnxuvv.supabase.co';
+const SUPA_KEY_D='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImZxYXh1aGJjd29pa2VsZG54dXZ2Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDMwNzQyMTEsImV4cCI6MjA1ODY1MDIxMX0.q0RHsNYE7OxNfv2qvNWQJl2wkqWk0bL2l_KlsXirKzM';
+
+async function sendToPrintQueue(){
+  const st=S();
+  if(!st.customerPngData||!st.printPngData){showToast('Generate both PNGs first');return;}
+  const btn=document.getElementById('btnSendQueue');
+  btn.disabled=true;btn.textContent='Saving…';
+
+  // Read aa_id from URL
+  const _dp=new URLSearchParams(window.location.search);
+  const aaId=_dp.get('aa_id')||null;
+  const skuVal=_dp.get('sku')||currentSkuRow?.sku_file||null;
+  const orderVal=_dp.get('order')||null;
+
+  try{
+    // 1. Upload customer PNG to Supabase storage
+    let customerUrl=null, printUrl=null;
+    const toBlob=dataUrl=>fetch(dataUrl).then(r=>r.blob());
+    const uploadPng=async(dataUrl,fileName)=>{
+      const blob=await toBlob(dataUrl);
+      const path=`outputs/${orderVal||'unknown'}/${fileName}`;
+      const up=await fetch(`${SUPA_URL_D}/storage/v1/object/artwork/${path}`,{
+        method:'POST',
+        headers:{
+          'apikey':SUPA_KEY_D,
+          'Authorization':'Bearer '+SUPA_KEY_D,
+          'Content-Type':'image/png',
+          'x-upsert':'true'
+        },
+        body:blob
+      });
+      if(!up.ok){const t=await up.text();console.warn('Upload failed:',t);return null;}
+      return `${SUPA_URL_D}/storage/v1/object/public/artwork/${path}`;
+    };
+
+    customerUrl=await uploadPng(st.customerPngData, st.customerPngName||'customer.png');
+    printUrl=await uploadPng(st.printPngData, st.printPngName||'print.png');
+
+    // 2. Fetch artwork_analysis row for order/sku/magento
+    let aaRow=null;
+    if(aaId){
+      const r=await fetch(`${SUPA_URL_D}/rest/v1/artwork_analysis?id=eq.${aaId}&select=sage_order,magento_order,sku`,
+        {headers:{apikey:SUPA_KEY_D,Authorization:'Bearer '+SUPA_KEY_D}});
+      const rows=await r.json();
+      aaRow=rows[0]||null;
+    }
+
+    // 3. Insert print_jobs row
+    const jobPayload={
+      artwork_analysis_id:aaId,
+      sage_order:aaRow?.sage_order||orderVal||'—',
+      magento_order:aaRow?.magento_order||null,
+      sku:aaRow?.sku||skuVal||null,
+      status:'job_received',
+      status_note:null
+    };
+    if(customerUrl) jobPayload.customer_png_url=customerUrl;
+    if(printUrl)    jobPayload.print_png_url=printUrl;
+
+    const ins=await fetch(`${SUPA_URL_D}/rest/v1/print_jobs`,{
+      method:'POST',
+      headers:{
+        apikey:SUPA_KEY_D,
+        Authorization:'Bearer '+SUPA_KEY_D,
+        'Content-Type':'application/json',
+        Prefer:'return=minimal'
+      },
+      body:JSON.stringify(jobPayload)
+    });
+    if(!ins.ok) throw new Error(await ins.text());
+
+    // 4. Update artwork_analysis with PNG urls
+    if(aaId){
+      const updates={assessed_at:new Date().toISOString()};
+      if(customerUrl) updates.customer_png_url=customerUrl;
+      if(printUrl)    updates.print_png_url=printUrl;
+      await fetch(`${SUPA_URL_D}/rest/v1/artwork_analysis?id=eq.${aaId}`,{
+        method:'PATCH',
+        headers:{apikey:SUPA_KEY_D,Authorization:'Bearer '+SUPA_KEY_D,'Content-Type':'application/json',Prefer:'return=minimal'},
+        body:JSON.stringify(updates)
+      });
+    }
+
+    btn.textContent='✓ Sent to Print Queue';
+    btn.style.background='#1B5E20';
+    showToast('Job sent to print queue');
+  }catch(e){
+    console.error('Queue send failed:',e);
+    showToast('Error: '+e.message);
+    btn.disabled=false;btn.textContent='✓ Send to Print Queue';
+  }
 }
 
 function showToast(msg){const t=document.getElementById('toast');t.textContent=msg;t.classList.add('show');setTimeout(()=>t.classList.remove('show'),2200);}
