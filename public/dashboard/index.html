@@ -474,7 +474,13 @@ function checkIcon(results, id) {
 }
 
 function renderRow(job) {
-  const results = job.results || null;
+  // Support both old array format (jobs table) and new object format (artwork_analysis)
+  const rawResults = job.check_results || job.results || null;
+  const results = rawResults
+    ? (Array.isArray(rawResults)
+        ? rawResults
+        : Object.entries(rawResults).map(([k,v]) => ({id:k, status:v})))
+    : null;
   const statusDot = {pass:'dot-pass',fail:'dot-fail',warn:'dot-warn'}[job.overall_status] || 'dot-pending';
   const pct = job.score_pct;
   const ringColor = pct >= 80 ? '#639922' : pct >= 50 ? '#EF9F27' : '#E24B4A';
