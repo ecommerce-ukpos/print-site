@@ -185,15 +185,15 @@ tbody tr:hover td{background:#FAFAF8}
     <div class="section-head">Submission Volume</div>
     <div class="cards-grid" id="volumeCards">
       <div class="card"><div class="card-label">Total Submissions</div><div class="card-value" id="cv-total">—</div><div class="card-sub" id="cv-total-sub"></div><div class="card-bar" style="background:#B4B2A9"></div></div>
-      <div class="card"><div class="card-label">Passed</div><div class="card-value" style="color:#3B6D11" id="cv-pass">—</div><div class="card-sub" id="cv-pass-sub"></div><div class="card-bar" style="background:#639922"></div></div>
-      <div class="card"><div class="card-label">Warnings</div><div class="card-value" style="color:#854F0B" id="cv-warn">—</div><div class="card-sub" id="cv-warn-sub"></div><div class="card-bar" style="background:#EF9F27"></div></div>
-      <div class="card"><div class="card-label">Failed</div><div class="card-value" style="color:#A32D2D" id="cv-fail">—</div><div class="card-sub" id="cv-fail-sub"></div><div class="card-bar" style="background:#E24B4A"></div></div>
+      <div class="card"><div class="card-label">Approved</div><div class="card-value" style="color:#3B6D11" id="cv-pass">—</div><div class="card-sub" id="cv-pass-sub"></div><div class="card-bar" style="background:#639922"></div></div>
+      <div class="card"><div class="card-label">Pending review</div><div class="card-value" style="color:#854F0B" id="cv-warn">—</div><div class="card-sub" id="cv-warn-sub"></div><div class="card-bar" style="background:#EF9F27"></div></div>
+      <div class="card"><div class="card-label">On Hold</div><div class="card-value" style="color:#A32D2D" id="cv-fail">—</div><div class="card-sub" id="cv-fail-sub"></div><div class="card-bar" style="background:#E24B4A"></div></div>
     </div>
 
     <!-- ── Section: Quality ── -->
     <div class="section-head">Artwork Quality</div>
     <div class="cards-grid">
-      <div class="card"><div class="card-label">Avg Score</div><div class="card-value" id="cq-score">—</div><div class="card-sub" id="cq-score-sub">out of 100</div><div class="card-bar" style="background:#F47920"></div></div>
+      <div class="card"><div class="card-label">DPI Quality Index</div><div class="card-value" id="cq-score">—</div><div class="card-sub" id="cq-score-sub">DPI quality index</div><div class="card-bar" style="background:#F47920"></div></div>
       <div class="card"><div class="card-label">Upscale Recommended</div><div class="card-value" id="cq-upscale">—</div><div class="card-sub" id="cq-upscale-sub"></div><div class="card-bar" style="background:#EF9F27"></div></div>
       <div class="card"><div class="card-label">Flagged (risky)</div><div class="card-value" id="cq-flag">—</div><div class="card-sub" id="cq-flag-sub"></div><div class="card-bar" style="background:#E24B4A"></div></div>
       <div class="card"><div class="card-label">True Vector</div><div class="card-value" id="cq-vector">—</div><div class="card-sub" id="cq-vector-sub"></div><div class="card-bar" style="background:#639922"></div></div>
@@ -220,8 +220,8 @@ tbody tr:hover td{background:#FAFAF8}
     <!-- ── Charts row 2: score dist + check fail rate ── -->
     <div class="charts-2">
       <div class="chart-card">
-        <div class="chart-title">Score distribution</div>
-        <div class="chart-sub">% of jobs in each score band</div>
+        <div class="chart-title">DPI distribution</div>
+        <div class="chart-sub">Jobs by reported DPI band</div>
         <div class="chart-wrap"><canvas id="scoreDistChart"></canvas></div>
       </div>
       <div class="chart-card">
@@ -390,7 +390,7 @@ async function loadAll() {
 
   try {
     const [aaRows, jobsRows, skuRows] = await Promise.all([
-      sbFetch(`artwork_analysis?processed_at=gte.${from}T00:00:00&processed_at=lte.${to}T23:59:59&select=id,processed_at,score_pct,overall_status,upscale_recommended,artwork_class,colour_mode,asset_filename,artwork_url,sage_order,notes&limit=5000`),
+      sbFetch(`artwork_analysis?processed_at=gte.${from}T00:00:00&processed_at=lte.${to}T23:59:59&select=id,processed_at,assessor_status,upscale_recommended,artwork_class,colour_mode,asset_filename,artwork_url,sage_order,notes,dpi_reported,width_px,height_px,file_size_kb,file_ext,sku&limit=5000`),
       sbFetch(`print_jobs?created_at=gte.${from}T00:00:00&created_at=lte.${to}T23:59:59&select=id,created_at,status&limit=5000`),
       sbFetch(`sku_specs?select=id,sku_code,template_img_path_side1,template_img_path_side2,double_sided,sku_file&limit=2000`)
     ]);
@@ -406,7 +406,7 @@ async function loadAll() {
       const cf = document.getElementById('compareFrom').value;
       const ct = document.getElementById('compareTo').value;
       if (cf && ct) {
-        compareRows = await sbFetch(`artwork_analysis?processed_at=gte.${cf}T00:00:00&processed_at=lte.${ct}T23:59:59&select=id,processed_at,score_pct,overall_status,upscale_recommended,artwork_class,colour_mode,asset_filename,artwork_url,sage_order&limit=5000`);
+        compareRows = await sbFetch(`artwork_analysis?processed_at=gte.${cf}T00:00:00&processed_at=lte.${ct}T23:59:59&select=id,processed_at,assessor_status,upscale_recommended,artwork_class,colour_mode,asset_filename,artwork_url,sage_order,dpi_reported,width_px,height_px,file_size_kb,file_ext,sku&limit=5000`);
       }
     }
 
@@ -452,9 +452,9 @@ function deltaHtml(curr, prev) {
 /* ── Volume cards ── */
 function renderVolumeCards(rows, cmp) {
   const total = rows.length;
-  const pass  = rows.filter(r => r.overall_status === 'pass').length;
-  const warn  = rows.filter(r => r.overall_status === 'warn').length;
-  const fail  = rows.filter(r => r.overall_status === 'fail').length;
+  const pass  = rows.filter(r => r.assessor_status === 'approved').length;
+  const warn  = rows.filter(r => !r.assessor_status || r.assessor_status === 'pending').length;
+  const fail  = rows.filter(r => r.assessor_status === 'hold').length;
 
   setText('cv-total', total);
   setText('cv-pass',  pass);
@@ -463,21 +463,30 @@ function renderVolumeCards(rows, cmp) {
 
   const pt = pass/total*100||0, wt = warn/total*100||0, ft = fail/total*100||0;
   setHtml('cv-total-sub', (cmp ? deltaHtml(total, cmp.length) + ' vs prior period' : ''));
-  setHtml('cv-pass-sub',  `${pt.toFixed(0)}% of total ${cmp ? deltaHtml(pass, cmp.filter(r=>r.overall_status==='pass').length) : ''}`);
-  setHtml('cv-warn-sub',  `${wt.toFixed(0)}% of total ${cmp ? deltaHtml(warn, cmp.filter(r=>r.overall_status==='warn').length) : ''}`);
-  setHtml('cv-fail-sub',  `${ft.toFixed(0)}% of total ${cmp ? deltaHtml(fail, cmp.filter(r=>r.overall_status==='fail').length) : ''}`);
+  setHtml('cv-pass-sub',  `${pt.toFixed(0)}% of total ${cmp ? deltaHtml(pass, cmp.filter(r=>r.assessor_status==='approved').length) : ''}`);
+  setHtml('cv-warn-sub',  `${wt.toFixed(0)}% of total ${cmp ? deltaHtml(warn, cmp.filter(r=>!r.assessor_status||r.assessor_status==='pending').length) : ''}`);
+  setHtml('cv-fail-sub',  `${ft.toFixed(0)}% of total ${cmp ? deltaHtml(fail, cmp.filter(r=>r.assessor_status==='hold').length) : ''}`);
 }
 
 /* ── Quality cards ── */
+// Derive a simple DPI quality score: dpi_reported >= 300 = good, 150-299 = marginal, <150 = poor
+function dpiScore(r) {
+  const d = r.dpi_reported;
+  if (!d || d <= 0) return null;
+  if (d >= 300) return 100;
+  if (d >= 150) return Math.round(50 + (d - 150) / 150 * 50);
+  return Math.round(d / 150 * 50);
+}
+
 function renderQualityCards(rows, cmp) {
-  const withScore = rows.filter(r => r.score_pct !== null);
-  const avg = withScore.length ? Math.round(withScore.reduce((s,r)=>s+r.score_pct,0)/withScore.length) : null;
+  const scored = rows.map(dpiScore).filter(s => s !== null);
+  const avg = scored.length ? Math.round(scored.reduce((a,b)=>a+b,0)/scored.length) : null;
   const upscale = rows.filter(r => r.upscale_recommended === 'raster').length;
   const flagged = rows.filter(r => r.upscale_recommended === 'flag').length;
   const vector  = rows.filter(r => r.upscale_recommended === 'none').length;
 
-  setText('cq-score',  avg !== null ? avg : '—');
-  setHtml('cq-score-sub', `out of 100 ${cmp ? deltaHtml(avg, calcAvg(cmp)) : ''}`);
+  setText('cq-score', avg !== null ? avg : '—');
+  setHtml('cq-score-sub', `DPI quality index ${cmp ? deltaHtml(avg, calcAvg(cmp)) : ''}`);
   setText('cq-upscale', upscale);
   setHtml('cq-upscale-sub', `${pct(upscale, rows.length)}% need raster upscale`);
   setText('cq-flag',   flagged);
@@ -487,16 +496,14 @@ function renderQualityCards(rows, cmp) {
 }
 
 function calcAvg(rows) {
-  const w = rows.filter(r => r.score_pct !== null);
-  return w.length ? Math.round(w.reduce((s,r)=>s+r.score_pct,0)/w.length) : null;
+  const scored = rows.map(dpiScore).filter(s => s !== null);
+  return scored.length ? Math.round(scored.reduce((a,b)=>a+b,0)/scored.length) : null;
 }
 
 /* ── Throughput cards ── */
 function renderThroughputCards(rows, jobs) {
-  // avg time to assess: processed_at - uploaded_at not stored, so use rows with processed_at
-  // We only have processed_at on artwork_analysis; show count of unreviewed as proxy
-  const assessed = rows.filter(r => r.overall_status).length;
-  const pending  = rows.filter(r => !r.overall_status || r.overall_status === 'pending').length;
+  const assessed = rows.filter(r => r.assessor_status).length;
+  const pending  = rows.filter(r => !r.assessor_status || r.assessor_status === 'pending').length;
   const missing  = rows.filter(r => !r.artwork_url).length;
 
   setText('ct-assess', assessed);
@@ -513,8 +520,9 @@ function renderVolChart(rows, cmp) {
     const d = (r.processed_at||'').slice(0,10);
     if (!d) return;
     if (!buckets[d]) buckets[d] = {pass:0,warn:0,fail:0};
-    const s = r.overall_status || 'warn';
-    if (buckets[d][s] !== undefined) buckets[d][s]++;
+    const s = r.assessor_status;
+    if (s === 'approved') buckets[d].pass++;
+    else if (s === 'hold') buckets[d].fail++;
     else buckets[d].warn++;
   });
   const labels = Object.keys(buckets).sort();
@@ -546,32 +554,29 @@ function renderVolChart(rows, cmp) {
   });
 }
 
-/* ── Score distribution ── */
+/* ── DPI distribution ── */
 function renderScoreDist(rows) {
-  const bands = {'0–20':0,'21–40':0,'41–60':0,'61–80':0,'81–100':0};
+  const bands = {'<72 dpi':0,'72–149':0,'150–299':0,'300–599':0,'600+ dpi':0};
   rows.forEach(r => {
-    const s = r.score_pct;
-    if (s===null||s===undefined) return;
-    if (s<=20) bands['0–20']++;
-    else if (s<=40) bands['21–40']++;
-    else if (s<=60) bands['41–60']++;
-    else if (s<=80) bands['61–80']++;
-    else bands['81–100']++;
+    const d = r.dpi_reported;
+    if (!d || d <= 0) return;
+    if (d < 72)       bands['<72 dpi']++;
+    else if (d < 150) bands['72–149']++;
+    else if (d < 300) bands['150–299']++;
+    else if (d < 600) bands['300–599']++;
+    else              bands['600+ dpi']++;
   });
   makeChart('scoreDistChart', {
     type:'bar',
     data:{ labels:Object.keys(bands), datasets:[{ label:'Jobs', data:Object.values(bands), backgroundColor:['#E24B4A','#F08030','#EF9F27','#8ABF47','#639922'], borderRadius:4 }] },
-    options:{ plugins:{legend:{display:false}}, scales:{ x:{ticks:{font:{size:10}}}, y:{beginAtZero:true,ticks:{font:{size:10}}} }, responsive:true, maintainAspectRatio:false }
+    options:{ plugins:{legend:{display:false},title:{display:true,text:'DPI distribution',font:{size:10},color:'#888780'}}, scales:{ x:{ticks:{font:{size:10}}}, y:{beginAtZero:true,ticks:{font:{size:10}}} }, responsive:true, maintainAspectRatio:false }
   });
 }
 
 /* ── Check fail rates chart ── */
 function renderCheckFail(rows) {
-  const assessed = rows.filter(r => r.overall_status);
-  // We don't have individual check results in artwork_analysis — only score_pct and overall_status
-  // So we use score bands as a proxy per check from what we know about scoring logic
-  // In future, if check results are persisted to artwork_analysis this can be wired up directly.
-  // For now, derive from score_pct and overall_status to show meaningful data.
+  // Individual check results are not yet stored in artwork_analysis.
+  // Showing representative distribution — will wire to real data when check_results column added.
   const labels = Object.values(CHECK_LABELS);
   // Synthetic distribution based on typical print fail patterns (will update when check data is stored)
   const failRates = [38, 22, 45, 55, 31, 28, 12, 18];
@@ -617,13 +622,9 @@ function renderUpscaleChart(rows) {
 
 /* ── Top SKUs chart ── */
 function renderSkuChart(rows) {
-  // SKU not directly on artwork_analysis — use sage_order prefix patterns or notes
-  // Group by sku extracted from notes if available
   const counts = {};
   rows.forEach(r => {
-    // Try to extract SKU from notes
-    const m = (r.notes||'').match(/([A-Z0-9]+-[A-Z0-9]+)/);
-    const sku = m ? m[1] : 'Unknown';
+    const sku = r.sku || 'Unknown';
     counts[sku] = (counts[sku]||0) + 1;
   });
   const top10 = Object.entries(counts).sort((a,b)=>b[1]-a[1]).slice(0,10);
@@ -643,7 +644,7 @@ function renderSkuChart(rows) {
 function renderFileTypeChart(rows) {
   const counts = {};
   rows.forEach(r => {
-    const ext = (r.asset_filename||'').split('.').pop().toUpperCase() || 'Unknown';
+    const ext = (r.file_ext||'').toUpperCase() || 'Unknown';
     counts[ext] = (counts[ext]||0) + 1;
   });
   const sorted = Object.entries(counts).sort((a,b)=>b[1]-a[1]);
@@ -657,12 +658,7 @@ function renderFileTypeChart(rows) {
 /* ── Check fail table ── */
 function renderCheckTable(rows) {
   const checks = Object.entries(CHECK_LABELS);
-  // Derive from score + status for now; will be richer when check results stored in DB
   const tbody = document.getElementById('checkTable');
-  // Use overall_status as a proxy for now — will wire to real check data later
-  const fail = rows.filter(r=>r.overall_status==='fail').length;
-  const warn = rows.filter(r=>r.overall_status==='warn').length;
-  const pass = rows.filter(r=>r.overall_status==='pass').length;
   const total = rows.length || 1;
 
   // Synthetic per-check rates (typical distribution) — to be replaced with real stored results
@@ -693,9 +689,10 @@ function renderRepeatTable(rows, manifestMap) {
     const co = m ? m.company : (r.sage_order ? `Order ${r.sage_order}` : 'Unknown');
     if (!companies[co]) companies[co] = {total:0,fail:0,warn:0,scores:[]};
     companies[co].total++;
-    if (r.overall_status==='fail') companies[co].fail++;
-    if (r.overall_status==='warn') companies[co].warn++;
-    if (r.score_pct !== null) companies[co].scores.push(r.score_pct);
+    if (r.assessor_status === 'hold') companies[co].fail++;
+    else if (!r.assessor_status || r.assessor_status === 'pending') companies[co].warn++;
+    const ds = dpiScore(r);
+    if (ds !== null) companies[co].scores.push(ds);
   });
 
   const sorted = Object.entries(companies)
