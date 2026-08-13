@@ -392,7 +392,7 @@ async function loadAll() {
     const [aaRows, jobsRows, skuRows] = await Promise.all([
       sbFetch(`artwork_analysis?processed_at=gte.${from}T00:00:00&processed_at=lte.${to}T23:59:59&select=id,processed_at,assessor_status,upscale_recommended,artwork_class,colour_mode,asset_filename,artwork_url,sage_order,notes,dpi_reported,width_px,height_px,file_size_kb,file_ext,sku&limit=5000`),
       sbFetch(`print_jobs?created_at=gte.${from}T00:00:00&created_at=lte.${to}T23:59:59&select=id,created_at,status&limit=5000`),
-      sbFetch(`sku_specs?select=id,sku_code,template_img_path_side1,template_img_path_side2,double_sided,sku_file&limit=2000`)
+      sbFetch(`sku_specs?select=id,sku_file,template_img_path,template_img_path_side2,single_or_double_sided,notes&limit=2000`)
     ]);
 
     // Also load order_manifest to join company names
@@ -721,10 +721,10 @@ function renderRepeatTable(rows, manifestMap) {
 /* ── SKU coverage table ── */
 function renderSkuCoverageTable(skus) {
   const active    = skus.filter(s => !s.sku_file?.startsWith('ARCHIVED_'));
-  const withT1    = active.filter(s => s.template_img_path_side1);
+  const withT1    = active.filter(s => s.template_img_path);
   const withT2    = active.filter(s => s.template_img_path_side2);
-  const noT       = active.filter(s => !s.template_img_path_side1);
-  const double    = active.filter(s => s.double_sided);
+  const noT       = active.filter(s => !s.template_img_path);
+  const double    = active.filter(s => s.single_or_double_sided === 'double');
   const archived  = skus.filter(s => s.sku_file?.startsWith('ARCHIVED_'));
 
   const rows = [
