@@ -475,7 +475,8 @@ function checkIcon(results, id) {
 
 function renderRow(job) {
   // Support both old array format (jobs table) and new object format (artwork_analysis)
-  const rawResults = job.check_results || job.results || null;
+  let rawResults = job.check_results || job.results || null;
+  if (typeof rawResults === 'string') { try { rawResults = JSON.parse(rawResults); } catch(e) { rawResults = null; } }
   const results = rawResults
     ? (Array.isArray(rawResults)
         ? rawResults
