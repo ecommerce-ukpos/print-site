@@ -154,7 +154,8 @@ tbody tr:hover td{background:#FAFAF8}
 /* ── Ref / filename cells ── */
 .ref-cell{display:flex;align-items:center;max-width:150px}
 .ref-text{overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-weight:500;color:#2C2C2A;font-size:12px}
-.filename-cell{color:#5F5E5A;max-width:130px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-size:11px}
+.filename-cell{color:#5F5E5A;max-width:100px;overflow:hidden;word-break:break-all;white-space:normal;font-size:11px;line-height:1.3}
+.customer-cell{font-size:11px;color:#5F5E5A;width:120px;min-width:120px;max-width:120px;white-space:normal;word-break:break-word;line-height:1.35}
 .date-cell{color:#888780;white-space:nowrap;font-size:11px}
 .source-cell{font-size:10px;color:#888780}
 
@@ -341,13 +342,13 @@ input[type=file]{display:none}
     <div class="controls-bar">
       <span class="controls-label">Checks:</span>
       <button class="col-pill on" data-col="dpi"          onclick="toggleCol(this)">DPI</button>
-      <button class="col-pill on" data-col="pixelation"   onclick="toggleCol(this)">Pixelation</button>
+      <button class="col-pill on" data-col="pixelation"   onclick="toggleCol(this)">Pix-n</button>
       <button class="col-pill on" data-col="bleed"        onclick="toggleCol(this)">Bleed</button>
       <button class="col-pill on" data-col="colour"       onclick="toggleCol(this)">Colour</button>
       <button class="col-pill on" data-col="white_edge"   onclick="toggleCol(this)">White edge</button>
       <button class="col-pill on" data-col="safe_zone"    onclick="toggleCol(this)">Safe zone</button>
-      <button class="col-pill on" data-col="fonts"        onclick="toggleCol(this)">Fonts</button>
-      <button class="col-pill on" data-col="transparency" onclick="toggleCol(this)">Transparency</button>
+      <button class="col-pill"    data-col="fonts"        onclick="toggleCol(this)">Fonts</button>
+      <button class="col-pill on" data-col="transparency" onclick="toggleCol(this)">Transp.</button>
     </div>
 
     <!-- Table -->
@@ -357,9 +358,9 @@ input[type=file]{display:none}
           <thead>
             <tr>
               <th onclick="sortBy('reference')" style="cursor:pointer">Sage ⇅</th>
-              <th onclick="sortBy('company')" style="cursor:pointer">Company ⇅</th>
               <th onclick="sortBy('customer_name')" style="cursor:pointer">Customer ⇅</th>
               <th onclick="sortBy('order_number')" style="cursor:pointer">Magento ⇅</th>
+              <th onclick="sortBy('sku')" style="cursor:pointer">SKU ⇅</th>
               <th onclick="sortBy('file_name')" style="cursor:pointer">File ⇅</th>
               <th onclick="sortBy('file_type')" style="cursor:pointer">Type ⇅</th>
               <th onclick="sortBy('source')" style="cursor:pointer">Source ⇅</th>
@@ -367,14 +368,13 @@ input[type=file]{display:none}
               <th onclick="sortBy('assessed_at')" style="cursor:pointer">Assessed ⇅</th>
               <th onclick="sortBy('score_pct')" style="cursor:pointer">Score ⇅</th>
               <th class="check-col check-cell" data-col="dpi">DPI</th>
-              <th class="check-col check-cell" data-col="pixelation">Pixelation</th>
+              <th class="check-col check-cell" data-col="pixelation">Pix-n</th>
               <th class="check-col check-cell" data-col="bleed">Bleed</th>
               <th class="check-col check-cell" data-col="colour">Colour</th>
               <th class="check-col check-cell" data-col="white_edge">White edge</th>
               <th class="check-col check-cell" data-col="safe_zone">Safe zone</th>
-              <th class="check-col check-cell" data-col="fonts">Fonts</th>
-              <th class="check-col check-cell" data-col="transparency">Transparency</th>
-              <th onclick="sortBy('sku')" style="cursor:pointer">SKU ⇅</th>
+              <th class="check-col check-cell" data-col="fonts" style="display:none">Fonts</th>
+              <th class="check-col check-cell" data-col="transparency">Transp.</th>
               <th onclick="sortBy('_class')" style="cursor:pointer">Class ⇅</th>
               <th onclick="sortBy('colour_mode')" style="cursor:pointer">Colour mode ⇅</th>
               <th onclick="sortBy('_upscale')" style="cursor:pointer">Upscale ⇅</th>
@@ -443,7 +443,7 @@ const STATIC_JOBS = [
   {id:'aa-be8210da',reference:'0001237977',customer_name:'Emma Weldon',order_number:'100623794',sage_order:'0001237977',magento_order:'100623794',company:'Bumbles & Boo Ltd',file_name:'asset-59993--1784032976.pdf',file_type:'PDF',sku:'WPG9A1-PRINTED',file_size_kb:7969.2,_class:'mixed_graphic',colour_mode:'colour',_upscale:'flag',_notes:'594x841mm A1 borderline',source:'upload',uploaded_at:null,assessed_at:null,score_pct:20,overall_status:'fail',results:null,_aa_id:'be8210da-fbb5-411e-81a8-1daa223d7ea4'},
 ];
 let allJobs = [];
-let hiddenCols = new Set();
+let hiddenCols = new Set(['fonts']);
 let currentPage = 1;
 let pageSize = 50;
 let pendingDeleteId = null;
@@ -506,9 +506,9 @@ function renderRow(job) {
 
   return `<tr data-id="${job.id}">
     <td><div class="ref-cell"><span class="status-dot ${statusDot}"></span><span class="ref-text" style="font-size:11px" title="${ref}">${ref}</span></div></td>
-    <td style="font-size:11px;font-weight:600;color:#2C2C2A;white-space:nowrap;max-width:140px;overflow:hidden;text-overflow:ellipsis">${job.company||'—'}</td>
-    <td style="font-size:11px;color:#5F5E5A;white-space:nowrap">${job.customer_name||'<span class="muted">—</span>'}</td>
+    <td class="customer-cell">${job.customer_name||'<span class="muted">—</span>'}</td>
     <td style="font-family:monospace;font-size:11px;color:#888780;white-space:nowrap">${job.magento_order||job.order_number||'—'}</td>
+    <td>${job.sku?'<span style="font-family:monospace;font-size:10px;font-weight:600;color:#1e40af;background:#eff6ff;padding:1px 6px;border-radius:3px">'+job.sku+'</span>':'<span style="color:#B4B2A9">—</span>'}</td>
     <td><div class="filename-cell" title="${fname}">${fname}</div></td>
     <td><span class="badge ${badgeType}">${job.file_type||'?'}</span></td>
     <td class="source-cell">${job.source||'manual'}</td>
@@ -516,7 +516,6 @@ function renderRow(job) {
     <td class="date-cell">${fmtDate(job.assessed_at)}</td>
     <td>${scoreHtml}</td>
     ${checkCells}
-    <td>${job.sku?'<span style="font-family:monospace;font-size:10px;font-weight:600;color:#1e40af;background:#eff6ff;padding:1px 6px;border-radius:3px">'+job.sku+'</span>':'<span style="color:#B4B2A9">—</span>'}</td>
     <td style="font-size:11px;color:#5F5E5A;white-space:nowrap">${job._class||job.artwork_class||'—'}</td>
     <td style="font-size:11px;white-space:nowrap">${(function(m){const d=m==='colour'?'#f59e0b':m==='greyscale'?'#94a3b8':'#e2e8f0';return m?'<span style="display:inline-block;width:7px;height:7px;border-radius:50%;background:'+d+';margin-right:3px;vertical-align:middle"></span>'+m:'—'})(job.colour_mode)}</td>
     <td style="white-space:nowrap">${(function(u){const m={none:['#d1fae5','#065f46','Ready'],raster:['#fef3c7','#92400e','Upscale'],vector:['#dbeafe','#1e40af','Vectorise'],flag:['#fee2e2','#991b1b','Flag']};const c=m[u];return c?'<span style="border-radius:4px;padding:2px 6px;font-size:10px;font-weight:600;background:'+c[0]+';color:'+c[1]+'">'+c[2]+'</span>':'<span style="color:#B4B2A9">—</span>'})(job._upscale||job.upscale_recommended)}</td>
