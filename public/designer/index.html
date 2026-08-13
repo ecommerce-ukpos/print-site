@@ -2290,9 +2290,12 @@ async function resolveSkuKey(raw){
       // Exact sku_family match
       const exact=rows.find(x=>(x.sku_family||'').toLowerCase()===bl);
       if(exact)return exact;
-      // Starts-with sku_family
-      const sw=rows.find(x=>(x.sku_family||'').toLowerCase().startsWith(bl));
+      // base starts-with sku_family (e.g. ABC7A1 matches family ABC7)
+      const sw=rows.find(x=>bl.startsWith((x.sku_family||'').toLowerCase()) && x.sku_family);
       if(sw)return sw;
+      // sku_family starts-with base (e.g. family ABC7A1 matches base ABC7A)
+      const sw2=rows.find(x=>(x.sku_family||'').toLowerCase().startsWith(bl));
+      if(sw2)return sw2;
       // product_name contains base
       const pn=rows.find(x=>(x.product_name||'').toLowerCase().includes(bl));
       if(pn)return pn;
