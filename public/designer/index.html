@@ -2261,18 +2261,20 @@ async function onSkuSearch(q){
   skuSearchTimeout=setTimeout(async()=>{
     let matches=[];
     try{
-      const r=await fetch('/api/sku?search='+encodeURIComponent(q)+'&limit=60');
+      const r=await fetch('/api/sku?search='+encodeURIComponent(q)+'&limit=80');
       if(r.ok) matches=await r.json();
     }catch(e){console.error('SKU search failed',e);}
     if(!matches.length){dd.innerHTML='<div class="sku-dd-empty">No results for "'+q+'"</div>';return;}
-    // Rank: exact sku_family match first, then starts-with, then contains
     const ql=q.toLowerCase();
-    matches.sort((a,b)=>{
-      const af=(a.sku_family||'').toLowerCase();
-      const bf=(b.sku_family||'').toLowerCase();
-      const score=x=>(x===ql?0:x.startsWith(ql)?1:2);
-      return score(af)-score(bf);
-    });
+    const skuScore=fam=>{
+      const f=(fam||'').toLowerCase();
+      if(f===ql) return 0;
+      if(f.startsWith(ql)) return 1;
+      if(f.includes(ql)) return 2;
+      return 3;
+    };
+    matches.sort((a,b)=>skuScore(a.sku_family)-skuScore(b.sku_family)||
+      (a.sku_family||'').localeCompare(b.sku_family||''));
     matches=matches.slice(0,40);
     dd._matches=matches;
     dd.innerHTML=matches.map((r,i)=>{
