@@ -503,7 +503,7 @@ function renderRow(job) {
 
   return `<tr data-id="${job.id}">
     <td><div class="ref-cell"><span class="status-dot ${statusDot}"></span><span class="ref-text" style="font-size:11px" title="${ref}">${ref}</span></div></td>
-    <td class="customer-cell">${job.customer_name||'<span class="muted">—</span>'}</td>
+    <td><div style="max-width:120px;line-height:1.3;word-wrap:break-word">${job.customer_name||''}${job.company?'<span style="color:#6b7280">,</span> <span style="font-weight:700">'+(job.company)+'</span>':''}</div></td>
     <td style="font-family:monospace;font-size:11px;color:#888780;white-space:nowrap">${job.magento_order||job.order_number||'—'}</td>
     <td>${(function(){const s=(job.products_ordered||'').match(/([A-Z0-9]+-(?:PRINTED|BRANDED))/i)?.[1]||job.sku||'';return s?'<span style="font-family:monospace;font-size:10px;font-weight:600;color:#1e40af;background:#eff6ff;padding:1px 6px;border-radius:3px">'+s+'</span>':'<span style="color:#B4B2A9">—</span>';})()} </td>
     <td><div class="filename-cell" title="${fname}">${fname}</div></td>
