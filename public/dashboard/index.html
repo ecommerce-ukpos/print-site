@@ -438,18 +438,7 @@ input[type=file]{display:none}
 
 const CHECK_COLS = ['dpi','pixelation','bleed','colour','white_edge','safe_zone','fonts','transparency'];
 
-const STATIC_JOBS = [
-  {id:'aa-1de84294',reference:'0001237823',customer_name:'Thushy Thavathurai',order_number:'100623642',sage_order:'0001237823',magento_order:'100623642',company:'Esquires Coffee House',file_name:'asset-59946--1783792917.pdf',file_type:'PDF',sku:'ABC7A1-BRANDED',file_size_kb:188.7,_class:'mixed_graphic',colour_mode:'colour',_upscale:'raster',_notes:'605x185mm banner - mixed graphic',source:'upload',uploaded_at:null,assessed_at:null,score_pct:65,overall_status:'warn',results:null,_aa_id:'1de84294-5057-49a9-83b6-2496ef413b19'},
-  {id:'aa-8391d7cc',reference:'0001237828',customer_name:'Simon Moore',order_number:'100623648',sage_order:'0001237828',magento_order:'100623648',company:'The Sumner Collection',file_name:'asset-60042--1784105955.pdf',file_type:'PDF',sku:'BACKLA3-PRINTED',file_size_kb:384.1,_class:'photo_complex',colour_mode:'colour',_upscale:'raster',_notes:'A4 210x297mm photo/complex',source:'upload',uploaded_at:null,assessed_at:null,score_pct:65,overall_status:'warn',results:null,_aa_id:'8391d7cc-e1c8-4a4a-9ada-060e787bae37'},
-  {id:'aa-1239a6aa',reference:'0001237860',customer_name:'Satminder Deo',order_number:'100623688',sage_order:'0001237860',magento_order:'100623688',company:'Spar Stores',file_name:'asset-59947--1783875765.pdf',file_type:'PDF',sku:'BACKLA1-PRINTED',file_size_kb:84.5,_class:'mixed_graphic',colour_mode:'colour',_upscale:'raster',_notes:'190x275mm mixed graphic',source:'upload',uploaded_at:null,assessed_at:null,score_pct:65,overall_status:'warn',results:null,_aa_id:'1239a6aa-3cb6-4f26-a252-1db17dcc01f9'},
-  {id:'aa-9f496a94',reference:'0001237877',customer_name:'Adam Roach',order_number:'100623711',sage_order:'0001237877',magento_order:'100623711',company:'Pontcanna Inn',file_name:'asset-59949--1783925409.pdf',file_type:'PDF',sku:'ABC7A1-BRANDED',file_size_kb:132.6,_class:'logo_flat_graphic',colour_mode:'greyscale',_upscale:'vector',_notes:'176x85mm logo flat greyscale',source:'upload',uploaded_at:null,assessed_at:null,score_pct:75,overall_status:'warn',results:null,_aa_id:'9f496a94-28af-4185-a66a-fea956623666'},
-  {id:'aa-cea26d1d',reference:'0001237880',customer_name:'Craig Potter',order_number:'100623718',sage_order:'0001237880',magento_order:'100623718',company:'DE Acquisitions Ltd',file_name:'asset-59976--1783954429.png',file_type:'PNG',sku:'SWG776-BRANDED',file_size_kb:2431.0,_class:'mixed_graphic',colour_mode:'greyscale',_upscale:'raster',_notes:'421x808mm greyscale PNG',source:'upload',uploaded_at:null,assessed_at:null,score_pct:65,overall_status:'warn',results:null,_aa_id:'cea26d1d-4705-4724-9b94-2c233fa3ab84'},
-  {id:'aa-f85c42c0',reference:'0001237920',customer_name:'Louise Awcock',order_number:'100623749',sage_order:'0001237920',magento_order:'100623749',company:'Kiki Ltd',file_name:'asset-59963--1783939854.pdf',file_type:'PDF',sku:'EAS06F-PRINTED',file_size_kb:4554.7,_class:'photo_complex',colour_mode:'colour',_upscale:'flag',_notes:'594x841mm photo - upscaling very risky',source:'upload',uploaded_at:null,assessed_at:null,score_pct:20,overall_status:'fail',results:null,_aa_id:'f85c42c0-0b63-447c-8dc8-c291318003ce'},
-  {id:'aa-7c49e113',reference:'0001237930',customer_name:'Andrea Makk',order_number:'100623754',sage_order:'0001237930',magento_order:'100623754',company:'Nupsala Ltd',file_name:'asset-59960--1783938148.pdf',file_type:'PDF',sku:'SPPA5-BRANDED',file_size_kb:330.7,_class:'mixed_graphic',colour_mode:'colour',_upscale:'raster',_notes:'216x154mm mixed graphic',source:'upload',uploaded_at:null,assessed_at:null,score_pct:65,overall_status:'warn',results:null,_aa_id:'7c49e113-2738-499e-a20f-397c627c9a0f'},
-  {id:'aa-4da651a2',reference:'0001237938',customer_name:'Gavin Knowles',order_number:'100623766',sage_order:'0001237938',magento_order:'100623766',company:'Howarth Timber',file_name:'asset-59957--1783936809.pdf',file_type:'PDF',sku:'WPG9A1-PRINTED',file_size_kb:47.8,_class:'mixed_graphic',colour_mode:'colour',_upscale:'vector',_notes:'1237x1750mm true vector PDF',source:'upload',uploaded_at:null,assessed_at:null,score_pct:75,overall_status:'warn',results:null,_aa_id:'4da651a2-8bcf-493f-9a8b-0796eba04ae4'},
-  {id:'aa-64f1c727',reference:'0001237961',customer_name:'Nisha Cairns',order_number:'100623783',sage_order:'0001237961',magento_order:'100623783',company:'Wed2b',file_name:'asset-59965--1783941364.pdf',file_type:'PDF',sku:'WPG9A1-PRINTED',file_size_kb:5584.1,_class:'mixed_graphic',colour_mode:'colour',_upscale:'flag',_notes:'594x841mm A1 double-sided',source:'upload',uploaded_at:null,assessed_at:null,score_pct:20,overall_status:'fail',results:null,_aa_id:'64f1c727-7a33-4cae-9b35-4a64da77ae0e'},
-  {id:'aa-be8210da',reference:'0001237977',customer_name:'Emma Weldon',order_number:'100623794',sage_order:'0001237977',magento_order:'100623794',company:'Bumbles & Boo Ltd',file_name:'asset-59993--1784032976.pdf',file_type:'PDF',sku:'WPG9A1-PRINTED',file_size_kb:7969.2,_class:'mixed_graphic',colour_mode:'colour',_upscale:'flag',_notes:'594x841mm A1 borderline',source:'upload',uploaded_at:null,assessed_at:null,score_pct:20,overall_status:'fail',results:null,_aa_id:'be8210da-fbb5-411e-81a8-1daa223d7ea4'},
-];
+const STATIC_JOBS = [];
 let allJobs = [];
 let hiddenCols = new Set(['fonts']);
 let currentPage = 1;
@@ -572,15 +561,14 @@ function sortBy(col) {
 }
 
 async function loadJobs() {
-  allJobs = [...STATIC_JOBS];
+  allJobs = [];
   currentPage = 1;
   renderTable();
   try {
     const r = await fetch('/api/jobs');
     const data = await r.json();
-    if (Array.isArray(data) && data.length) {
-      const staticIds = new Set(STATIC_JOBS.map(j => j.id));
-      allJobs = [...data.filter(j => !staticIds.has(j.id)), ...STATIC_JOBS];
+    if (Array.isArray(data)) {
+      allJobs = [...data];
       currentPage = 1;
       renderTable();
     }
@@ -588,13 +576,9 @@ async function loadJobs() {
 }
 
 function openJob(id) {
-  const s = STATIC_JOBS.find(j => j.id === id);
-  if (s) { window.location.href = `/artwork-assessor?aa_id=${s._aa_id}&sku=${encodeURIComponent(s.sku||'')}&order=${s.reference}`; return; }
   window.location.href = `/artwork-assessor?job=${id}`;
 }
 function openDesigner(id, ref, fileName, sku) {
-  const s = STATIC_JOBS.find(j => j.id === id);
-  if (s) { window.location.href = `/designer?aa_id=${s._aa_id}&sku=${encodeURIComponent(s.sku||'')}&order=${s.reference}`; return; }
   const params = new URLSearchParams({ job: id });
   if (sku) params.set('sku', sku);
   window.location.href = `/designer?${params.toString()}`;
