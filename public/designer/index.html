@@ -43,6 +43,39 @@ body{font-family:'Inter',-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;
 .z-val{font-size:11px;font-weight:600;color:#2C2C2A;min-width:34px;text-align:center}
 .tb-info{font-size:10px;color:#888780;font-style:italic;white-space:nowrap}
 
+/* ══ SIDEBAR (shared with dashboard) ══ */
+.sidebar{width:52px;background:#fff;border-right:0.5px solid #D3D1C7;display:flex;flex-direction:column;align-items:flex-start;padding:12px 0;gap:2px;flex-shrink:0;overflow:hidden;transition:width 0.2s ease;position:relative;z-index:10}
+.sidebar:hover{width:184px}
+.sb-logo{width:52px;height:40px;display:flex;align-items:center;justify-content:center;flex-shrink:0;margin-bottom:8px}
+.sb-logo-inner{width:28px;height:28px;background:#F47920;border-radius:7px;display:flex;align-items:center;justify-content:center;flex-shrink:0}
+.sb-logo-inner svg{width:16px;height:16px;fill:#fff}
+.sb-item{height:36px;display:flex;align-items:center;gap:10px;padding:0 14px;cursor:pointer;width:100%;white-space:nowrap;overflow:hidden;border-left:3px solid transparent;text-decoration:none}
+.sb-item:hover{background:#F2F1F6}
+.sb-item.active{background:#FFF0E6;border-left-color:#F47920}
+.sb-item.active .sb-icon{color:#F47920}
+.sb-item:not(.active) .sb-icon{color:#888780}
+.sb-icon{font-size:17px;flex-shrink:0;width:20px;text-align:center;font-style:normal}
+.sb-label{font-size:12px;font-weight:500;color:#2C2C2A;opacity:0;white-space:nowrap;pointer-events:none}
+.sb-item.active .sb-label{color:#C75E0A}
+.sidebar:hover .sb-label{opacity:1;transition:opacity 0.15s ease 0.05s}
+.sb-spacer{flex:1}
+.sb-divider{height:0.5px;background:#E8E6DE;margin:6px 10px;flex-shrink:0;width:calc(100% - 20px)}
+
+/* ══ LEAVE WARNING MODAL ══ */
+.leave-modal-bg{display:none;position:fixed;inset:0;background:rgba(0,0,0,0.45);z-index:1100;align-items:center;justify-content:center}
+.leave-modal-bg.show{display:flex}
+.leave-modal{background:#fff;border-radius:14px;width:100%;max-width:400px;box-shadow:0 12px 48px rgba(0,0,0,0.28);overflow:hidden}
+.leave-modal-header{background:#F47920;padding:16px 20px;display:flex;align-items:center;gap:10px}
+.leave-modal-header h2{font-size:15px;font-weight:700;color:#fff;margin:0;flex:1}
+.leave-modal-body{padding:18px 20px}
+.leave-modal-body p{font-size:13px;color:#2C2C2A;line-height:1.6;margin-bottom:16px}
+.leave-modal-btns{display:flex;gap:8px;justify-content:flex-end}
+.leave-modal-btns button{padding:7px 16px;border-radius:8px;font-size:12px;font-weight:600;cursor:pointer;font-family:'Inter',sans-serif;border:1px solid #D3D1C7}
+.leave-modal-btns .lm-leave{background:#F2F1F6;color:#2C2C2A}
+.leave-modal-btns .lm-leave:hover{background:#E8E6DE}
+.leave-modal-btns .lm-stay{background:#F47920;color:#fff;border-color:#F47920}
+.leave-modal-btns .lm-stay:hover{background:#D96B0A}
+
 /* ══ JOB BAR ══ */
 .job-bar{display:none;align-items:center;gap:16px;padding:6px 16px;background:#EEEDFE;border-bottom:0.5px solid #AFA9EC;font-size:12px;flex-shrink:0}
 .job-bar.show{display:flex}
@@ -402,8 +435,23 @@ canvas{display:block}
 <body>
 
 <!-- ══ TOP BAR ══ -->
+<!-- ══ LEAVE WARNING MODAL ══ -->
+<div class="leave-modal-bg" id="leaveModalBg">
+  <div class="leave-modal">
+    <div class="leave-modal-header"><h2>⚠ Unsaved changes</h2></div>
+    <div class="leave-modal-body">
+      <p>You have unsaved changes in the designer. If you leave now they will be lost.</p>
+      <div class="leave-modal-btns">
+        <button class="lm-leave" onclick="leaveConfirmed()">Leave anyway</button>
+        <button class="lm-stay" onclick="leaveCancel()">Stay</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ══ TOP BAR ══ -->
 <div class="topbar">
-  <a class="tb-back" href="/dashboard" title="Back to artwork list">←</a>
+  <a class="tb-back" href="#" onclick="navAway('/dashboard');return false;" title="Back to artwork list">←</a>
   <div class="tb-div"></div>
   <span class="tb-ref" id="topbarRef">Designer</span>
   <span class="tb-sku" id="topbarSku" style="display:none"></span>
@@ -420,10 +468,37 @@ canvas{display:block}
   <span class="jb-label">Ref</span><span class="jb-val" id="jbRef">—</span>
   <span class="jb-label" style="margin-left:12px">Customer</span><span class="jb-val" id="jbCustomer">—</span>
   <span class="jb-label" style="margin-left:12px">Order</span><span class="jb-val" id="jbOrder">—</span>
-  <a class="jb-back" href="/dashboard">← Back to artwork list</a>
+  <a class="jb-back" href="#" onclick="navAway('/dashboard');return false;">← Back to artwork list</a>
 </div>
 
 <div class="workspace">
+
+<!-- ══ SIDEBAR ══ -->
+<nav class="sidebar">
+  <div class="sb-logo">
+    <div class="sb-logo-inner">
+      <svg viewBox="0 0 24 24"><path d="M3 6h18v2H3zm0 5h18v2H3zm0 5h18v2H3z"/></svg>
+    </div>
+  </div>
+  <a class="sb-item" href="#" onclick="navAway('/dashboard');return false;">
+    <span class="sb-icon">☰</span>
+    <span class="sb-label">Artwork list</span>
+  </a>
+  <a class="sb-item active" href="/designer">
+    <span class="sb-icon">✏️</span>
+    <span class="sb-label">Designer</span>
+  </a>
+  <a class="sb-item" href="#" onclick="navAway('/artwork-assessor');return false;">
+    <span class="sb-icon">✓</span>
+    <span class="sb-label">Assessor</span>
+  </a>
+  <div class="sb-spacer"></div>
+  <div class="sb-divider"></div>
+  <a class="sb-item" href="#">
+    <span class="sb-icon">⚙</span>
+    <span class="sb-label">Settings</span>
+  </a>
+</nav>
 
 <!-- ══ LEFT PANEL ══ -->
 <div class="step-panel">
@@ -726,7 +801,7 @@ canvas{display:block}
     <button class="rp-btn" id="btnExportCustomer" disabled onclick="exportCustomerPNG()" style="background:#F2F1F6;color:#2C2C2A;border-color:#D3D1C7">↓ Customer PNG (flat)</button>
     <button class="rp-btn" id="btnExportPrint"    disabled onclick="exportPrintPNG()"    style="background:#F2F1F6;color:#2C2C2A;border-color:#D3D1C7">↓ Print PNG (with guides)</button>
     <button class="rp-btn" id="btnSendQueue" disabled onclick="sendToPrintQueue()" style="background:#2E7D32;color:#fff;border-color:#2E7D32;opacity:0.4">✓ Send to Print Queue</button>
-    <a class="rp-btn" href="/dashboard">← Artwork list</a>
+    <a class="rp-btn" href="#" onclick="navAway('/dashboard');return false;">← Artwork list</a>
   </div>
 </div><!-- end right-panel -->
 
@@ -2233,6 +2308,31 @@ if(jobId){
   loadSkuAndArtwork(urlSku, null);
 }
 computeLayout();draw();updateDial(0);
+
+// ── Leave warning ──
+let _leaveTarget=null;
+function isDirty(){
+  return sides.some(s=>s.undoStack&&s.undoStack.length>0);
+}
+function navAway(url){
+  if(isDirty()){
+    _leaveTarget=url;
+    document.getElementById('leaveModalBg').classList.add('show');
+  } else {
+    window.location.href=url;
+  }
+}
+function leaveConfirmed(){
+  document.getElementById('leaveModalBg').classList.remove('show');
+  if(_leaveTarget) window.location.href=_leaveTarget;
+}
+function leaveCancel(){
+  _leaveTarget=null;
+  document.getElementById('leaveModalBg').classList.remove('show');
+}
+window.addEventListener('beforeunload',e=>{
+  if(isDirty()){e.preventDefault();e.returnValue='';}
+});
 
 // ═══════════════════════════════════════════════════════════
 // TEMPLATE INTEGRATION — Supabase sku_specs + PDF overlay
