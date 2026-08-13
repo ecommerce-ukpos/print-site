@@ -505,7 +505,7 @@ function renderRow(job) {
     <td><div class="ref-cell"><span class="status-dot ${statusDot}"></span><span class="ref-text" style="font-size:11px" title="${ref}">${ref}</span></div></td>
     <td class="customer-cell">${job.customer_name||'<span class="muted">—</span>'}</td>
     <td style="font-family:monospace;font-size:11px;color:#888780;white-space:nowrap">${job.magento_order||job.order_number||'—'}</td>
-    <td>${job.sku?'<span style="font-family:monospace;font-size:10px;font-weight:600;color:#1e40af;background:#eff6ff;padding:1px 6px;border-radius:3px">'+job.sku+'</span>':'<span style="color:#B4B2A9">—</span>'}</td>
+    <td>${(function(){const s=(job.products_ordered||'').match(/([A-Z0-9]+-(?:PRINTED|BRANDED))/i)?.[1]||job.sku||'';return s?'<span style="font-family:monospace;font-size:10px;font-weight:600;color:#1e40af;background:#eff6ff;padding:1px 6px;border-radius:3px">'+s+'</span>':'<span style="color:#B4B2A9">—</span>';})()} </td>
     <td><div class="filename-cell" title="${fname}">${fname}</div></td>
     <td><span class="badge ${badgeType}">${job.file_type||'?'}</span></td>
     <td class="source-cell">${job.source||'manual'}</td>
@@ -519,7 +519,7 @@ function renderRow(job) {
     <td style="font-size:10px;color:#888780;max-width:180px;white-space:normal;line-height:1.35">${job._notes||job.notes||'—'}</td>
     <td><div class="actions-cell">
       <button class="view-btn" onclick="openJob('${job.id}')">Assess →</button>
-      <button class="design-btn" onclick="openDesigner('${job.id}','${ref}','${encodeURIComponent(job.file_name||'')}','${job.sku||''}')">Design →</button>
+      <button class="design-btn" onclick="openDesigner('${job.id}','${ref}','${encodeURIComponent(job.file_name||'')}','${(job.products_ordered||'').match(/([A-Z0-9]+-(?:PRINTED|BRANDED))/i)?.[1]||job.sku||''}')">Design →</button>
       <button class="del-btn" onclick="openDeleteModal('${job.id}','${ref}')">✕</button>
     </div></td>
   </tr>`;
@@ -579,7 +579,7 @@ function openJob(id) {
   window.location.href = `/artwork-assessor?job=${id}`;
 }
 function openDesigner(id, ref, fileName, sku) {
-  const params = new URLSearchParams({ job: id });
+  const params = new URLSearchParams({ aa_id: id });
   if (sku) params.set('sku', sku);
   window.location.href = `/designer?${params.toString()}`;
 }
