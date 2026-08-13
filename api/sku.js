@@ -15,7 +15,7 @@ let url = `${SUPABASE_URL}/rest/v1/sku_specs?select=sku_family,sku_file,product_
   if (file) {
     url += `&sku_file=eq.${encodeURIComponent(file)}`;
   } else if (search) {
-    url += `&or=(sku_family.ilike.*${encodeURIComponent(search)}*,product_name.ilike.*${encodeURIComponent(search)}*,template_code.ilike.*${encodeURIComponent(search)}*)`;
+    url += `&or=(sku_family.ilike.*${encodeURIComponent(search)}*,product_name.ilike.*${encodeURIComponent(search)}*,template_code.ilike.*${encodeURIComponent(search)}*,sku_file.ilike.*${encodeURIComponent(search)}*)`;
   }
 
   url += `&limit=${limit}&offset=${offset}&order=sku_family.asc,sku_file.asc`;
