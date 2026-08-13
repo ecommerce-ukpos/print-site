@@ -240,6 +240,14 @@ input[type=file]{display:none}
     <span class="sb-icon">✓</span>
     <span class="sb-label">Assessor</span>
   </a>
+  <a class="sb-item" href="/print-jobs">
+    <span class="sb-icon">🖨</span>
+    <span class="sb-label">Print jobs</span>
+  </a>
+  <a class="sb-item" href="/reporting">
+    <span class="sb-icon">📊</span>
+    <span class="sb-label">Reporting</span>
+  </a>
   <div class="sb-spacer"></div>
   <div class="sb-divider"></div>
   <a class="sb-item" href="/">
@@ -270,22 +278,22 @@ input[type=file]{display:none}
 
     <!-- Stats -->
     <div class="stats" id="statsRow">
-      <div class="stat">
+      <div class="stat" style="cursor:pointer" onclick="window.location.href='/reporting'">
         <div class="stat-label">Total jobs</div>
         <div class="stat-value" style="color:#2C2C2A" id="statTotal">—</div>
-        <div class="stat-sub">This session</div>
+        <div class="stat-sub">This session · <span style="color:#F47920;font-size:10px">View report →</span></div>
       </div>
-      <div class="stat">
+      <div class="stat" style="cursor:pointer" onclick="window.location.href='/reporting'">
         <div class="stat-label">Passed</div>
         <div class="stat-value" style="color:#3B6D11" id="statPass">—</div>
         <div class="stat-sub"><span class="stat-dot" style="background:#639922"></span>Ready to print</div>
       </div>
-      <div class="stat">
+      <div class="stat" style="cursor:pointer" onclick="window.location.href='/reporting'">
         <div class="stat-label">Warnings</div>
         <div class="stat-value" style="color:#854F0B" id="statWarn">—</div>
         <div class="stat-sub"><span class="stat-dot" style="background:#EF9F27"></span>Need review</div>
       </div>
-      <div class="stat">
+      <div class="stat" style="cursor:pointer" onclick="window.location.href='/reporting'">
         <div class="stat-label">Failed</div>
         <div class="stat-value" style="color:#A32D2D" id="statFail">—</div>
         <div class="stat-sub"><span class="stat-dot" style="background:#E24B4A"></span>Action required</div>
