@@ -2258,54 +2258,112 @@ activeSnapCtx=activeSnapCanvas.getContext('2d');
 bindCanvasEvents(activeCanvas);
 
 const _p=new URLSearchParams(window.location.search);
-jobId=_p.get('job')||null;const urlSku=_p.get('sku')||'';
-async function loadArtworkFromStorage(job){
-  if(!job.storage_path)return;
+jobId=_p.get('job')||null;
+const urlSku=_p.get('sku')||'';
+const urlAaId=_p.get('aa_id')||null;
+const urlOrder=_p.get('order')||null;
+
+async function loadArtworkFromStorage(storagePath, fileName){
+  if(!storagePath)return;
   try{
-    const r=await fetch('/api/file?path='+encodeURIComponent(job.storage_path));
-    if(!r.ok)return;
+    const r=await fetch('/api/file?path='+encodeURIComponent(storagePath));
+    if(!r.ok){console.warn('Artwork file not in storage yet:',storagePath);return;}
     const d=await r.json();
     if(!d?.b64)return;
     const img=new Image();
     const dataUrl='data:'+d.mediaType+';base64,'+d.b64;
-    img.onload=()=>addLayer(job.file_name||'Stored file',img,dataUrl,d.mediaType);
+    img.onload=()=>addLayer(fileName||'Customer artwork',img,dataUrl,d.mediaType);
     img.src=dataUrl;
   }catch(e){console.error('artwork load failed',e);}
 }
 
-async function loadSkuAndArtwork(skuKey, job){
+async function resolveSkuKey(raw){
+  // raw may be a Magento SKU like "ABC7A1-BRANDED" or a sku_file or sku_family
+  // Strip -PRINTED / -BRANDED suffix to get the base family
+  const base=raw.replace(/-(PRINTED|BRANDED)$/i,'').trim();
+  // Try API search — exact family first, then file match
+  try{
+    const r=await fetch('/api/sku?search='+encodeURIComponent(base)+'&limit=20');
+    if(r.ok){
+      const rows=await r.json();
+      const bl=base.toLowerCase();
+      // Exact sku_family match
+      const exact=rows.find(x=>(x.sku_family||'').toLowerCase()===bl);
+      if(exact)return exact;
+      // Starts-with sku_family
+      const sw=rows.find(x=>(x.sku_family||'').toLowerCase().startsWith(bl));
+      if(sw)return sw;
+      // product_name contains base
+      const pn=rows.find(x=>(x.product_name||'').toLowerCase().includes(bl));
+      if(pn)return pn;
+    }
+  }catch(e){console.error('SKU resolve failed',e);}
+  return null;
+}
+
+async function loadSkuAndArtwork(skuKey, storagePath, fileName){
+  // 1. Load SKU template
   if(SKU_SPECS[skuKey]){
     applySkuRow(Object.assign({sku_family:skuKey},SKU_SPECS[skuKey]));
-    if(job)await loadArtworkFromStorage(job);
-    return;
+  }else{
+    const row=await resolveSkuKey(skuKey);
+    if(row) applySkuRow(row);
   }
+  // 2. Load artwork if storage path available
+  if(storagePath) await loadArtworkFromStorage(storagePath, fileName);
+}
+
+async function initFromAaId(aaId){
+  // Fetch artwork_analysis row — gives us sku, sage_order, asset_filename
   try{
-    const db=await loadSkuDb();
-    const row=db.find(r=>(r.sku_file||'').toLowerCase()===skuKey.toLowerCase())||
-              db.find(r=>(r.sku_family||'').toLowerCase()===skuKey.toLowerCase());
-    if(row){
-      applySkuRow(row);
-      if(job)await loadArtworkFromStorage(job);
-    }
-  }catch(e){console.error('SKU lookup failed',e);}
+    const SURL=`https://fqaxuhbcwoikeldnxuvv.supabase.co`;
+    const SKEY=`eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImZxYXh1aGJjd29pa2VsZG54dXZ2Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODExNjk2NTQsImV4cCI6MjA5Njc0NTY1NH0.0XtMq5p6L9pnRilG5GUI5j72zPNuhl4PnD9ihDxeT1c`;
+    const r=await fetch(`${SURL}/rest/v1/artwork_analysis?id=eq.${aaId}&select=id,sage_order,asset_filename,sku&limit=1`,
+      {headers:{apikey:SKEY,Authorization:'Bearer '+SKEY}});
+    if(!r.ok)return;
+    const rows=await r.json();
+    const aa=rows[0];
+    if(!aa)return;
+
+    // Update job bar with order info
+    document.getElementById('jobBar').classList.add('show');
+    document.getElementById('jbRef').textContent=aa.sage_order||urlOrder||'—';
+    document.getElementById('jbOrder').textContent=aa.sage_order||'—';
+    const refEl=document.getElementById('topbarRef');
+    if(refEl)refEl.textContent=aa.sage_order||'Designer';
+
+    // Determine SKU — URL param takes priority, fall back to aa row
+    const sku=urlSku||aa.sku||'';
+
+    // Construct storage path: artwork/<sage_order>/<asset_filename>
+    // (will 404 gracefully if not yet uploaded — artwork upload pipeline pending)
+    const storagePath=aa.sage_order&&aa.asset_filename
+      ? `${aa.sage_order}/${aa.asset_filename}`
+      : null;
+
+    await loadSkuAndArtwork(sku, storagePath, aa.asset_filename||'Customer artwork');
+  }catch(e){console.error('aa_id init failed',e);}
 }
 
 if(jobId){
+  // Real DB job — fetch from jobs table
   fetch('/api/job?id='+jobId).then(r=>r.json()).then(async job=>{
     if(!job)return;
     document.getElementById('jobBar').classList.add('show');
     document.getElementById('jbRef').textContent=job.reference||'—';
     document.getElementById('jbCustomer').textContent=job.customer_name||'—';
     document.getElementById('jbOrder').textContent=job.order_number||'—';
-    // Update topbar ref
     const refEl=document.getElementById('topbarRef');
     if(refEl)refEl.textContent=job.reference||'Designer';
     const sku=job.sku_name||job.sku||urlSku;
-    if(sku) await loadSkuAndArtwork(sku, job);
-    else if(job.storage_path) await loadArtworkFromStorage(job);
+    await loadSkuAndArtwork(sku, job.storage_path, job.file_name);
   }).catch(e=>console.error('job load',e));
+}else if(urlAaId){
+  // Static job or assessor handoff — has aa_id in URL
+  initFromAaId(urlAaId);
 }else if(urlSku){
-  loadSkuAndArtwork(urlSku, null);
+  // SKU only — just load template, no artwork
+  loadSkuAndArtwork(urlSku, null, null);
 }
 computeLayout();draw();updateDial(0);
 
