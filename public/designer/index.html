@@ -2270,10 +2270,40 @@ async function loadArtworkFromStorage(storagePath, fileName){
     if(!r.ok){console.warn('Artwork file not in storage yet:',storagePath);return;}
     const d=await r.json();
     if(!d?.b64)return;
-    const img=new Image();
-    const dataUrl='data:'+d.mediaType+';base64,'+d.b64;
-    img.onload=()=>addLayer(fileName||'Customer artwork',img,dataUrl,d.mediaType);
-    img.src=dataUrl;
+    const isPdf=d.mediaType==='application/pdf'||(fileName||'').toLowerCase().endsWith('.pdf');
+    if(isPdf){
+      // Render PDF via PDF.js — same path as file upload
+      if(typeof pdfjsLib==='undefined'){console.error('pdfjsLib not loaded');return;}
+      const binary=atob(d.b64);
+      const ab=new Uint8Array(binary.length);
+      for(let i=0;i<binary.length;i++)ab[i]=binary.charCodeAt(i);
+      const pdf=await pdfjsLib.getDocument({data:ab}).promise;
+      const page=await pdf.getPage(1);
+      const nativeViewport=page.getViewport({scale:1.0});
+      const pdfNativeW=nativeViewport.width*(25.4/72);
+      const pdfNativeH=nativeViewport.height*(25.4/72);
+      const MAX_DISPLAY_PX=3000;
+      const displayScale=Math.min(2.0,MAX_DISPLAY_PX/Math.max(nativeViewport.width,nativeViewport.height));
+      const viewport=page.getViewport({scale:displayScale});
+      const oc=document.createElement('canvas');
+      oc.width=Math.round(viewport.width);oc.height=Math.round(viewport.height);
+      const ctx=oc.getContext('2d',{willReadFrequently:true});
+      await page.render({canvasContext:ctx,viewport}).promise;
+      const displayDataUrl=oc.toDataURL('image/png');
+      const vpUp=page.getViewport({scale:1.0});
+      const ocUp=document.createElement('canvas');
+      ocUp.width=vpUp.width;ocUp.height=vpUp.height;
+      await page.render({canvasContext:ocUp.getContext('2d',{willReadFrequently:true}),viewport:vpUp}).promise;
+      const upscaleDataUrl=ocUp.toDataURL('image/png');
+      const img=new Image();
+      img.onload=()=>{captureState('Add layer');const l=addLayer(fileName||'Customer artwork',img,upscaleDataUrl,'image/png');if(l){l.pdfNativeW=pdfNativeW;l.pdfNativeH=pdfNativeH;l.img=img;l.displayDataUrl=displayDataUrl;centreOnTemplate(l);syncControlsToActive();draw();}};
+      img.src=displayDataUrl;
+    }else{
+      const img=new Image();
+      const dataUrl='data:'+d.mediaType+';base64,'+d.b64;
+      img.onload=()=>addLayer(fileName||'Customer artwork',img,dataUrl,d.mediaType);
+      img.src=dataUrl;
+    }
   }catch(e){console.error('artwork load failed',e);}
 }
 
