@@ -10,15 +10,15 @@ export default async function handler(req, res) {
 
   const { file, search, limit = 200, offset = 0 } = req.query;
 
-let url = `${SUPABASE_URL}/rest/v1/sku_specs?select=sku_family,sku_file,product_name,template_code,finished_w_mm,finished_h_mm,bleed_w_mm,bleed_h_mm,safe_w_mm,safe_h_mm,required_dpi,colour_profile,single_or_double_sided,template_pdf_path,template_pdf_path_side2,template_img_path,template_img_path_side2,svg_trim,svg_bleed,svg_safe,svg_viewbox`;
+let url = `${SUPABASE_URL}/rest/v1/sku_specs?select=variant_sku,sku_family,sku_file,product_name,template_code,finished_w_mm,finished_h_mm,bleed_w_mm,bleed_h_mm,safe_w_mm,safe_h_mm,required_dpi,colour_profile,single_or_double_sided,template_pdf_path,template_pdf_path_side2,template_img_path,template_img_path_side2,svg_trim,svg_bleed,svg_safe,svg_viewbox`;
 
   if (file) {
     url += `&sku_file=eq.${encodeURIComponent(file)}`;
   } else if (search) {
-    url += `&or=(sku_family.ilike.*${encodeURIComponent(search)}*,product_name.ilike.*${encodeURIComponent(search)}*,template_code.ilike.*${encodeURIComponent(search)}*,sku_file.ilike.*${encodeURIComponent(search)}*)`;
+    url += `&or=(variant_sku.ilike.*${encodeURIComponent(search)}*,sku_family.ilike.*${encodeURIComponent(search)}*,product_name.ilike.*${encodeURIComponent(search)}*,template_code.ilike.*${encodeURIComponent(search)}*,sku_file.ilike.*${encodeURIComponent(search)}*)`;
   }
 
-  url += `&limit=${limit}&offset=${offset}&order=sku_family.asc,sku_file.asc`;
+  url += `&limit=${limit}&offset=${offset}&order=variant_sku.asc,sku_family.asc,sku_file.asc`;
 
   const r = await fetch(url, {
     headers: { apikey: SUPABASE_KEY, Authorization: `Bearer ${SUPABASE_KEY}` }
