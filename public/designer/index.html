@@ -2464,7 +2464,7 @@ async function onSkuSearch(q){
       if(f.includes(ql)) return 2;
       return 3;
     };
-    matches.sort((a,b)=>skuScore(a.sku_family)-skuScore(b.sku_family)||
+    matches.sort((a,b)=>skuScore(a.variant_sku||a.sku_family)-skuScore(b.variant_sku||b.sku_family)||
       (a.sku_family||'').localeCompare(b.sku_family||''));
     matches=matches.slice(0,40);
     dd._matches=matches;
@@ -2473,7 +2473,7 @@ async function onSkuSearch(q){
       const dims=w?`${Math.round(w)}×${Math.round(h)}mm`:'';
       const dpi=r.required_dpi?`${r.required_dpi}dpi`:'';
       return `<div class="sku-dd-opt" data-idx="${i}" onclick="selectSkuFromDd(${i})">
-        <span class="sku-dd-family">${r.sku_family||'—'}<span style="font-weight:400;color:#B4B2A9;margin-left:5px">${r.template_code||''}</span></span>
+        <span class="sku-dd-family">${r.variant_sku||r.sku_family||'—'}<span style="font-weight:400;color:#B4B2A9;margin-left:5px">${r.template_code||''}</span></span>
         <span class="sku-dd-name">${r.product_name||r.sku_file||'—'}</span>
         ${(dims||dpi)?`<span class="sku-dd-dims">${[dims,dpi,r.colour_profile].filter(Boolean).join(' · ')}</span>`:''}
       </div>`;
