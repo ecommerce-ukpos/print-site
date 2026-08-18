@@ -2261,15 +2261,22 @@ async function saveToArtworkAnalysis(aaId,opts){
   const SURL='https://fqaxuhbcwoikeldnxuvv.supabase.co';
   const SKEY=SUPA_KEY_D;
   showToast('Saving…');
-  const pfIds=['pfBleed','pfDpi','pfSafe','pfColour'];
-  const pfResults=pfIds.map(id=>{
-    const el=document.getElementById(id);
-    if(!el)return{id,status:'info'};
-    const state=el.className.match(/pf-(pass|fail|warn)/)?.[1]||'info';
-    const label=el.querySelector('.pf-label')?.textContent||id;
-    const val=el.querySelector('.pf-val')?.textContent||'';
-    return{id,label,status:state,headline:val};
-  }).filter(r=>r.status!=='info');
+    // map designer preflight elements -> dashboard CHECK_COLS ids
+  const pfMap={pfBleed:'bleed', pfDpi:'dpi', pfSafe:'safe_zone', pfColour:'colour'};
+  const pfResults=Object.keys(pfMap).map(domId=>{
+    const el=document.getElementById(domId);
+    if(!el)return null;
+    // class is "pf-item pass|warn|fail|idle"; dataset.pfState is authoritative
+    const state=el.dataset.pfState||(el.className.split(/\s+/).find(c=>['pass','warn','fail'].includes(c)))||'idle';
+    if(!['pass','warn','fail'].includes(state))return null;
+    return{
+      id:pfMap[domId],
+      label:el.querySelector('.pf-label')?.textContent||pfMap[domId],
+      status:state,
+      headline:el.querySelector('.pf-val')?.textContent||'',
+      detail:el.querySelector('.pf-detail')?.textContent||''
+    };
+  }).filter(Boolean);
   const passed=pfResults.filter(r=>r.status==='pass').length;
   const scorePct=pfResults.length?Math.round(passed/pfResults.length*100):null;
   const overall=pfResults.some(r=>r.status==='fail')?'fail':pfResults.some(r=>r.status==='warn')?'warn':'pass';
