@@ -257,12 +257,12 @@ canvas{display:block}
 .copy-design-btn.side2{left:calc(50% + 8px);right:auto}
 
 /* Guides float */
-.guides-float{position:absolute;bottom:14px;left:14px;background:rgba(255,255,255,0.97);border:0.5px solid #D3D1C7;border-radius:10px;padding:8px 18px;font-size:20px;pointer-events:none;z-index:8;box-shadow:0 2px 8px rgba(0,0,0,0.08);display:none;flex-direction:row;align-items:center;gap:22px}
+.guides-float{position:absolute;bottom:14px;left:14px;background:rgba(255,255,255,0.97);border:0.5px solid #D3D1C7;border-radius:8px;padding:5px 12px;font-size:12px;pointer-events:none;z-index:8;box-shadow:0 2px 8px rgba(0,0,0,0.08);display:none;flex-direction:row;align-items:center;gap:14px}
 .guides-float.show-guides{display:flex}
 .gf-item{display:flex;align-items:center;gap:4px;white-space:nowrap}
-.gf-dot{width:16px;height:16px;border-radius:50%;flex-shrink:0}
-.gf-label{color:#2C2C2A;font-weight:600;font-size:20px}
-.gf-sub{color:#888780;font-size:18px}
+.gf-dot{width:10px;height:10px;border-radius:50%;flex-shrink:0}
+.gf-label{color:#2C2C2A;font-weight:600;font-size:12px}
+.gf-sub{color:#888780;font-size:12px}
 
 /* Bleed callout */
 .bleed-callout{position:absolute;bottom:22px;left:50%;transform:translateX(-50%);background:rgba(244,121,32,0.93);color:#fff;font-size:11px;font-weight:600;padding:5px 14px;border-radius:20px;white-space:nowrap;pointer-events:none;display:none;align-items:center;gap:5px;z-index:9}
@@ -1408,55 +1408,50 @@ function drawToContext(ctx, layers, bgColor, drawHandlesFlag, tmplA, sideIdx){
   ctx.save(); ctx.strokeStyle='rgba(30,100,220,0.85)'; ctx.lineWidth=1.5; ctx.stroke(trimPath); ctx.restore();
 
     // ── Guide labels: scale with canvas so they stay readable when zoomed ──
-  const gFS = Math.max(9, Math.min(17, Math.round(TW/58)));
-  const gPad = Math.round(gFS*0.45);
-  function guideTag(text, sub, x, y, colour, align){
+    const gFS = Math.max(5, Math.min(9, Math.round(TW/116)));
+  const gPad = Math.round(gFS*0.5);
+  // Bare text, no pill. rot = 0 | -90 (reads bottom-to-top on side edges)
+  function guideTag(text, sub, x, y, colour, align, rot){
     ctx.save();
-    ctx.font = `bold ${gFS}px Inter,-apple-system,sans-serif`;
-    const wMain = ctx.measureText(text).width;
-    ctx.font = `${Math.round(gFS*0.82)}px Inter,-apple-system,sans-serif`;
-    const wSub = sub ? ctx.measureText(sub).width : 0;
-    const boxW = Math.max(wMain, wSub) + gPad*2;
-    const boxH = sub ? gFS*2.15 + gPad : gFS + gPad*1.4;
-    let bx0 = align==='right' ? x - boxW : x;
-    let by0 = y;
-    ctx.globalAlpha = 0.93; ctx.fillStyle = '#fff';
-    ctx.beginPath();
-    if(ctx.roundRect) ctx.roundRect(bx0, by0, boxW, boxH, 4); else ctx.rect(bx0, by0, boxW, boxH);
-    ctx.fill();
-    ctx.globalAlpha = 1; ctx.strokeStyle = colour; ctx.lineWidth = 1; ctx.stroke();
-    ctx.fillStyle = colour; ctx.textAlign = 'left';
-    ctx.font = `bold ${gFS}px Inter,-apple-system,sans-serif`;
-    ctx.fillText(text, bx0+gPad, by0+gFS+gPad*0.25);
-    if(sub){
-      ctx.font = `${Math.round(gFS*0.82)}px Inter,-apple-system,sans-serif`;
-      ctx.globalAlpha = 0.8;
-      ctx.fillText(sub, bx0+gPad, by0+gFS*2+gPad*0.1);
-      ctx.globalAlpha = 1;
+    ctx.fillStyle = colour;
+    ctx.globalAlpha = 0.9;
+    ctx.textBaseline = 'top';
+    if(rot){
+      ctx.translate(x, y);
+      ctx.rotate(-Math.PI/2);
+      ctx.textAlign = 'left';
+      ctx.font = `bold ${gFS}px Inter,-apple-system,sans-serif`;
+      ctx.fillText(text, 0, 0);
+    } else {
+      ctx.textAlign = align==='right' ? 'right' : 'left';
+      ctx.font = `bold ${gFS}px Inter,-apple-system,sans-serif`;
+      ctx.fillText(text, x, y);
+      if(sub){
+        ctx.font = `${Math.round(gFS*0.85)}px Inter,-apple-system,sans-serif`;
+        ctx.globalAlpha = 0.72;
+        ctx.fillText(sub, x, y + gFS + 1);
+      }
     }
-    ctx.restore(); ctx.textAlign = 'start';
+    ctx.restore(); ctx.textAlign = 'start'; ctx.textBaseline = 'alphabetic';
   }
 
   // Place a tag at all four corners plus both side mid-points of a box.
   // Full label (with sub-text) on the primary corner, compact repeats elsewhere.
   function tagBox(x, y, w, h, text, sub, colour, primary){
-    const inset = 4;
-    const fullH = gFS*2.15 + gPad;
-    const compH = gFS + gPad*1.4;
+        const inset = gPad + 1;
+    const fullH = gFS*2 + 1;
     const pts = [
-      ['tl', x+inset,     y+inset,          'left'],
-      ['tr', x+w-inset,   y+inset,          'right'],
-      ['bl', x+inset,     y+h-inset-compH,  'left'],
-      ['br', x+w-inset,   y+h-inset-compH,  'right'],
-      ['ml', x+inset,     y+h/2-compH/2,    'left'],
-      ['mr', x+w-inset,   y+h/2-compH/2,    'right']
+      ['tl', x+inset,   y+inset,          'left',  0],
+      ['tr', x+w-inset, y+inset,          'right', 0],
+      ['bl', x+inset,   y+h-inset-gFS,    'left',  0],
+      ['br', x+w-inset, y+h-inset-gFS,    'right', 0],
+      ['ml', x+inset,   y+h/2,            'left',  1],
+      ['mr', x+w-inset-gFS, y+h/2,        'left',  1]
     ];
-    pts.forEach(([pos, px, py, al])=>{
-      if(pos===primary){
-        guideTag(text, sub, px, (py===y+h-inset-compH? y+h-inset-fullH : py), colour, al);
-      } else {
-        guideTag(text, null, px, py, colour, al);
-      }
+    pts.forEach(([pos, px, py, al, rot])=>{
+      const isPrimary = (pos===primary && !rot);
+      const yy = (isPrimary && (pos==='bl'||pos==='br')) ? y+h-inset-fullH : py;
+      guideTag(text, isPrimary?sub:null, px, yy, colour, al, rot);
     });
   }
 
