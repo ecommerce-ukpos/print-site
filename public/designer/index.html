@@ -257,12 +257,12 @@ canvas{display:block}
 .copy-design-btn.side2{left:calc(50% + 8px);right:auto}
 
 /* Guides float */
-.guides-float{position:absolute;bottom:14px;left:14px;background:rgba(255,255,255,0.97);border:0.5px solid #D3D1C7;border-radius:8px;padding:4px 10px;font-size:10px;pointer-events:none;z-index:8;box-shadow:0 2px 8px rgba(0,0,0,0.08);display:none;flex-direction:row;align-items:center;gap:12px}
+.guides-float{position:absolute;bottom:14px;left:14px;background:rgba(255,255,255,0.97);border:0.5px solid #D3D1C7;border-radius:10px;padding:8px 18px;font-size:20px;pointer-events:none;z-index:8;box-shadow:0 2px 8px rgba(0,0,0,0.08);display:none;flex-direction:row;align-items:center;gap:22px}
 .guides-float.show-guides{display:flex}
 .gf-item{display:flex;align-items:center;gap:4px;white-space:nowrap}
-.gf-dot{width:8px;height:8px;border-radius:50%;flex-shrink:0}
-.gf-label{color:#2C2C2A;font-weight:500;font-size:10px}
-.gf-sub{color:#888780;font-size:9px}
+.gf-dot{width:16px;height:16px;border-radius:50%;flex-shrink:0}
+.gf-label{color:#2C2C2A;font-weight:600;font-size:20px}
+.gf-sub{color:#888780;font-size:18px}
 
 /* Bleed callout */
 .bleed-callout{position:absolute;bottom:22px;left:50%;transform:translateX(-50%);background:rgba(244,121,32,0.93);color:#fff;font-size:11px;font-weight:600;padding:5px 14px;border-radius:20px;white-space:nowrap;pointer-events:none;display:none;align-items:center;gap:5px;z-index:9}
@@ -1437,24 +1437,50 @@ function drawToContext(ctx, layers, bgColor, drawHandlesFlag, tmplA, sideIdx){
     ctx.restore(); ctx.textAlign = 'start';
   }
 
+  // Place a tag at all four corners plus both side mid-points of a box.
+  // Full label (with sub-text) on the primary corner, compact repeats elsewhere.
+  function tagBox(x, y, w, h, text, sub, colour, primary){
+    const inset = 4;
+    const fullH = gFS*2.15 + gPad;
+    const compH = gFS + gPad*1.4;
+    const pts = [
+      ['tl', x+inset,     y+inset,          'left'],
+      ['tr', x+w-inset,   y+inset,          'right'],
+      ['bl', x+inset,     y+h-inset-compH,  'left'],
+      ['br', x+w-inset,   y+h-inset-compH,  'right'],
+      ['ml', x+inset,     y+h/2-compH/2,    'left'],
+      ['mr', x+w-inset,   y+h/2-compH/2,    'right']
+    ];
+    pts.forEach(([pos, px, py, al])=>{
+      if(pos===primary){
+        guideTag(text, sub, px, (py===y+h-inset-compH? y+h-inset-fullH : py), colour, al);
+      } else {
+        guideTag(text, null, px, py, colour, al);
+      }
+    });
+  }
+
   // Safe zone
   if(safePath){
     ctx.save(); ctx.strokeStyle='rgba(34,170,102,0.9)'; ctx.lineWidth=1.5;
     ctx.setLineDash([4,3]); ctx.stroke(safePath); ctx.setLineDash([]); ctx.restore();
-    guideTag(`Safe zone · ${spec.safe_zone||5}mm`, 'Keep text and logos inside',
-             TX+SAFEPX+4, TY+TH-SAFEPX-(gFS*2.15+gPad)-4, '#1A8855', 'left');
+    tagBox(TX+SAFEPX, TY+SAFEPX, TW-SAFEPX*2, TH-SAFEPX*2,
+           `Safe zone · ${spec.safe_zone||5}mm`, 'Keep text and logos inside',
+           '#1A8855', 'bl');
   }
 
   // Trim line
-  guideTag(`Trim · ${spec.w||'?'}×${spec.h||'?'}mm`, 'Cut here — finished size',
-           TX+TW-4, TY+4, 'rgba(30,100,220,0.95)', 'right');
+  tagBox(TX, TY, TW, TH,
+         `Trim · ${spec.w||'?'}×${spec.h||'?'}mm`, 'Cut here — finished size',
+         'rgba(30,100,220,0.95)', 'tr');
 
   // Bleed line
   if(spec.bleed>0){
     ctx.save(); ctx.strokeStyle='#F47920'; ctx.lineWidth=2;
     ctx.setLineDash([7,4]); ctx.stroke(bleedPath); ctx.setLineDash([]); ctx.restore();
-    guideTag(`Bleed · ${spec.bleed}mm`, 'Fill background to this edge',
-             bx+4, by+4, '#C75E0A', 'left');
+    tagBox(bx, by, bw, bh,
+           `Bleed · ${spec.bleed}mm`, 'Fill background to this edge',
+           '#C75E0A', 'tl');
   }
 
   // ── 6. Transform handles (topmost) ──
