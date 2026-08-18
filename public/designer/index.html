@@ -453,14 +453,15 @@ canvas{display:block}
 </div>
 
 <!-- ══ TOP BAR ══ -->
-<div class="topbar">
-  <a class="tb-back" href="#" onclick="navAway('/dashboard');return false;" title="Back to artwork list">←</a>
-  <div class="tb-div"></div>
-  <span class="tb-ref" id="topbarRef">Designer</span>
+<div class="topbar" style="position:relative">
+  <div id="stageTitle" style="position:absolute;left:0;right:0;top:0;bottom:0;display:flex;align-items:center;justify-content:center;pointer-events:none;font-size:24px;font-weight:700;letter-spacing:-0.01em;color:#2C2C2A;z-index:1">Internal Designer</div>
+  <a class="tb-back" href="#" onclick="navAway('/dashboard');return false;" title="Back to artwork list" style="position:relative;z-index:2">←</a>
+  <div class="tb-div" style="position:relative;z-index:2"></div>
+  <span class="tb-ref" id="topbarRef" style="position:relative;z-index:2">Designer</span>
   <span class="tb-sku" id="topbarSku" style="display:none"></span>
   <div class="tb-sp"></div>
   <!-- Undo/redo mirrored in topbar -->
-  <div class="tb-undo-group">
+    <div class="tb-undo-group" style="position:relative;z-index:2">
     <button class="tb-undo-btn" id="undoBtn" onclick="undo()" disabled title="Undo (Ctrl+Z)">↩</button>
     <button class="tb-undo-btn" id="redoBtn" onclick="redo()" disabled title="Redo (Ctrl+Y)">↪</button>
   </div>
