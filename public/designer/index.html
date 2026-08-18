@@ -1407,31 +1407,55 @@ function drawToContext(ctx, layers, bgColor, drawHandlesFlag, tmplA, sideIdx){
   // Trim line
   ctx.save(); ctx.strokeStyle='rgba(30,100,220,0.85)'; ctx.lineWidth=1.5; ctx.stroke(trimPath); ctx.restore();
 
+    // ── Guide labels: scale with canvas so they stay readable when zoomed ──
+  const gFS = Math.max(9, Math.min(17, Math.round(TW/58)));
+  const gPad = Math.round(gFS*0.45);
+  function guideTag(text, sub, x, y, colour, align){
+    ctx.save();
+    ctx.font = `bold ${gFS}px Inter,-apple-system,sans-serif`;
+    const wMain = ctx.measureText(text).width;
+    ctx.font = `${Math.round(gFS*0.82)}px Inter,-apple-system,sans-serif`;
+    const wSub = sub ? ctx.measureText(sub).width : 0;
+    const boxW = Math.max(wMain, wSub) + gPad*2;
+    const boxH = sub ? gFS*2.15 + gPad : gFS + gPad*1.4;
+    let bx0 = align==='right' ? x - boxW : x;
+    let by0 = y;
+    ctx.globalAlpha = 0.93; ctx.fillStyle = '#fff';
+    ctx.beginPath();
+    if(ctx.roundRect) ctx.roundRect(bx0, by0, boxW, boxH, 4); else ctx.rect(bx0, by0, boxW, boxH);
+    ctx.fill();
+    ctx.globalAlpha = 1; ctx.strokeStyle = colour; ctx.lineWidth = 1; ctx.stroke();
+    ctx.fillStyle = colour; ctx.textAlign = 'left';
+    ctx.font = `bold ${gFS}px Inter,-apple-system,sans-serif`;
+    ctx.fillText(text, bx0+gPad, by0+gFS+gPad*0.25);
+    if(sub){
+      ctx.font = `${Math.round(gFS*0.82)}px Inter,-apple-system,sans-serif`;
+      ctx.globalAlpha = 0.8;
+      ctx.fillText(sub, bx0+gPad, by0+gFS*2+gPad*0.1);
+      ctx.globalAlpha = 1;
+    }
+    ctx.restore(); ctx.textAlign = 'start';
+  }
+
   // Safe zone
   if(safePath){
     ctx.save(); ctx.strokeStyle='rgba(34,170,102,0.9)'; ctx.lineWidth=1.5;
     ctx.setLineDash([4,3]); ctx.stroke(safePath); ctx.setLineDash([]); ctx.restore();
-    ctx.globalAlpha=0.85; ctx.fillStyle='#1A8855';
-    ctx.font='bold 8px Inter,-apple-system,sans-serif'; ctx.textAlign='left';
-    ctx.fillText(`Safe ${spec.safe_zone||5}mm`, TX+SAFEPX+3, TY+TH-SAFEPX-4);
-    ctx.globalAlpha=1;
+    guideTag(`Safe zone · ${spec.safe_zone||5}mm`, 'Keep text and logos inside',
+             TX+SAFEPX+4, TY+TH-SAFEPX-(gFS*2.15+gPad)-4, '#1A8855', 'left');
   }
+
+  // Trim line
+  guideTag(`Trim · ${spec.w||'?'}×${spec.h||'?'}mm`, 'Cut here — finished size',
+           TX+TW-4, TY+4, 'rgba(30,100,220,0.95)', 'right');
 
   // Bleed line
   if(spec.bleed>0){
     ctx.save(); ctx.strokeStyle='#F47920'; ctx.lineWidth=2;
     ctx.setLineDash([7,4]); ctx.stroke(bleedPath); ctx.setLineDash([]); ctx.restore();
-    ctx.globalAlpha=0.8; ctx.fillStyle='#C75E0A';
-    ctx.font='bold 8px Inter,-apple-system,sans-serif'; ctx.textAlign='left';
-    ctx.fillText(`Bleed ${spec.bleed}mm`, bx+3, by+10);
-    ctx.globalAlpha=1;
+    guideTag(`Bleed · ${spec.bleed}mm`, 'Fill background to this edge',
+             bx+4, by+4, '#C75E0A', 'left');
   }
-
-  // Dimension label
-  ctx.globalAlpha=0.75; ctx.fillStyle='rgba(30,100,220,0.9)';
-  ctx.font='bold 8px Inter,-apple-system,sans-serif'; ctx.textAlign='right';
-  ctx.fillText(`${spec.w||'?'}×${spec.h||'?'}mm`, TX+TW-3, TY+10);
-  ctx.globalAlpha=1; ctx.textAlign='start';
 
   // ── 6. Transform handles (topmost) ──
   if(drawHandlesFlag) drawHandles(ctx);
