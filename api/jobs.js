@@ -19,8 +19,8 @@ export default async function handler(req, res) {
     // 1. Fetch artwork_analysis rows
     const aaRes = await fetch(
       `${SUPABASE_URL}/rest/v1/artwork_analysis` +
-      `?magento_order=not.is.null` +
-      `&select=id,sage_order,magento_order,asset_filename,file_ext,` +
+            `?or=(magento_order.not.is.null,source.eq.manual)` +
+      `&select=id,sage_order,magento_order,asset_filename,file_ext,source,` +
       `artwork_class,colour_mode,dpi_reported,upscale_recommended,` +
       `score_pct,overall_status,check_results,assessor_status,assessed_at,` +
       `artwork_url,notes,processed_at` +
@@ -96,7 +96,30 @@ export default async function handler(req, res) {
   }
 
   // ── POST — manual upload (legacy) ────────────────────────────────────────
-  if (req.method === 'POST') {
+    if (req.method === 'POST') {
+    const b = req.body || {};
+    const manualRow = {
+      sage_order: null,
+      magento_order: null,
+      source: 'manual',
+      asset_filename: b.file_name || b.reference || 'manual-upload',
+      file_ext: (b.file_type || '').toUpperCase() || null,
+      sku: b.sku || null,
+      notes: 'Manual upload via designer — no customer order attached',
+      processed_at: new Date().toISOString(),
+      assessor_status: 'pending'
+    };
+    const r = await fetch(`${SUPABASE_URL}/rest/v1/artwork_analysis`, {
+      method: 'POST',
+      headers: { ...HEADERS, 'Content-Type': 'application/json', Prefer: 'return=representation' },
+      body: JSON.stringify(manualRow)
+    });
+    const created = await r.json();
+    if (!r.ok) return res.status(r.status).json(created);
+    return res.status(200).json(Array.isArray(created) ? created[0] : created);
+  }
+
+  if (req.method === 'POST_LEGACY_DISABLED') {
     const r = await fetch(`${SUPABASE_URL}/rest/v1/jobs`, {
       method: 'POST',
       headers: { ...HEADERS, Prefer: 'return=representation' },
