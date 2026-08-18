@@ -441,10 +441,12 @@ canvas{display:block}
   <div class="leave-modal">
     <div class="leave-modal-header"><h2>⚠ Unsaved changes</h2></div>
     <div class="leave-modal-body">
-      <p>You have unsaved changes in the designer. If you leave now they will be lost.</p>
+            <p>You have unsaved changes in the designer.</p>
       <div class="leave-modal-btns">
-        <button class="lm-leave" onclick="leaveConfirmed()">Leave anyway</button>
+        <button class="lm-leave" onclick="leaveConfirmed()">Leave without saving</button>
+        <button class="lm-stay" style="background:#2E7D32;color:#fff;border-color:#2E7D32" onclick="saveThenLeave()">Save then leave</button>
         <button class="lm-stay" onclick="leaveCancel()">Stay</button>
+      </div>
       </div>
     </div>
   </div>
@@ -1977,10 +1979,13 @@ function copyDesignToOtherSide(){
 }
 
 // ── Submit ─────────────────────────────────────────────────
-async function submitToArtworkList(){
-  if(isDoubleSided){showToast('Double-sided submit not yet implemented');return;}
+async function submitToArtworkList(opts){
+  opts=opts||{};
   const layers=getLayers();
-  if(!layers.length){showToast('No artwork to submit');return;}
+  if(!layers.length){showToast('No artwork to submit');return false;}
+  const _aa=new URLSearchParams(location.search).get('aa_id');
+  if(_aa) return await saveToArtworkAnalysis(_aa,opts);
+  if(isDoubleSided){showToast('Double-sided submit not yet implemented');return false;}
   const topLayer=layers[0];
   const ref=(topLayer.name||'designer-upload').replace(/\.[^.]+$/,'').substring(0,40);
   showToast('Creating job record…');
@@ -2059,6 +2064,43 @@ async function submitToArtworkList(){
   setTimeout(()=>window.location.href='/dashboard',1200);
 }
 function goToAssessor(){const p=new URLSearchParams();if(jobId)p.set('job',jobId);if(currentSku)p.set('sku',currentSku);window.location.href='/artwork-assessor'+(p.toString()?'?'+p.toString():'');}
+// ── Designer state capture / restore ─────────────────────────
+function captureDesignerState(){
+  return {
+    v:1, sku:currentSku||null, activeSide,
+    templateRotDeg:(typeof templateRotDeg!=='undefined'?templateRotDeg:0),
+    sides: sides.map(s=>({
+      bgColor:s.bgColor||null,
+      layers:(s.layers||[]).map(l=>({
+        name:l.name||null, visible:l.visible!==false,
+        offsetX:l.offsetX, offsetY:l.offsetY, scale:l.scale,
+        rotation:l.rotation||0, flipX:!!l.flipX, flipY:!!l.flipY,
+        opacity:(l.opacity===undefined?1:l.opacity), srcUrl:l.srcUrl||null
+      }))
+    }))
+  };
+}
+function applyDesignerState(st){
+  if(!st||!st.sides)return false;
+  try{
+    st.sides.forEach((ss,i)=>{
+      if(!sides[i])return;
+      sides[i].bgColor=ss.bgColor||null;
+      (ss.layers||[]).forEach((sl,j)=>{
+        const L=sides[i].layers[j];
+        if(!L)return;
+        L.offsetX=sl.offsetX; L.offsetY=sl.offsetY; L.scale=sl.scale;
+        L.rotation=sl.rotation||0; L.flipX=!!sl.flipX; L.flipY=!!sl.flipY;
+        L.visible=sl.visible!==false;
+        if(sl.opacity!==undefined) L.opacity=sl.opacity;
+      });
+    });
+    if(st.templateRotDeg!==undefined && typeof templateRotDeg!=='undefined') templateRotDeg=st.templateRotDeg;
+    computeLayout();draw();
+    return true;
+  }catch(e){console.error('applyDesignerState failed',e);return false;}
+}
+
 // ── Export functions ────────────────────────────────────────
 function getExportLayout(){
   const spec=SKU_SPECS[currentSku];
@@ -2161,6 +2203,50 @@ function exportPrintProof(){
     link.href=printDataUrl;link.click();
     showToast('PDF library unavailable — downloaded PNG instead');
   }
+}
+
+async function saveToArtworkAnalysis(aaId,opts){
+  opts=opts||{};
+  const SURL='https://fqaxuhbcwoikeldnxuvv.supabase.co';
+  const SKEY=SUPA_KEY_D;
+  showToast('Saving…');
+  const pfIds=['pfBleed','pfDpi','pfSafe','pfColour'];
+  const pfResults=pfIds.map(id=>{
+    const el=document.getElementById(id);
+    if(!el)return{id,status:'info'};
+    const state=el.className.match(/pf-(pass|fail|warn)/)?.[1]||'info';
+    const label=el.querySelector('.pf-label')?.textContent||id;
+    const val=el.querySelector('.pf-val')?.textContent||'';
+    return{id,label,status:state,headline:val};
+  }).filter(r=>r.status!=='info');
+  const passed=pfResults.filter(r=>r.status==='pass').length;
+  const scorePct=pfResults.length?Math.round(passed/pfResults.length*100):null;
+  const overall=pfResults.some(r=>r.status==='fail')?'fail':pfResults.some(r=>r.status==='warn')?'warn':'pass';
+  try{
+    const cur=await fetch(`${SURL}/rest/v1/artwork_analysis?id=eq.${aaId}&select=saved_version`,
+      {headers:{apikey:SKEY,Authorization:'Bearer '+SKEY}});
+    const curRow=(await cur.json())[0]||{};
+    const r=await fetch(`${SURL}/rest/v1/artwork_analysis?id=eq.${aaId}`,{
+      method:'PATCH',
+      headers:{apikey:SKEY,Authorization:'Bearer '+SKEY,'Content-Type':'application/json',Prefer:'return=minimal'},
+      body:JSON.stringify({
+        designer_state:captureDesignerState(),
+        last_saved_at:new Date().toISOString(),
+        saved_version:(curRow.saved_version||0)+1,
+        score_pct:scorePct,
+        overall_status:overall,
+        check_results:pfResults,
+        assessed_at:new Date().toISOString(),
+        sku:currentSku||null
+      })});
+    if(!r.ok) throw new Error('HTTP '+r.status+' '+await r.text());
+  }catch(e){ showToast('Save failed: '+e.message); return false; }
+  markSaved();
+  if(!opts.silent){
+    showToast('Saved to artwork list');
+    setTimeout(()=>window.location.href='/dashboard',900);
+  }
+  return true;
 }
 
 function updateQueueBtn(){
@@ -2370,7 +2456,7 @@ async function initFromAaId(aaId){
   try{
     const SURL=`https://fqaxuhbcwoikeldnxuvv.supabase.co`;
     const SKEY=`eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImZxYXh1aGJjd29pa2VsZG54dXZ2Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODExNjk2NTQsImV4cCI6MjA5Njc0NTY1NH0.0XtMq5p6L9pnRilG5GUI5j72zPNuhl4PnD9ihDxeT1c`;
-    const r=await fetch(`${SURL}/rest/v1/artwork_analysis?id=eq.${aaId}&select=id,sage_order,asset_filename,sku&limit=1`,
+        const r=await fetch(`${SURL}/rest/v1/artwork_analysis?id=eq.${aaId}&select=id,sage_order,asset_filename,sku,designer_state,saved_version&limit=1`,
       {headers:{apikey:SKEY,Authorization:'Bearer '+SKEY}});
     if(!r.ok)return;
     const rows=await r.json();
@@ -2394,6 +2480,14 @@ async function initFromAaId(aaId){
       : null;
 
     await loadSkuAndArtwork(sku, storagePath, aa.asset_filename||'Customer artwork');
+      if(row&&row.designer_state){
+      setTimeout(()=>{
+        if(applyDesignerState(row.designer_state)){
+          markSaved();
+          showToast('Restored saved version '+(row.saved_version||1));
+        }
+      },1400);
+    }
   }catch(e){console.error('aa_id init failed',e);}
 }
 
@@ -2421,8 +2515,15 @@ computeLayout();draw();updateDial(0);
 
 // ── Leave warning ──
 let _leaveTarget=null;
-function isDirty(){
-  return sides.some(s=>s.undoStack&&s.undoStack.length>0);
+let _savedMark=0;
+function dirtyCount(){ return sides.reduce((n,s)=>n+((s.undoStack&&s.undoStack.length)||0),0); }
+function isDirty(){ return dirtyCount()>_savedMark; }
+function markSaved(){ _savedMark=dirtyCount(); }
+async function saveThenLeave(){
+  const ok=await submitToArtworkList({silent:true});
+  document.getElementById('leaveModalBg').classList.remove('show');
+  if(ok){ markSaved(); if(_leaveTarget) window.location.href=_leaveTarget; }
+  else { showToast('Save failed — staying put'); _leaveTarget=null; }
 }
 function navAway(url){
   if(isDirty()){
