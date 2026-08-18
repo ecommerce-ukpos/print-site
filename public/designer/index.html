@@ -717,6 +717,9 @@ canvas{display:block}
       <button class="tb-vbtn active" id="stWorking" onclick="setViewMode('working')">Working</button>
       <button class="tb-vbtn" id="stFull" onclick="setViewMode('full')">Full size</button>
     </div>
+    <div class="tb-vgroup" style="margin-left:10px">
+      <button class="tb-vbtn" id="stProof" onclick="toggleProof()" title="Hide guides and template — see artwork as it will print">👁 Show proof</button>
+    </div>
     <div class="ct-sep"></div>
     <div class="zoom-group">
       <div class="zoom-btn" onclick="zoomBy(-0.25)" title="Zoom out">−</div>
@@ -973,6 +976,8 @@ const BG_PRESETS=['transparent','#FFFFFF','#000000','#F47920','#1A2233','#D4E8FF
 
 // ── Core state ─────────────────────────────────────────────
 let currentSku='', viewMode='working', jobId=null, openStep=1;
+// Nominal CSS reference resolution. Adjust per-monitor if physical accuracy matters.
+const SCREEN_DPI=96;
 let templateRotDeg=0, zoomLevel=1;
 let snapEnabled=true;
 let dragSrcId=null;
@@ -1295,15 +1300,19 @@ function remapLayersToNewLayout(oTW,oTH,oTX,oTY,nTW,nTH,nTX,nTY){
 function applyZoom(){
   const dpr=zoomLevel||1;
   if(viewMode==='full'){
-    // Full size: canvas is already at true pixel dimensions — use CSS scale for zoom
+    // Canvas holds true print pixels; CSS scales it down to true PHYSICAL size on screen.
+    // 1 CSS px = 1/96 inch, so shrink by screenDPI/printDPI.
+    const spec=currentSku?SKU_SPECS[currentSku]:null;
+    const printDpi=(spec&&spec.dpi)?spec.dpi:300;
+    const physScale=(SCREEN_DPI/printDpi)*dpr;
     ['canvasTransform','canvasTransform0','canvasTransform1'].forEach(id=>{
       const t=document.getElementById(id);if(!t)return;
-      t.style.transform=`scale(${dpr})`;t.style.transformOrigin='top left';
+      t.style.transform=`scale(${physScale})`;t.style.transformOrigin='top left';
       t.style.width=CW+'px';t.style.height=CH+'px';
     });
     ['canvasOuter','canvasOuter0','canvasOuter1'].forEach(id=>{
       const outer=document.getElementById(id);if(!outer)return;
-      outer.style.width=Math.round(CW*dpr)+'px';outer.style.height=Math.round(CH*dpr)+'px';
+      outer.style.width=Math.round(CW*physScale)+'px';outer.style.height=Math.round(CH*physScale)+'px';
     });
   }else{
     // Working: canvas pixels scale with zoom for crisp rendering
@@ -1455,6 +1464,8 @@ function drawToContext(ctx, layers, bgColor, drawHandlesFlag, tmplA, sideIdx){
       guideTag(text, isPrimary?sub:null, px, yy, colour, al, rot);
     });
   }
+
+    if(typeof proofMode!=='undefined' && proofMode && drawHandlesFlag){ ctx.restore(); return; }
 
   // Safe zone
   if(safePath){
@@ -1903,8 +1914,10 @@ function updateStatusUI(){
     const top=vis[0],fp=getRotatedFootprint(top),aw=fp.w*top.scale,ah=fp.h*top.scale;
     const al=top.offsetX-aw/2,at=top.offsetY-ah/2;
     const COVERAGE_EPS=0.5;
-    const coversBleed=al<=bx+COVERAGE_EPS&&at<=by+COVERAGE_EPS&&(al+aw)>=(bx+bw)-COVERAGE_EPS&&(at+ah)>=(by+bh)-COVERAGE_EPS;
-    const coversTrim=al<=TX+COVERAGE_EPS&&at<=TY+COVERAGE_EPS&&(al+aw)>=(TX+TW)-COVERAGE_EPS&&(at+ah)>=(TY+TH)-COVERAGE_EPS;
+    const _bg=getBgColor();
+    const hasBg=!!_bg && _bg!=='transparent';
+    const coversBleed=hasBg||(al<=bx+COVERAGE_EPS&&at<=by+COVERAGE_EPS&&(al+aw)>=(bx+bw)-COVERAGE_EPS&&(at+ah)>=(by+bh)-COVERAGE_EPS);
+    const coversTrim=hasBg||(al<=TX+COVERAGE_EPS&&at<=TY+COVERAGE_EPS&&(al+aw)>=(TX+TW)-COVERAGE_EPS&&(at+ah)>=(TY+TH)-COVERAGE_EPS);
     const coverageOk=spec.bleed===0?coversTrim:coversBleed;
     if(!coversTrim&&!coverageOk){set('cs-warn','⚠ Artwork does not cover the trim area');enbl(false);return;}
     if(hasFailItems()){set('cs-warn','⚠ Critical issues must be resolved before submitting');enbl(false);return;}
@@ -1937,9 +1950,11 @@ function updatePreflight(){
   const bx=TX-BLEEDPX,by=TY-BLEEDPX,bw=TW+BLEEDPX*2,bh=TH+BLEEDPX*2;
   const fp=getRotatedFootprint(top),aw=fp.w*top.scale,ah=fp.h*top.scale;
   const al=top.offsetX-aw/2,at=top.offsetY-ah/2;
-  const COVERAGE_EPS=0.5;
-  const coversBleed=al<=bx+COVERAGE_EPS&&at<=by+COVERAGE_EPS&&(al+aw)>=(bx+bw)-COVERAGE_EPS&&(at+ah)>=(by+bh)-COVERAGE_EPS;
-  const coversTrim=al<=TX+COVERAGE_EPS&&at<=TY+COVERAGE_EPS&&(al+aw)>=(TX+TW)-COVERAGE_EPS&&(at+ah)>=(TY+TH)-COVERAGE_EPS;
+    const COVERAGE_EPS=0.5;
+  const _bg=getBgColor();
+  const hasBg=!!_bg && _bg!=='transparent';
+  const coversBleed=hasBg||(al<=bx+COVERAGE_EPS&&at<=by+COVERAGE_EPS&&(al+aw)>=(bx+bw)-COVERAGE_EPS&&(at+ah)>=(by+bh)-COVERAGE_EPS);
+  const coversTrim=hasBg||(al<=TX+COVERAGE_EPS&&at<=TY+COVERAGE_EPS&&(al+aw)>=(TX+TW)-COVERAGE_EPS&&(at+ah)>=(TY+TH)-COVERAGE_EPS);
   if(spec.bleed===0){setPF('pfBleed',coversTrim?'pass':'warn',coversTrim?'OK':'No bleed required — artwork should cover the trim line exactly');}
   else{
     if(coversBleed)setPF('pfBleed','pass','OK',`Artwork extends ${spec.bleed}mm beyond trim — correct`);
@@ -1974,6 +1989,15 @@ function updatePreflight(){
 }
 
 // ── View mode ──────────────────────────────────────────────
+let proofMode=false;
+function toggleProof(){
+  proofMode=!proofMode;
+  const b=document.getElementById('stProof');
+  if(b){ b.classList.toggle('active',proofMode); b.textContent=proofMode?'👁 Exit proof':'👁 Show proof'; }
+  const legend=document.querySelector('.guides-float');
+  if(legend) legend.style.display=proofMode?'none':'';
+  draw();
+}
 function setViewMode(m){
   const spec=currentSku?SKU_SPECS[currentSku]:null;if(!spec||!spec.w){viewMode=m;return;}
   document.getElementById('stWorking').classList.toggle('active',m==='working');
@@ -1993,7 +2017,7 @@ const oTW=TW,oTH=TH,oTX=TX,oTY=TY;viewMode=m;
 }
 function updateViewInfo(){
   const spec=currentSku?SKU_SPECS[currentSku]:null;const info=document.getElementById('ctInfo');
-  if(viewMode==='full'&&spec&&spec.w){const mmPx=25.4/spec.dpi;info.textContent=`Full size: ${Math.round(spec.w/mmPx)}×${Math.round(spec.h/mmPx)}px at ${spec.dpi}dpi`;}
+  if(viewMode==='full'&&spec&&spec.w){const mmPx=25.4/spec.dpi;info.textContent=`Actual size: ${spec.w}×${spec.h}mm · ${Math.round(spec.w/mmPx)}×${Math.round(spec.h/mmPx)}px at ${spec.dpi}dpi`;}
   else info.textContent='Scaled to fit screen';
 }
 
