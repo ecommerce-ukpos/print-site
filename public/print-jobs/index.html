@@ -4,8 +4,22 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Print Jobs — PrintSite</title>
-  <style>
+    <style>
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    .sidebar{width:52px;background:#fff;border-right:0.5px solid #D3D1C7;display:flex;flex-direction:column;align-items:flex-start;padding:12px 0;gap:2px;flex-shrink:0;overflow:hidden;transition:width 0.2s ease;position:fixed;top:0;left:0;bottom:0;z-index:50}
+    .sidebar:hover{width:184px}
+    .sb-logo{padding:0 14px 14px}
+    .sb-logo-inner{width:24px;height:24px;display:flex;align-items:center;justify-content:center}
+    .sb-logo-inner svg{width:18px;height:18px;fill:#2C2C2A}
+    .sb-item{display:flex;align-items:center;gap:12px;padding:8px 14px;width:100%;text-decoration:none;color:#6B6A63;white-space:nowrap;font-size:12px}
+    .sb-item:hover{background:#F5F4EF;color:#2C2C2A}
+    .sb-item.active{color:#2C2C2A;font-weight:600}
+    .sb-icon{width:24px;display:flex;align-items:center;justify-content:center;flex-shrink:0;font-size:14px}
+    .sb-label{opacity:0;transition:opacity 0.1s ease}
+    .sidebar:hover .sb-label{opacity:1;transition:opacity 0.15s ease 0.05s}
+    .sb-spacer{flex:1}
+    .sb-divider{height:0.5px;background:#D3D1C7;width:100%;margin:6px 0}
+    body{padding-left:52px}
     body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; background: #f8fafc; color: #0f172a; font-size: 12px; }
     ::-webkit-scrollbar { height: 6px; width: 6px; }
     ::-webkit-scrollbar-track { background: #f1f5f9; }
@@ -77,6 +91,40 @@
   </style>
 </head>
 <body>
+
+<nav class="sidebar">
+  <div class="sb-logo">
+    <div class="sb-logo-inner">
+      <svg viewBox="0 0 24 24"><path d="M3 6h18v2H3zm0 5h18v2H3zm0 5h18v2H3z"/></svg>
+    </div>
+  </div>
+  <a class="sb-item" href="/dashboard">
+    <span class="sb-icon">☰</span>
+    <span class="sb-label">Artwork list</span>
+  </a>
+  <a class="sb-item" href="/designer">
+    <span class="sb-icon">✏️</span>
+    <span class="sb-label">Designer</span>
+  </a>
+  <a class="sb-item" href="/artwork-assessor">
+    <span class="sb-icon">✓</span>
+    <span class="sb-label">Assessor</span>
+  </a>
+  <a class="sb-item active" href="/print-jobs">
+    <span class="sb-icon">🖨</span>
+    <span class="sb-label">Print jobs</span>
+  </a>
+  <a class="sb-item" href="/reporting">
+    <span class="sb-icon">📊</span>
+    <span class="sb-label">Reporting</span>
+  </a>
+  <div class="sb-spacer"></div>
+  <div class="sb-divider"></div>
+  <a class="sb-item" href="/">
+    <span class="sb-icon">⚙</span>
+    <span class="sb-label">Settings</span>
+  </a>
+</nav>
 
 <div id="header">
   <div>
