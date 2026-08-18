@@ -2262,7 +2262,26 @@ async function saveToArtworkAnalysis(aaId,opts){
   const SKEY=SUPA_KEY_D;
   showToast('Saving…');
     // map designer preflight elements -> dashboard CHECK_COLS ids
-  const pfMap={pfBleed:'bleed', pfDpi:'dpi', pfSafe:'safe_zone', pfColour:'colour'};
+    const pfMap={pfBleed:'bleed', pfDpi:'dpi', pfSafe:'safe_zone', pfColour:'colour'};
+  const _pfExtra=[];
+  (function(){
+    // Pixelation: derived from the DPI check plus whether the AI upscaler was run.
+    const dEl=document.getElementById('pfDpi');
+    if(!dEl)return;
+    const dState=dEl.dataset.pfState||'idle';
+    if(!['pass','warn','fail'].includes(dState))return;
+    const wasUpscaled=(getLayers()||[]).some(l=>/_upscaled\./i.test(l.name||''));
+    const dVal=dEl.querySelector('.pf-val')?.textContent||'';
+    _pfExtra.push({
+      id:'pixelation',
+      label:'Pixelation',
+      status:dState,
+      headline:wasUpscaled?('AI upscaled · '+dVal):dVal,
+      detail:wasUpscaled
+        ? 'AI upscaler applied in designer; resolution rechecked after upscaling.'
+        : 'Derived from effective resolution at final print size.'
+    });
+  })();
   const pfResults=Object.keys(pfMap).map(domId=>{
     const el=document.getElementById(domId);
     if(!el)return null;
@@ -2276,7 +2295,7 @@ async function saveToArtworkAnalysis(aaId,opts){
       headline:el.querySelector('.pf-val')?.textContent||'',
       detail:el.querySelector('.pf-detail')?.textContent||''
     };
-  }).filter(Boolean);
+  }).filter(Boolean).concat(_pfExtra);
   const passed=pfResults.filter(r=>r.status==='pass').length;
   const scorePct=pfResults.length?Math.round(passed/pfResults.length*100):null;
   const overall=pfResults.some(r=>r.status==='fail')?'fail':pfResults.some(r=>r.status==='warn')?'warn':'pass';
