@@ -262,10 +262,6 @@ input[type=file]{display:none}
   <!-- Topbar -->
   <div class="topbar">
     <span class="topbar-title">Artwork list</span>
-    <div class="topbar-search">
-      <span class="search-icon">🔍</span>
-      <input type="text" placeholder="Search reference or SKU…" />
-    </div>
     <div class="tb-spacer"></div>
     <button class="btn-refresh" onclick="loadJobs()">↻ Refresh</button>
     <button class="btn-csv" onclick="document.getElementById('csvInput').click()">Upload CSV</button>
@@ -320,7 +316,15 @@ input[type=file]{display:none}
     </div>
 
     <!-- Date + score filter bar -->
-    <div class="filter-bar" id="filterBar">
+    <div class="filter-bar" id="filterBar" style="flex-wrap:wrap">
+      <div class="filter-group" style="flex-basis:100%;margin-bottom:8px">
+        <span class="filter-group-label">Search</span>
+        <div class="topbar-search" style="max-width:340px">
+          <span class="search-icon">🔍</span>
+          <input type="text" id="filterSearch" placeholder="Sage, Magento, customer, SKU, file…" oninput="applyFilters()" />
+        </div>
+        <button class="date-preset" onclick="document.getElementById('filterSearch').value='';applyFilters()">✕</button>
+      </div>
       <div class="filter-group">
         <span class="filter-group-label">Date</span>
         <button class="date-preset active" data-preset="all" onclick="setDatePreset(this,'all')">All</button>
@@ -575,7 +579,9 @@ async function loadJobs() {
     const r = await fetch('/api/jobs');
     const data = await r.json();
     if (Array.isArray(data)) {
-      allJobs = [...data];
+      allJobs = [...data].sort((a,b) =>
+        String(b.reference||'').localeCompare(String(a.reference||''), undefined, {numeric:true}));
+      sortCol = 'reference'; sortDir = -1;
       currentPage = 1;
       renderTable();
     }
@@ -850,9 +856,18 @@ function applyFilters() {
   const scoreMin = scoreMinStr !== '' ? parseInt(scoreMinStr) : null;
   const scoreMax = scoreMaxStr !== '' ? parseInt(scoreMaxStr) : null;
 
-  const isFiltered = activePreset !== 'all' || fromDate || toDate || scoreMin !== null || scoreMax !== null;
+    const qEl = document.getElementById('filterSearch');
+  const q = qEl ? qEl.value.trim().toLowerCase() : '';
+
+  const isFiltered = activePreset !== 'all' || fromDate || toDate || scoreMin !== null || scoreMax !== null || q !== '';
 
   filteredJobs = allJobs.filter(job => {
+    if (q) {
+      const hay = [job.reference, job.order_number, job.customer_name, job.company,
+                   job.sku, job.file_name, job.file_type]
+                  .filter(Boolean).join(' ').toLowerCase();
+      if (!hay.includes(q)) return false;
+    }
     // Date filter — use uploaded_at
     if (fromDate || toDate) {
       const uploaded = job.uploaded_at ? new Date(job.uploaded_at) : null;
