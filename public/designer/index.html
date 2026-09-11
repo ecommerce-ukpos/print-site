@@ -36,6 +36,10 @@ body{font-family:'Inter',-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;
 .tb-vbtn{padding:0 10px;font-size:11px;font-weight:600;cursor:pointer;background:#D3D1C7;color:#2C2C2A;border:none;height:100%;font-family:'Inter',sans-serif}
 .tb-vbtn.active{background:#1A1A18;color:#fff}
 .tb-vbtn:not(.active):hover{background:#C4C2B8;color:#2C2C2A}
+.tb-revert-btn{padding:0 10px;height:26px;font-size:11px;font-weight:600;cursor:pointer;background:#fff;color:#B3413E;border:1px solid #E8B4B1;border-radius:6px;font-family:'Inter',sans-serif}
+.tb-revert-btn:hover{background:#FCEBEB;border-color:#E24B4A;color:#E24B4A}
+.revert-modal-btns button.rm-confirm{background:#E24B4A;color:#fff;border-color:#E24B4A}
+.revert-modal-btns button.rm-confirm:hover{background:#C93F3E}
 /* Zoom */
 .zoom-group{display:flex;align-items:center;gap:3px}
 .z-btn{width:22px;height:22px;border-radius:5px;border:1px solid #B4B2A9;background:#D3D1C7;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:700;color:#2C2C2A;cursor:pointer}
@@ -452,6 +456,21 @@ canvas{display:block}
   </div>
 </div>
 
+<!-- ══ REVERT TO ORIGINAL WARNING MODAL ══ -->
+<div class="leave-modal-bg" id="revertModalBg">
+  <div class="leave-modal">
+    <div class="leave-modal-header" style="background:#E24B4A"><h2>⚠ Revert to original artwork</h2></div>
+    <div class="leave-modal-body">
+      <p>This will discard the current working version — all positioning, scaling, and any added or removed layers — and reload the customer's original submitted artwork instead.</p>
+      <p style="margin-top:8px">This cannot be undone once saved. The change only takes effect if you save afterwards.</p>
+      <div class="leave-modal-btns revert-modal-btns">
+        <button class="lm-stay" onclick="revertCancel()">Cancel</button>
+        <button class="rm-confirm" onclick="revertToOriginal()">Revert to original</button>
+      </div>
+    </div>
+  </div>
+</div>
+
 <!-- ══ TOP BAR ══ -->
 <div class="topbar" style="position:relative">
   <div id="stageTitle" style="position:absolute;left:0;right:0;top:0;bottom:0;display:flex;align-items:center;justify-content:center;pointer-events:none;font-size:24px;font-weight:700;letter-spacing:-0.01em;color:#2C2C2A;z-index:1">Internal Designer</div>
@@ -728,6 +747,8 @@ canvas{display:block}
       <div class="zoom-btn" onclick="zoomReset()" style="font-size:10px;width:30px" title="Fit">Fit</div>
     </div>
     <span class="ct-info" id="ctInfo">Scaled to fit screen</span>
+    <div class="ct-sep"></div>
+    <button class="tb-revert-btn" onclick="openRevertModal()" title="Discard the working version and reload the customer's original submitted artwork">⟲ Revert to original</button>
   </div>
   <div class="canvas-spinner" id="canvasSpinner">
     <svg viewBox="0 0 36 36" fill="none" xmlns="http://www.w3.org/2000/svg">
@@ -2469,49 +2490,127 @@ jobId=_p.get('job')||null;
 const urlSku=_p.get('sku')||'';
 const urlAaId=_p.get('aa_id')||null;
 const urlOrder=_p.get('order')||null;
+let currentStoragePath=null, currentAssetFileName='Customer artwork'; // for Revert-to-original
 
+function loadImageFromDataUrl(dataUrl){
+  return new Promise((resolve,reject)=>{
+    const img=new Image();
+    img.onload=()=>resolve(img);
+    img.onerror=reject;
+    img.src=dataUrl;
+  });
+}
+
+// Fetches + decodes the immutable original artwork file from storage. Pure fetch/decode —
+// does not touch layers/canvas. Shared by first-ever load and by restoreWorkingVersion/revert,
+// so both always decode the source file the same way.
+async function fetchArtworkImage(storagePath, fileName){
+  const r=await fetch('/api/file?path='+encodeURIComponent(storagePath));
+  if(!r.ok){console.warn('Artwork file not in storage yet:',storagePath);return null;}
+  const d=await r.json();
+  if(!d?.b64)return null;
+  const isPdf=d.mediaType==='application/pdf'||(fileName||'').toLowerCase().endsWith('.pdf');
+  if(isPdf){
+    if(typeof pdfjsLib==='undefined'){console.error('pdfjsLib not loaded');return null;}
+    const binary=atob(d.b64);
+    const ab=new Uint8Array(binary.length);
+    for(let i=0;i<binary.length;i++)ab[i]=binary.charCodeAt(i);
+    const pdf=await pdfjsLib.getDocument({data:ab}).promise;
+    const page=await pdf.getPage(1);
+    const nativeViewport=page.getViewport({scale:1.0});
+    const pdfNativeW=nativeViewport.width*(25.4/72);
+    const pdfNativeH=nativeViewport.height*(25.4/72);
+    const MAX_DISPLAY_PX=3000;
+    const displayScale=Math.min(2.0,MAX_DISPLAY_PX/Math.max(nativeViewport.width,nativeViewport.height));
+    const viewport=page.getViewport({scale:displayScale});
+    const oc=document.createElement('canvas');
+    oc.width=Math.round(viewport.width);oc.height=Math.round(viewport.height);
+    const ctx=oc.getContext('2d',{willReadFrequently:true});
+    await page.render({canvasContext:ctx,viewport}).promise;
+    const displayDataUrl=oc.toDataURL('image/png');
+    const vpUp=page.getViewport({scale:1.0});
+    const ocUp=document.createElement('canvas');
+    ocUp.width=vpUp.width;ocUp.height=vpUp.height;
+    await page.render({canvasContext:ocUp.getContext('2d',{willReadFrequently:true}),viewport:vpUp}).promise;
+    const upscaleDataUrl=ocUp.toDataURL('image/png');
+    const img=await loadImageFromDataUrl(displayDataUrl);
+    return {img,isPdf:true,pdfNativeW,pdfNativeH,displayDataUrl,srcData:upscaleDataUrl,mime:'image/png'};
+  }else{
+    const dataUrl='data:'+d.mediaType+';base64,'+d.b64;
+    const img=await loadImageFromDataUrl(dataUrl);
+    return {img,isPdf:false,srcData:dataUrl,mime:d.mediaType};
+  }
+}
+
+// First-ever load of an order (no working version saved yet): seed the canvas with the
+// original artwork. Unchanged behaviour from before — same visual result as always.
 async function loadArtworkFromStorage(storagePath, fileName){
   if(!storagePath)return;
   try{
-    const r=await fetch('/api/file?path='+encodeURIComponent(storagePath));
-    if(!r.ok){console.warn('Artwork file not in storage yet:',storagePath);return;}
-    const d=await r.json();
-    if(!d?.b64)return;
-    const isPdf=d.mediaType==='application/pdf'||(fileName||'').toLowerCase().endsWith('.pdf');
-    if(isPdf){
-      // Render PDF via PDF.js — same path as file upload
-      if(typeof pdfjsLib==='undefined'){console.error('pdfjsLib not loaded');return;}
-      const binary=atob(d.b64);
-      const ab=new Uint8Array(binary.length);
-      for(let i=0;i<binary.length;i++)ab[i]=binary.charCodeAt(i);
-      const pdf=await pdfjsLib.getDocument({data:ab}).promise;
-      const page=await pdf.getPage(1);
-      const nativeViewport=page.getViewport({scale:1.0});
-      const pdfNativeW=nativeViewport.width*(25.4/72);
-      const pdfNativeH=nativeViewport.height*(25.4/72);
-      const MAX_DISPLAY_PX=3000;
-      const displayScale=Math.min(2.0,MAX_DISPLAY_PX/Math.max(nativeViewport.width,nativeViewport.height));
-      const viewport=page.getViewport({scale:displayScale});
-      const oc=document.createElement('canvas');
-      oc.width=Math.round(viewport.width);oc.height=Math.round(viewport.height);
-      const ctx=oc.getContext('2d',{willReadFrequently:true});
-      await page.render({canvasContext:ctx,viewport}).promise;
-      const displayDataUrl=oc.toDataURL('image/png');
-      const vpUp=page.getViewport({scale:1.0});
-      const ocUp=document.createElement('canvas');
-      ocUp.width=vpUp.width;ocUp.height=vpUp.height;
-      await page.render({canvasContext:ocUp.getContext('2d',{willReadFrequently:true}),viewport:vpUp}).promise;
-      const upscaleDataUrl=ocUp.toDataURL('image/png');
-      const img=new Image();
-      img.onload=()=>{captureState('Add layer');const l=addLayer(fileName||'Customer artwork',img,upscaleDataUrl,'image/png');if(l){l.pdfNativeW=pdfNativeW;l.pdfNativeH=pdfNativeH;l.img=img;l.displayDataUrl=displayDataUrl;centreOnTemplate(l);syncControlsToActive();draw();}};
-      img.src=displayDataUrl;
-    }else{
-      const img=new Image();
-      const dataUrl='data:'+d.mediaType+';base64,'+d.b64;
-      img.onload=()=>addLayer(fileName||'Customer artwork',img,dataUrl,d.mediaType);
-      img.src=dataUrl;
-    }
+    const res=await fetchArtworkImage(storagePath, fileName);
+    if(!res)return;
+    captureState('Add layer');
+    const l=addLayer(fileName||'Customer artwork',res.img,res.srcData,res.mime);
+    if(l&&res.isPdf){l.pdfNativeW=res.pdfNativeW;l.pdfNativeH=res.pdfNativeH;l.img=res.img;l.displayDataUrl=res.displayDataUrl;centreOnTemplate(l);}
+    syncControlsToActive();draw();
   }catch(e){console.error('artwork load failed',e);}
+}
+
+// Reconstructs the canvas exactly as last saved. The original file in storage is only
+// re-fetched for layers that reference it (srcUrl null, i.e. the pipeline-loaded artwork) —
+// layers added by hand carry their own image data and rehydrate straight from that. If a
+// layer was deleted and saved, it stays deleted here — the original is never re-injected
+// unless the user explicitly reverts.
+async function restoreWorkingVersion(state, storagePath, fileName){
+  if(!state||!state.sides)return;
+  const savedActiveSide=state.activeSide!=null?state.activeSide:0;
+  for(let i=0;i<state.sides.length;i++){
+    const ss=state.sides[i];
+    if(!sides[i])continue;
+    activeSide=i;
+    sides[i].bgColor=ss.bgColor||null;
+    for(const sl of (ss.layers||[])){
+      let l=null;
+      try{
+        if(sl.srcUrl){
+          const img=await loadImageFromDataUrl(sl.srcUrl);
+          const mime=(sl.srcUrl.split(';')[0].split(':')[1])||'image/png';
+          l=addLayer(sl.name||'Layer',img,sl.srcUrl,mime);
+        }else if(storagePath){
+          const res=await fetchArtworkImage(storagePath,fileName);
+          if(res){
+            l=addLayer(sl.name||fileName||'Customer artwork',res.img,res.srcData,res.mime);
+            if(l&&res.isPdf){l.pdfNativeW=res.pdfNativeW;l.pdfNativeH=res.pdfNativeH;l.img=res.img;l.displayDataUrl=res.displayDataUrl;}
+          }
+        }
+      }catch(e){console.error('restore layer failed',e);}
+      if(l){
+        l.offsetX=sl.offsetX;l.offsetY=sl.offsetY;l.scale=sl.scale;
+        l.rotation=sl.rotation||0;l.flipX=!!sl.flipX;l.flipY=!!sl.flipY;
+        l.visible=sl.visible!==false;
+        if(sl.opacity!==undefined)l.opacity=sl.opacity;
+      }
+    }
+  }
+  activeSide=savedActiveSide;
+  if(state.templateRotDeg!==undefined&&typeof templateRotDeg!=='undefined')templateRotDeg=state.templateRotDeg;
+  syncControlsToActive();renderLayersList();computeLayout();draw();
+}
+
+// Explicit, user-triggered discard of the working version — re-seeds from the immutable
+// original. Only fires from the toolbar button + confirmation modal, never automatically.
+function openRevertModal(){document.getElementById('revertModalBg').classList.add('show');}
+function revertCancel(){document.getElementById('revertModalBg').classList.remove('show');}
+async function revertToOriginal(){
+  document.getElementById('revertModalBg').classList.remove('show');
+  if(!currentStoragePath){showToast('No original file on record for this order');return;}
+  sides=[blankSideState(),blankSideState()];
+  activeSide=0;
+  renderLayersList();
+  showToast('Reverting to original…');
+  await loadArtworkFromStorage(currentStoragePath,currentAssetFileName);
+  markSaved();
+  showToast('Reverted to original — not yet saved');
 }
 
 async function resolveSkuKey(raw){
@@ -2580,15 +2679,23 @@ async function initFromAaId(aaId){
     const storagePath=aa.sage_order&&aa.asset_filename
       ? `${aa.sage_order}/${aa.asset_filename}`
       : null;
+    currentStoragePath=storagePath;
+    currentAssetFileName=aa.asset_filename||'Customer artwork';
 
-    await loadSkuAndArtwork(sku, storagePath, aa.asset_filename||'Customer artwork');
-      if(row&&row.designer_state){
-      setTimeout(()=>{
-        if(applyDesignerState(row.designer_state)){
-          markSaved();
-          showToast('Restored saved version '+(row.saved_version||1));
-        }
-      },1400);
+    // 1. Template — always resolved fresh on every load, independent of any saved working
+    // version. Pass storagePath=null here so this call handles the SKU step only.
+    await loadSkuAndArtwork(sku, null, currentAssetFileName);
+
+    // 2. Artwork — if a working version has been saved before, restore it exactly as left
+    // (including any deleted/repositioned layers). Only seed from the original file on the
+    // very first-ever load of this order. The original is never re-injected after that
+    // unless the user explicitly hits "Revert to original".
+    if(aa.designer_state&&aa.saved_version){
+      await restoreWorkingVersion(aa.designer_state,storagePath,currentAssetFileName);
+      markSaved();
+      showToast('Working version restored (v'+aa.saved_version+')');
+    }else if(storagePath){
+      await loadArtworkFromStorage(storagePath,currentAssetFileName);
     }
   }catch(e){console.error('aa_id init failed',e);}
 }
