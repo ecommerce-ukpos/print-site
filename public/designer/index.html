@@ -736,9 +736,6 @@ canvas{display:block}
       <button class="tb-vbtn active" id="stWorking" onclick="setViewMode('working')">Working</button>
       <button class="tb-vbtn" id="stFull" onclick="setViewMode('full')">Full size</button>
     </div>
-    <div class="tb-vgroup" style="margin-left:10px">
-      <button class="tb-vbtn" id="stProof" onclick="toggleProof()" title="Hide guides and template — see artwork as it will print">👁 Show proof</button>
-    </div>
     <div class="ct-sep"></div>
     <div class="zoom-group">
       <div class="zoom-btn" onclick="zoomBy(-0.25)" title="Zoom out">−</div>
@@ -748,7 +745,7 @@ canvas{display:block}
     </div>
     <span class="ct-info" id="ctInfo">Scaled to fit screen</span>
     <div class="ct-sep"></div>
-    <button class="tb-revert-btn" onclick="openRevertModal()" title="Discard the working version and reload the customer's original submitted artwork">⟲ Revert to original</button>
+    <button class="tb-revert-btn" onclick="openRevertModal()" title="Discard the working version and reload the customer's original submitted artwork">⟲ Revert to customer original</button>
   </div>
   <div class="canvas-spinner" id="canvasSpinner">
     <svg viewBox="0 0 36 36" fill="none" xmlns="http://www.w3.org/2000/svg">
@@ -832,8 +829,6 @@ canvas{display:block}
   </div>
 
   <div class="rp-actions">
-    <button class="rp-btn rp-btn-green" id="btnSubmit" disabled onclick="submitToArtworkList()">Submit to artwork list →</button>
-    <button class="rp-btn rp-btn-blue"  id="btnAssessor" disabled onclick="goToAssessor()">Run checks in assessor</button>
         <button class="rp-btn" id="btnExportPrint"    disabled onclick="exportPrintProof()"  style="background:#F2F1F6;color:#2C2C2A;border-color:#D3D1C7">⎙ See Print Proof</button>
     <button class="rp-btn" id="btnExportCustomer" disabled onclick="exportCustomerPNG()" style="background:#F2F1F6;color:#2C2C2A;border-color:#D3D1C7">✉ Resend to Customer</button>
     <button class="rp-btn" id="btnSendQueue" disabled onclick="sendToPrintQueue()" style="background:#2E7D32;color:#fff;border-color:#2E7D32;opacity:0.4">✓ Send to Print Queue</button>
@@ -1911,14 +1906,10 @@ function updateStatusUI(){
   try{
     const layers=getLayers();
     const enbl=v=>{
-      document.getElementById('btnSubmit').disabled=!v;
-      document.getElementById('btnAssessor').disabled=layers.length===0;
       document.getElementById('btnExportCustomer').disabled=layers.length===0;
       document.getElementById('btnExportPrint').disabled=layers.length===0;
     };
     if(isDoubleSided){
-      document.getElementById('btnSubmit').disabled=true;
-      document.getElementById('btnAssessor').disabled=layers.length===0;
       document.getElementById('btnExportCustomer').disabled=layers.length===0;
       document.getElementById('btnExportPrint').disabled=layers.length===0;
       return;
@@ -1941,13 +1932,13 @@ function updateStatusUI(){
     const coversTrim=hasBg||(al<=TX+COVERAGE_EPS&&at<=TY+COVERAGE_EPS&&(al+aw)>=(TX+TW)-COVERAGE_EPS&&(at+ah)>=(TY+TH)-COVERAGE_EPS);
     const coverageOk=spec.bleed===0?coversTrim:coversBleed;
     if(!coversTrim&&!coverageOk){set('cs-warn','⚠ Artwork does not cover the trim area');enbl(false);return;}
-    if(hasFailItems()){set('cs-warn','⚠ Critical issues must be resolved before submitting');enbl(false);return;}
+    if(hasFailItems()){set('cs-warn','⚠ Critical issues must be resolved');enbl(false);return;}
     const warnsOk=allWarnsAcknowledged();
     if(!warnsOk){
-      const warnMsg=coverageOk?'⚠ Acknowledge all warnings below before submitting':'⚠ Covers trim but not bleed — acknowledge warnings to proceed';
+      const warnMsg=coverageOk?'⚠ Acknowledge all warnings below to proceed':'⚠ Covers trim but not bleed — acknowledge warnings to proceed';
       set('cs-warn',warnMsg);enbl(false);return;
     }
-    set('cs-ok','✓ Artwork covers the '+(spec.bleed>0?'bleed':'trim')+' area — ready to submit');enbl(true);
+    set('cs-ok','✓ Artwork covers the '+(spec.bleed>0?'bleed':'trim')+' area');enbl(true);
   }catch(e){console.error('updateStatusUI error:',e);}
 }
 
@@ -2010,15 +2001,6 @@ function updatePreflight(){
 }
 
 // ── View mode ──────────────────────────────────────────────
-let proofMode=false;
-function toggleProof(){
-  proofMode=!proofMode;
-  const b=document.getElementById('stProof');
-  if(b){ b.classList.toggle('active',proofMode); b.textContent=proofMode?'👁 Exit proof':'👁 Show proof'; }
-  const legend=document.querySelector('.guides-float');
-  if(legend) legend.style.display=proofMode?'none':'';
-  draw();
-}
 function setViewMode(m){
   const spec=currentSku?SKU_SPECS[currentSku]:null;if(!spec||!spec.w){viewMode=m;return;}
   document.getElementById('stWorking').classList.toggle('active',m==='working');
