@@ -830,7 +830,7 @@ canvas{display:block}
 
   <div class="rp-actions">
         <button class="rp-btn" id="btnExportPrint"    disabled onclick="exportPrintProof()"  style="background:#F2F1F6;color:#2C2C2A;border-color:#D3D1C7">⎙ See Print Proof</button>
-    <button class="rp-btn" id="btnExportCustomer" disabled onclick="exportCustomerPNG()" style="background:#F2F1F6;color:#2C2C2A;border-color:#D3D1C7">✉ Resend to Customer</button>
+    <button class="rp-btn" id="btnExportCustomer" disabled onclick="exportCustomerPNG()" style="background:#F2F1F6;color:#2C2C2A;border-color:#D3D1C7;opacity:0.55" title="Downloads a PNG for you to forward manually — direct email sending isn't built yet">✉ Resend to Customer</button>
     <button class="rp-btn" id="btnSendQueue" disabled onclick="sendToPrintQueue()" style="background:#2E7D32;color:#fff;border-color:#2E7D32;opacity:0.4">✓ Send to Print Queue</button>
     <a class="rp-btn" href="#" onclick="navAway('/dashboard');return false;">← Artwork list</a>
   </div>
@@ -2608,12 +2608,21 @@ async function resolveSkuKey(raw){
       // Exact sku_family match
       const exact=rows.find(x=>(x.sku_family||'').toLowerCase()===bl);
       if(exact)return exact;
-      // base starts-with sku_family (e.g. ABC7A1 matches family ABC7)
-      const sw=rows.find(x=>bl.startsWith((x.sku_family||'').toLowerCase()) && x.sku_family);
-      if(sw)return sw;
-      // sku_family starts-with base (e.g. family ABC7A1 matches base ABC7A)
-      const sw2=rows.find(x=>(x.sku_family||'').toLowerCase().startsWith(bl));
-      if(sw2)return sw2;
+      // base starts-with sku_family (e.g. ABC7A1 matches family ABC7) — when several
+      // active families fit, the most specific (longest) one is almost always correct,
+      // never whichever the API happened to list first.
+      const swMatches=rows.filter(x=>x.sku_family && bl.startsWith((x.sku_family||'').toLowerCase()));
+      if(swMatches.length){
+        swMatches.sort((a,b)=>(b.sku_family||'').length-(a.sku_family||'').length);
+        return swMatches[0];
+      }
+      // sku_family starts-with base (e.g. family ABC7A1 matches base ABC7A) — prefer the
+      // shortest (closest) match for the same reason, in reverse.
+      const sw2Matches=rows.filter(x=>(x.sku_family||'').toLowerCase().startsWith(bl));
+      if(sw2Matches.length){
+        sw2Matches.sort((a,b)=>(a.sku_family||'').length-(b.sku_family||'').length);
+        return sw2Matches[0];
+      }
       // product_name contains base
       const pn=rows.find(x=>(x.product_name||'').toLowerCase().includes(bl));
       if(pn)return pn;
