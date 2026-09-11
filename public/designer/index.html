@@ -1368,7 +1368,9 @@ function draw(){
   drawInactiveSide();
 }
 
-function drawToContext(ctx, layers, bgColor, drawHandlesFlag, tmplA, sideIdx){
+function drawToContext(ctx, layers, bgColor, drawHandlesFlag, tmplA, sideIdx, showBleed, showTrim){
+  if(showBleed===undefined)showBleed=true;
+  if(showTrim===undefined)showTrim=true;
   if(!ctx) return;
   sideIdx = sideIdx !== undefined ? sideIdx : activeSide;
   tmplA = tmplA !== undefined ? tmplA : (parseInt(document.getElementById('tmplOpacity').value)/100);
@@ -1428,10 +1430,10 @@ function drawToContext(ctx, layers, bgColor, drawHandlesFlag, tmplA, sideIdx){
   const safePath  = svgSafe  ? svgPathToCanvas(svgSafe)  : (SAFEPX>0 ? rectPath(TX+SAFEPX,TY+SAFEPX,TW-SAFEPX*2,TH-SAFEPX*2) : null);
 
   // Bleed area highlight
-  ctx.save(); ctx.globalAlpha=0.06; ctx.fillStyle='#fff'; ctx.fill(bleedPath); ctx.restore(); ctx.globalAlpha=1;
+  if(showBleed){ ctx.save(); ctx.globalAlpha=0.06; ctx.fillStyle='#fff'; ctx.fill(bleedPath); ctx.restore(); ctx.globalAlpha=1; }
 
   // Trim line
-  ctx.save(); ctx.strokeStyle='rgba(30,100,220,0.85)'; ctx.lineWidth=1.5; ctx.stroke(trimPath); ctx.restore();
+  if(showTrim){ ctx.save(); ctx.strokeStyle='rgba(30,100,220,0.85)'; ctx.lineWidth=1.5; ctx.stroke(trimPath); ctx.restore(); }
 
     // ── Guide labels: scale with canvas so they stay readable when zoomed ──
     const gFS = Math.max(5, Math.min(9, Math.round(TW/116)));
@@ -2238,7 +2240,8 @@ function exportCustomerPNG(){
   showToast('Customer PNG downloaded');
 }
 
-// Print Proof: artwork at 100%, NO template, NO guides. Internal check only. Opens as PDF.
+// Print Proof: artwork at 100%, NO bleed/safe/trim guides at all. This is what staff (and
+// customers, if forwarded) see when checking artwork. Opens as PDF.
 function exportPrintProof(){
   const layers=getLayers();
   if(!layers.length){showToast('No artwork to export');return;}
@@ -2254,17 +2257,29 @@ function exportPrintProof(){
     offsetX:ex.eTX+(l.offsetX-oTX-oTW/2)*ex.scaleX+ex.eTW/2,
     offsetY:ex.eTY+(l.offsetY-oTY-oTH/2)*ex.scaleY+ex.eTH/2,
   }));
-  const offscreen=document.createElement('canvas');
-  offscreen.width=ex.eCW;offscreen.height=ex.eCH;
-  const ctx=offscreen.getContext('2d');
-  drawToContext(ctx,exportLayers,S().bgColor,false,0,activeSide);
-  CW=oCW;CH=oCH;TX=oTX;TY=oTY;TW=oTW;TH=oTH;BLEEDPX=oBLEED;SAFEPX=oSAFE;viewMode=oMode;
   const bx=ex.eTX-ex.eBLEED,by=ex.eTY-ex.eBLEED,bw=ex.eTW+ex.eBLEED*2,bh=ex.eTH+ex.eBLEED*2;
-  const cropCanvas=document.createElement('canvas');
-  cropCanvas.width=bw;cropCanvas.height=bh;
-  cropCanvas.getContext('2d').drawImage(offscreen,bx,by,bw,bh,0,0,bw,bh);
-    const printDataUrl=cropCanvas.toDataURL('image/png');
-  S().printPngData=printDataUrl;
+
+  // 1. The proof itself — pure artwork, zero guides (no bleed, no trim, no safe zone)
+  const offscreenProof=document.createElement('canvas');
+  offscreenProof.width=ex.eCW;offscreenProof.height=ex.eCH;
+  drawToContext(offscreenProof.getContext('2d'),exportLayers,S().bgColor,false,0,activeSide,false,false);
+  const cropProof=document.createElement('canvas');
+  cropProof.width=bw;cropProof.height=bh;
+  cropProof.getContext('2d').drawImage(offscreenProof,bx,by,bw,bh,0,0,bw,bh);
+  const printDataUrl=cropProof.toDataURL('image/png');
+
+  // 2. The print-queue file — same artwork, trim line only (no bleed highlight, no safe
+  // zone). This is what the print team see once it's sent to the queue — never shown here.
+  const offscreenPrint=document.createElement('canvas');
+  offscreenPrint.width=ex.eCW;offscreenPrint.height=ex.eCH;
+  drawToContext(offscreenPrint.getContext('2d'),exportLayers,S().bgColor,false,0,activeSide,false,true);
+  const cropPrint=document.createElement('canvas');
+  cropPrint.width=bw;cropPrint.height=bh;
+  cropPrint.getContext('2d').drawImage(offscreenPrint,bx,by,bw,bh,0,0,bw,bh);
+  const printQueueDataUrl=cropPrint.toDataURL('image/png');
+
+  CW=oCW;CH=oCH;TX=oTX;TY=oTY;TW=oTW;TH=oTH;BLEEDPX=oBLEED;SAFEPX=oSAFE;viewMode=oMode;
+  S().printPngData=printQueueDataUrl;
   S().printPngName=(jobId||'artwork')+'_print.png';
   updateQueueBtn();
   const spec=SKU_SPECS[currentSku]||{};
