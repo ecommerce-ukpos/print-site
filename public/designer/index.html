@@ -81,11 +81,6 @@ body{font-family:'Inter',-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;
 .leave-modal-btns .lm-stay:hover{background:#D96B0A}
 
 /* ══ JOB BAR ══ */
-.job-bar{display:none;align-items:center;gap:16px;padding:6px 16px;background:#EEEDFE;border-bottom:0.5px solid #AFA9EC;font-size:12px;flex-shrink:0}
-.job-bar.show{display:flex}
-.jb-label{font-size:10px;color:#7F77DD;font-weight:600;text-transform:uppercase;letter-spacing:0.05em;margin-right:3px}
-.jb-val{color:#3C3489;font-weight:500}
-.jb-back{margin-left:auto;font-size:11px;color:#534AB7;text-decoration:none}
 
 /* ══ WORKSPACE ══ */
 .workspace{display:flex;flex:1;overflow:hidden}
@@ -104,7 +99,7 @@ body{font-family:'Inter',-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;
 
 /* Step blocks */
 .step-block{border-bottom:0.5px solid #E8E6DE;flex-shrink:0}
-.step-header{display:flex;align-items:center;gap:8px;padding:8px 12px;cursor:pointer;user-select:none}
+.step-header{display:flex;align-items:center;gap:8px;padding:18px;cursor:pointer;user-select:none}
 .step-header:hover{background:#FAFAF8}
 /* Step pill states — all inline to prevent cascade override */
 .step-num{width:20px;height:20px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:9px;font-weight:700;flex-shrink:0;transition:all 0.15s}
@@ -126,8 +121,9 @@ body{font-family:'Inter',-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;
 .sku-confirm-keep:hover{background:#E8E6DE}
 .sku-confirm-clear{padding:7px 16px;border:0.5px solid #E24B4A;border-radius:7px;background:#FCEBEB;cursor:pointer;font-size:12px;font-weight:500;color:#A32D2D;font-family:'Inter',sans-serif}
 .sku-confirm-clear:hover{background:#E24B4A;color:#fff}
-.sku-summary{display:none;margin:0 12px 2px;padding:6px 9px;background:#FFF3EB;border:0.5px solid #FAC795;border-radius:7px;font-size:10px;cursor:pointer}
+.sku-summary{display:none;margin:0 12px 2px;padding:6px 9px 12px;background:#FFF3EB;border:0.5px solid #FAC795;border-bottom:0.5px solid #E8E6DE;border-radius:7px;font-size:10px;cursor:pointer}
 .sku-summary.show{display:block}
+#sb1{border-bottom:none}
 .sku-summary-top{display:flex;align-items:center;gap:5px;margin-bottom:2px}
 .sku-summary-code{font-weight:700;font-size:9px;background:#F47920;color:#fff;padding:1px 5px;border-radius:3px}
 .sku-summary-name{color:#7A3A00;font-weight:500;flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-size:10px}
@@ -186,6 +182,10 @@ body{font-family:'Inter',-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;
 .dial-right{flex:1;display:flex;flex-direction:column;gap:5px}
 .dial-readout{font-size:16px;font-weight:700;color:#F47920;text-align:center;letter-spacing:-0.02em}
 .dial-presets{display:grid;grid-template-columns:1fr 1fr;gap:3px}
+.ctrl-btn{flex:1;height:28px;border-radius:6px;border:1px solid #D8D6CC;background:#F2F1EC;font-size:12px;font-weight:600;color:#4A4946;cursor:pointer;font-family:'Inter',sans-serif}
+.ctrl-btn:hover{background:#E8E6DE}
+.ctrl-btn-sm{padding:6px 4px;font-size:12px;font-weight:700;border-radius:5px;border:1px solid #D8D6CC;background:#F2F1EC;color:#4A4946;cursor:pointer;text-align:center;font-family:'Inter',sans-serif}
+.ctrl-btn-sm:hover{background:#E8E6DE}
 /* Rotation preset buttons — inline in HTML to prevent cascade override */
 
 /* Controls */
@@ -323,21 +323,26 @@ canvas{display:block}
 .preflight-section::-webkit-scrollbar{width:2px}
 .preflight-section::-webkit-scrollbar-thumb{background:#D3D1C7}
 .pf-title{font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:0.08em;color:#888780;margin-bottom:7px}
-.pf-item{border-radius:7px;padding:7px 9px;margin-bottom:5px;border:0.5px solid transparent}
+.pf-item{border-radius:7px;padding:0;margin-bottom:5px;border:0.5px solid transparent;overflow:hidden}
 .pf-item.pass{background:#EAF3DE;border-color:#C0DD97}
 .pf-item.warn{background:#FAEEDA;border-color:#FAC775}
 .pf-item.fail{background:#FCEBEB;border-color:#F09595}
 .pf-item.idle{background:#F7F6F2;border-color:#D3D1C7}
-.pf-item-top{display:flex;align-items:center;gap:6px}
+.pf-item-top{display:flex;align-items:center;gap:6px;padding:9px;cursor:pointer;user-select:none}
 .pf-dot{width:7px;height:7px;border-radius:50%;flex-shrink:0}
 .pf-dot.pass{background:#639922}.pf-dot.warn{background:#D4890A}.pf-dot.fail{background:#C0392B}.pf-dot.idle{background:#B4B2A9}
-.pf-label{font-size:11px;font-weight:600;flex:1}
+.pf-label{font-size:13px;font-weight:600;flex:1}
 .pf-item.pass .pf-label,.pf-item.pass .pf-val,.pf-item.pass .pf-detail{color:#173404}
 .pf-item.warn .pf-label,.pf-item.warn .pf-val,.pf-item.warn .pf-detail{color:#412402}
 .pf-item.fail .pf-label,.pf-item.fail .pf-val,.pf-item.fail .pf-detail{color:#501313}
 .pf-item.idle .pf-label,.pf-item.idle .pf-val,.pf-item.idle .pf-detail{color:#5F5E5A}
-.pf-val{font-size:10px;font-weight:700}
-.pf-detail{font-size:10px;margin-top:2px;line-height:1.4}
+.pf-val{font-size:13px;font-weight:700}
+.pf-caret{width:14px;height:14px;flex-shrink:0;opacity:0.55;transition:transform 0.15s ease}
+.pf-item.open .pf-caret{transform:rotate(90deg)}
+.pf-body{max-height:0;overflow:hidden;transition:max-height 0.2s ease}
+.pf-item.open .pf-body{max-height:480px}
+.pf-body-inner{padding:0 9px 9px}
+.pf-detail{font-size:10.5px;margin-top:0;line-height:1.4}
 .pf-override{display:none;align-items:center;gap:5px;margin-top:6px;padding-top:6px;border-top:0.5px solid #FAC775}
 .pf-item.warn .pf-override{display:flex}
 .pf-override input[type=checkbox]{accent-color:#D4890A;width:11px;height:11px;cursor:pointer;flex-shrink:0}
@@ -484,14 +489,6 @@ canvas{display:block}
     <button class="tb-undo-btn" id="undoBtn" onclick="undo()" disabled title="Undo (Ctrl+Z)">↩</button>
     <button class="tb-undo-btn" id="redoBtn" onclick="redo()" disabled title="Redo (Ctrl+Y)">↪</button>
   </div>
-</div>
-
-<!-- Job bar (shown when editing existing job) -->
-<div class="job-bar" id="jobBar">
-  <span class="jb-label">Ref</span><span class="jb-val" id="jbRef">—</span>
-  <span class="jb-label" style="margin-left:12px">Customer</span><span class="jb-val" id="jbCustomer">—</span>
-  <span class="jb-label" style="margin-left:12px">Order</span><span class="jb-val" id="jbOrder">—</span>
-  <a class="jb-back" href="#" onclick="navAway('/dashboard');return false;">← Back to artwork list</a>
 </div>
 
 <div class="workspace">
@@ -658,9 +655,9 @@ canvas{display:block}
           <div class="dial-presets">
             <!-- Rotation presets: inline styles to prevent cascade override -->
             <button id="rp0d"   onclick="setAbsoluteRot(0)"   style="padding:4px;font-size:10px;font-weight:700;border-radius:5px;border:1px solid #E07010;background:#F47920;color:#ffffff;cursor:pointer;text-align:center;font-family:'Inter',sans-serif">0°</button>
-            <button id="rp90d"  onclick="setAbsoluteRot(90)"  style="padding:4px;font-size:10px;font-weight:700;border-radius:5px;border:1px solid #888780;background:#D3D1C7;color:#2C2C2A;cursor:pointer;text-align:center;font-family:'Inter',sans-serif">90°</button>
-            <button id="rpn90d" onclick="setAbsoluteRot(-90)" style="padding:4px;font-size:10px;font-weight:700;border-radius:5px;border:1px solid #888780;background:#D3D1C7;color:#2C2C2A;cursor:pointer;text-align:center;font-family:'Inter',sans-serif">−90°</button>
-            <button id="rp180d" onclick="setAbsoluteRot(180)" style="padding:4px;font-size:10px;font-weight:700;border-radius:5px;border:1px solid #888780;background:#D3D1C7;color:#2C2C2A;cursor:pointer;text-align:center;font-family:'Inter',sans-serif">180°</button>
+            <button id="rp90d"  class="ctrl-btn-sm" onclick="setAbsoluteRot(90)">90°</button>
+            <button id="rpn90d" class="ctrl-btn-sm" onclick="setAbsoluteRot(-90)">−90°</button>
+            <button id="rp180d" class="ctrl-btn-sm" onclick="setAbsoluteRot(180)">180°</button>
           </div>
         </div>
       </div>
@@ -673,18 +670,18 @@ canvas{display:block}
 
       <!-- Fit / Centre / Reset -->
       <div class="btn-row">
-        <button onclick="fitToBleed()" style="flex:1;height:24px;border-radius:6px;border:1px solid #888780;background:#D3D1C7;font-size:10px;font-weight:600;color:#2C2C2A;cursor:pointer;font-family:'Inter',sans-serif">Fit to bleed</button>
-        <button onclick="fitToTrim()"  style="flex:1;height:24px;border-radius:6px;border:1px solid #888780;background:#D3D1C7;font-size:10px;font-weight:600;color:#2C2C2A;cursor:pointer;font-family:'Inter',sans-serif">Fit to trim</button>
+        <button class="ctrl-btn" onclick="fitToBleed()">Fit to bleed</button>
+        <button class="ctrl-btn" onclick="fitToTrim()">Fit to trim</button>
       </div>
       <div class="btn-row">
-        <button onclick="centreActive()" style="flex:1;height:24px;border-radius:6px;border:1px solid #888780;background:#D3D1C7;font-size:10px;font-weight:600;color:#2C2C2A;cursor:pointer;font-family:'Inter',sans-serif">Centre</button>
-        <button onclick="resetActive()"  style="flex:1;height:24px;border-radius:6px;border:1px solid #888780;background:#D3D1C7;font-size:10px;font-weight:600;color:#2C2C2A;cursor:pointer;font-family:'Inter',sans-serif">Reset all</button>
+        <button class="ctrl-btn" onclick="centreActive()">Centre</button>
+        <button class="ctrl-btn" onclick="resetActive()">Reset all</button>
       </div>
 
       <!-- Flip -->
       <div class="flip-row">
-        <button class="flip-btn" id="flipHBtn" onclick="flipLayer('h')" title="Flip horizontal" style="flex:1;height:24px;border-radius:6px;border:1px solid #888780;background:#D3D1C7;font-size:10px;font-weight:600;color:#2C2C2A;cursor:pointer;font-family:'Inter',sans-serif">↔ Flip H</button>
-        <button class="flip-btn" id="flipVBtn" onclick="flipLayer('v')" title="Flip vertical"   style="flex:1;height:24px;border-radius:6px;border:1px solid #888780;background:#D3D1C7;font-size:10px;font-weight:600;color:#2C2C2A;cursor:pointer;font-family:'Inter',sans-serif">↕ Flip V</button>
+        <button class="ctrl-btn flip-btn" id="flipHBtn" onclick="flipLayer('h')" title="Flip horizontal">↔ Flip H</button>
+        <button class="ctrl-btn flip-btn" id="flipVBtn" onclick="flipLayer('v')" title="Flip vertical">↕ Flip V</button>
       </div>
 
       <label class="snap-toggle">
@@ -803,28 +800,36 @@ canvas{display:block}
   <div class="rp-section-title">Preflight checks</div>
   <div class="preflight-section" id="preflightSection">
     <div class="pf-item idle" id="pfBleed">
-      <div class="pf-item-top"><div class="pf-dot idle"></div><span class="pf-label">Bleed coverage</span><span class="pf-val" id="pfBleedVal">—</span></div>
-      <div class="pf-detail" id="pfBleedDetail"></div>
-      <div class="pf-override"><input type="checkbox" id="ovBleed" onchange="onOverrideChange()"><label for="ovBleed">I understand the risk and wish to proceed anyway</label></div>
+      <div class="pf-item-top" onclick="togglePfItem('pfBleed')"><div class="pf-dot idle"></div><span class="pf-label">Bleed coverage</span><span class="pf-val" id="pfBleedVal">—</span><svg class="pf-caret" viewBox="0 0 16 16" fill="none"><path d="M6 4l4 4-4 4" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg></div>
+      <div class="pf-body"><div class="pf-body-inner">
+        <div class="pf-detail" id="pfBleedDetail"></div>
+        <div class="pf-override"><input type="checkbox" id="ovBleed" onchange="onOverrideChange()"><label for="ovBleed">I understand the risk and wish to proceed anyway</label></div>
+      </div></div>
     </div>
     <div class="pf-item idle" id="pfDpi">
-      <div class="pf-item-top"><div class="pf-dot idle"></div><span class="pf-label">Resolution (DPI)</span><span class="pf-val" id="pfDpiVal">—</span></div>
-      <div class="pf-detail" id="pfDpiDetail"></div>
-      <div class="pf-override"><input type="checkbox" id="ovDpi" onchange="onOverrideChange()"><label for="ovDpi">I understand the risk and wish to proceed anyway</label></div>
-      <div class="pf-help">
-        <button class="pf-help-btn pf-help-btn-ai" id="btnAiUpscale" onclick="upscaleWithAI()">↑ Upscale with AI — fix this automatically</button>
-        <button class="pf-help-btn" onclick="showUpscaleModal()" style="margin-top:4px">↑ Upscaling tools — do it yourself</button>
-      </div>
+      <div class="pf-item-top" onclick="togglePfItem('pfDpi')"><div class="pf-dot idle"></div><span class="pf-label">Resolution (DPI)</span><span class="pf-val" id="pfDpiVal">—</span><svg class="pf-caret" viewBox="0 0 16 16" fill="none"><path d="M6 4l4 4-4 4" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg></div>
+      <div class="pf-body"><div class="pf-body-inner">
+        <div class="pf-detail" id="pfDpiDetail"></div>
+        <div class="pf-override"><input type="checkbox" id="ovDpi" onchange="onOverrideChange()"><label for="ovDpi">I understand the risk and wish to proceed anyway</label></div>
+        <div class="pf-help">
+          <button class="pf-help-btn pf-help-btn-ai" id="btnAiUpscale" onclick="upscaleWithAI()">↑ Upscale with AI — fix this automatically</button>
+          <button class="pf-help-btn" onclick="showUpscaleModal()" style="margin-top:4px">↑ Upscaling tools — do it yourself</button>
+        </div>
+      </div></div>
     </div>
     <div class="pf-item idle" id="pfSafe">
-      <div class="pf-item-top"><div class="pf-dot idle"></div><span class="pf-label">Safe zone</span><span class="pf-val" id="pfSafeVal">—</span></div>
-      <div class="pf-detail" id="pfSafeDetail"></div>
-      <div class="pf-override"><input type="checkbox" id="ovSafe" onchange="onOverrideChange()"><label for="ovSafe">I understand the risk and wish to proceed anyway</label></div>
+      <div class="pf-item-top" onclick="togglePfItem('pfSafe')"><div class="pf-dot idle"></div><span class="pf-label">Safe zone</span><span class="pf-val" id="pfSafeVal">—</span><svg class="pf-caret" viewBox="0 0 16 16" fill="none"><path d="M6 4l4 4-4 4" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg></div>
+      <div class="pf-body"><div class="pf-body-inner">
+        <div class="pf-detail" id="pfSafeDetail"></div>
+        <div class="pf-override"><input type="checkbox" id="ovSafe" onchange="onOverrideChange()"><label for="ovSafe">I understand the risk and wish to proceed anyway</label></div>
+      </div></div>
     </div>
     <div class="pf-item idle" id="pfColour">
-      <div class="pf-item-top"><div class="pf-dot idle"></div><span class="pf-label">Colour mode</span><span class="pf-val" id="pfColourVal">—</span></div>
-      <div class="pf-detail" id="pfColourDetail"></div>
-      <div class="pf-override"><input type="checkbox" id="ovColour" onchange="onOverrideChange()"><label for="ovColour">I understand the risk and wish to proceed anyway</label></div>
+      <div class="pf-item-top" onclick="togglePfItem('pfColour')"><div class="pf-dot idle"></div><span class="pf-label">Colour mode</span><span class="pf-val" id="pfColourVal">—</span><svg class="pf-caret" viewBox="0 0 16 16" fill="none"><path d="M6 4l4 4-4 4" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg></div>
+      <div class="pf-body"><div class="pf-body-inner">
+        <div class="pf-detail" id="pfColourDetail"></div>
+        <div class="pf-override"><input type="checkbox" id="ovColour" onchange="onOverrideChange()"><label for="ovColour">I understand the risk and wish to proceed anyway</label></div>
+      </div></div>
     </div>
   </div>
 
@@ -1945,10 +1950,18 @@ function updateStatusUI(){
 }
 
 // ── Preflight ──────────────────────────────────────────────
+function togglePfItem(id){
+  const item=document.getElementById(id);
+  if(item)item.classList.toggle('open');
+}
 function setPF(id,state,val,detail){
   const item=document.getElementById(id);
   const prevState=item.dataset.pfState||'idle';
-  item.className='pf-item '+state;
+  const wasOpen=item.classList.contains('open');
+  // Auto-expand the first time an item newly becomes a warning/failure, so it's not missed —
+  // but never force-close something the user already opened themselves.
+  const autoOpen=(state==='warn'||state==='fail')&&state!==prevState;
+  item.className='pf-item '+state+((wasOpen||autoOpen)?' open':'');
   item.dataset.pfState=state;
   item.querySelector('.pf-dot').className='pf-dot '+state;
   item.querySelector('.pf-val').textContent=val;
@@ -2670,10 +2683,7 @@ async function initFromAaId(aaId){
     const aa=rows[0];
     if(!aa)return;
 
-    // Update job bar with order info
-    document.getElementById('jobBar').classList.add('show');
-    document.getElementById('jbRef').textContent=aa.sage_order||urlOrder||'—';
-    document.getElementById('jbOrder').textContent=aa.sage_order||'—';
+    // Update top bar with order ref
     const refEl=document.getElementById('topbarRef');
     if(refEl)refEl.textContent=aa.sage_order||'Designer';
 
@@ -2710,10 +2720,6 @@ if(jobId){
   // Real DB job — fetch from jobs table
   fetch('/api/job?id='+jobId).then(r=>r.json()).then(async job=>{
     if(!job)return;
-    document.getElementById('jobBar').classList.add('show');
-    document.getElementById('jbRef').textContent=job.reference||'—';
-    document.getElementById('jbCustomer').textContent=job.customer_name||'—';
-    document.getElementById('jbOrder').textContent=job.order_number||'—';
     const refEl=document.getElementById('topbarRef');
     if(refEl)refEl.textContent=job.reference||'Designer';
     const sku=job.sku_name||job.sku||urlSku;
