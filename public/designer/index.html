@@ -1763,7 +1763,13 @@ function getRotatedFootprint(l){
 }
 function centreOnTemplate(l){l.offsetX=TX+TW/2;l.offsetY=TY+TH/2;}
 function fitLayerToBleed(l){
-  if(!l.img||!currentSku)return;
+  // Previously bailed when currentSku was empty, leaving the layer at its
+  // addLayer default of scale 1 centred on the 360x460 placeholder box. For a
+  // 3969x5613 asset that means the canvas shows a ~460x560 crop from the middle
+  // of the image -- which reads as "no artwork loaded" when the artwork is in
+  // fact loaded and simply 900% too big to see. TW/TH always hold a usable box
+  // (the placeholder when there is no SKU), so fit to it regardless.
+  if(!l.img)return;
   const bw=TW+BLEEDPX*2,bh=TH+BLEEDPX*2;
   const fp=getRotatedFootprint(l);
   l.scale=Math.max(bw/fp.w,bh/fp.h);
@@ -2746,6 +2752,17 @@ async function loadArtworkFromStorage(storagePath, fileName){
 async function restoreWorkingVersion(state, storagePath, fileName){
   if(!state||!state.sides)return;
   const savedActiveSide=state.activeSide!=null?state.activeSide:0;
+  // offsetX/offsetY/scale are raw canvas-pixel coordinates, so they only mean
+  // anything against the template layout they were captured on. If the saved
+  // state names a different SKU than the one now resolved, those numbers are
+  // stale -- order 0001243855 had scale 0.564 at offset 230,280, captured
+  // against the archived ABC5A1 row whose null finished_*_mm had dropped
+  // computeLayout onto its 360x460 placeholder (230,280 is exactly the centre
+  // of that box). Applying them over the correct 690x175 template reproduces
+  // the old broken placement on a now-correct template.
+  // Keep everything the designer actually decided -- deletions, visibility,
+  // rotation, flips, opacity -- and re-fit position and scale.
+  const staleLayout=!!(state.sku&&currentSku&&String(state.sku)!==String(currentSku));
   for(let i=0;i<state.sides.length;i++){
     const ss=state.sides[i];
     if(!sides[i])continue;
@@ -2767,16 +2784,23 @@ async function restoreWorkingVersion(state, storagePath, fileName){
         }
       }catch(e){console.error('restore layer failed',e);}
       if(l){
-        l.offsetX=sl.offsetX;l.offsetY=sl.offsetY;l.scale=sl.scale;
         l.rotation=sl.rotation||0;l.flipX=!!sl.flipX;l.flipY=!!sl.flipY;
         l.visible=sl.visible!==false;
         if(sl.opacity!==undefined)l.opacity=sl.opacity;
+        if(staleLayout){
+          fitLayerToBleed(l);
+        }else{
+          l.offsetX=sl.offsetX;l.offsetY=sl.offsetY;l.scale=sl.scale;
+        }
       }
     }
   }
   activeSide=savedActiveSide;
   if(state.templateRotDeg!==undefined&&typeof templateRotDeg!=='undefined')templateRotDeg=state.templateRotDeg;
   syncControlsToActive();renderLayersList();computeLayout();draw();
+  if(staleLayout){
+    showToast('Saved position was for SKU '+state.sku+' \u2014 artwork re-fitted to '+currentSku+'. Check placement before sending.');
+  }
 }
 
 // Explicit, user-triggered discard of the working version — re-seeds from the immutable
