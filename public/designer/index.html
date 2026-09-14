@@ -25,6 +25,7 @@ body{font-family:'Inter',-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;
 .tb-div{width:1px;height:18px;background:#D3D1C7;flex-shrink:0}
 .tb-ref{font-size:11px;font-weight:500;color:#5F5E5A;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:200px}
 .tb-sku{height:18px;padding:0 7px;background:#FFF0E6;border-radius:4px;font-size:10px;font-weight:600;color:#C75E0A;display:flex;align-items:center;flex-shrink:0}
+.tb-customer{font-size:11px;color:#5F5E5A;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:200px}
 .tb-sp{flex:1}
 /* Undo buttons */
 /* View toggle */
@@ -87,11 +88,11 @@ body{font-family:'Inter',-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;
 .step-panel::-webkit-scrollbar-thumb{background:#D3D1C7;border-radius:2px}
 
 /* Undo bar inside panel */
-.undo-bar{display:flex;align-items:center;gap:5px;padding:6px 12px;border-bottom:0.5px solid #E8E6DE;flex-shrink:0;background:#FAFAF8}
-.undo-btn{display:flex;align-items:center;gap:3px;padding:3px 8px;font-size:10px;border-radius:5px;border:1px solid #B4B2A9;background:#E8E6DE;color:#2C2C2A;cursor:pointer;font-family:'Inter',sans-serif;font-weight:600}
+.undo-bar{display:flex;flex-wrap:wrap;align-items:center;gap:8px;padding:10px 12px;border-bottom:0.5px solid #E8E6DE;flex-shrink:0;background:#FAFAF8}
+.undo-btn{flex:1 1 calc(50% - 4px);display:flex;align-items:center;justify-content:center;gap:5px;padding:9px 10px;font-size:12px;border-radius:6px;border:1px solid #B4B2A9;background:#E8E6DE;color:#2C2C2A;cursor:pointer;font-family:'Inter',sans-serif;font-weight:600}
 .undo-btn:hover:not(:disabled){background:#D3D1C7}
 .undo-btn:disabled{opacity:0.35;cursor:not-allowed}
-.undo-label{font-size:9px;color:#888780;margin-left:auto;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;max-width:80px}
+.undo-label{font-size:10px;color:#888780;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;flex-basis:100%;margin-left:0}
 
 /* Step blocks */
 .step-block{border-bottom:0.5px solid #E8E6DE;flex-shrink:0}
@@ -338,7 +339,7 @@ canvas{display:block}
 .pf-body{max-height:0;overflow:hidden;transition:max-height 0.2s ease}
 .pf-item.open .pf-body{max-height:480px}
 .pf-body-inner{padding:0 9px 9px}
-.pf-detail{font-size:10.5px;margin-top:0;line-height:1.4}
+.pf-detail{font-size:12px;margin-top:0;line-height:1.4}
 .pf-override{display:none;align-items:center;gap:5px;margin-top:6px;padding-top:6px;border-top:0.5px solid #FAC775}
 .pf-item.warn .pf-override{display:flex}
 .pf-override input[type=checkbox]{accent-color:#D4890A;width:11px;height:11px;cursor:pointer;flex-shrink:0}
@@ -479,6 +480,7 @@ canvas{display:block}
   <div class="tb-div" style="position:relative;z-index:2"></div>
   <span class="tb-ref" id="topbarRef" style="position:relative;z-index:2">Designer</span>
   <span class="tb-sku" id="topbarSku" style="display:none"></span>
+  <span class="tb-customer" id="topbarCustomer" style="display:none"></span>
   <div class="tb-sp"></div>
 </div>
 
@@ -719,9 +721,9 @@ canvas{display:block}
 
   <!-- Canvas toolbar: view toggle + zoom, sits above the canvas -->
   <div class="canvas-toolbar">
-    <span style="font-size:10px;font-weight:600;color:#888780;letter-spacing:0.04em;text-transform:uppercase;flex-shrink:0">View</span>
+    <span style="font-size:10px;font-weight:600;color:#888780;letter-spacing:0.04em;text-transform:uppercase;flex-shrink:0">See</span>
     <div class="tb-view">
-      <button class="tb-vbtn active" id="stWorking" onclick="setViewMode('working')">See Working Size</button>
+      <button class="tb-vbtn active" id="stWorking" onclick="setViewMode('working')">Working</button>
       <button class="tb-vbtn" id="stFull" onclick="setViewMode('full')">Full Size</button>
     </div>
     <div class="ct-sep"></div>
@@ -2678,6 +2680,19 @@ async function initFromAaId(aaId){
     // Update top bar with order ref
     const refEl=document.getElementById('topbarRef');
     if(refEl)refEl.textContent=aa.sage_order||'Designer';
+
+    // Customer name lives on order_manifest, not artwork_analysis — separate lookup by
+    // sage_order, fetched in parallel with everything below rather than blocking on it.
+    if(aa.sage_order){
+      fetch(`${SURL}/rest/v1/order_manifest?sage_order=eq.${aa.sage_order}&select=customer_name,company&limit=1`,
+        {headers:{apikey:SKEY,Authorization:'Bearer '+SKEY}})
+        .then(r=>r.ok?r.json():[])
+        .then(rows=>{
+          const custEl=document.getElementById('topbarCustomer');
+          const name=rows[0]?.customer_name||rows[0]?.company||'';
+          if(custEl&&name){custEl.textContent=name;custEl.style.display='block';}
+        }).catch(e=>console.error('customer lookup failed',e));
+    }
 
     // Determine SKU — URL param takes priority, fall back to aa row
     const sku=urlSku||aa.sku||'';
