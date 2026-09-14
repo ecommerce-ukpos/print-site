@@ -990,6 +990,10 @@ const BG_PRESETS=['transparent','#FFFFFF','#000000','#F47920','#1A2233','#D4E8FF
 
 // ── Core state ─────────────────────────────────────────────
 let currentSku='', viewMode='working', jobId=null, openStep=1;
+// Effective render dpi of the Full Size canvas once the memory budget in
+// computeLayout() has been applied. Null in working mode. Surfaced in the
+// view info line so a capped preview is never silently misrepresented as 1:1.
+let fullSizeEffDpi=null;
 // Nominal CSS reference resolution. Adjust per-monitor if physical accuracy matters.
 const SCREEN_DPI=96;
 let templateRotDeg=0, zoomLevel=1;
@@ -1268,16 +1272,45 @@ function computeLayout(){
   if(viewMode==='full'){
     let mmPx=25.4/spec.dpi;
     let fTW=Math.round(spec.w/mmPx),fTH=Math.round(spec.h/mmPx);
+    // Two caps, and both matter.
+    //
+    // MAX_CANVAS_PX guards a single canvas against Chrome's hard per-canvas
+    // dimension limit. It is NOT enough on its own: the stage holds a main and a
+    // snap canvas per visible side, so a double-sided A1 at 300dpi asks for four
+    // backing stores of 7096x10013 -- about 1.1GB. Chrome silently refuses the
+    // allocation and hands back canvases with no backing store, which is why the
+    // artwork vanished in Full Size while the guides still appeared to draw.
+    //
+    // MAX_TOTAL_CANVAS_PX budgets the combined backing store across every canvas
+    // the stage will allocate. It only bites on genuinely large double-sided
+    // formats (A1 and up); A2 and single-sided A1 still render at true 300dpi.
+    // Exports are unaffected -- exportPrintProof/exportCustomerPng build their own
+    // offscreen canvases from getExportLayout() and never read CW/CH from here.
     const MAX_CANVAS_PX=16000;
+    // Tuning knob. 140M px is ~560MB of backing store across four canvases.
+    // If Full Size still blanks on the biggest double-sided formats, lower this
+    // first (120e6 / 100e6) before changing anything else.
+    const MAX_TOTAL_CANVAS_PX=140e6;
     if(fTW>MAX_CANVAS_PX||fTH>MAX_CANVAS_PX){
       const capScale=MAX_CANVAS_PX/Math.max(fTW,fTH);
       fTW=Math.round(fTW*capScale);fTH=Math.round(fTH*capScale);
       mmPx=spec.w/fTW;
     }
+    const liveCanvases=isDoubleSided?4:2;
+    let projBleed=Math.round(spec.bleed/mmPx);
+    let projArea=(fTW+projBleed*2+80)*(fTH+projBleed*2+80)*liveCanvases;
+    if(projArea>MAX_TOTAL_CANVAS_PX){
+      const areaScale=Math.sqrt(MAX_TOTAL_CANVAS_PX/projArea);
+      fTW=Math.max(1,Math.round(fTW*areaScale));
+      fTH=Math.max(1,Math.round(fTH*areaScale));
+      mmPx=spec.w/fTW;
+    }
     TW=fTW;TH=fTH;
+    fullSizeEffDpi=Math.round(25.4/mmPx);
     BLEEDPX=Math.round(spec.bleed/mmPx);SAFEPX=Math.round((spec.safe_zone||5)/mmPx);
     CW=TW+BLEEDPX*2+80;CH=TH+BLEEDPX*2+80;
   }else{
+    fullSizeEffDpi=null;
     const scrollEl=document.getElementById('canvasScroll');
     const availW=isDoubleSided?Math.floor((scrollEl.clientWidth-40-12)*0.62):scrollEl.clientWidth-64;
     const availH=scrollEl.clientHeight-80;
@@ -1297,10 +1330,22 @@ function computeLayout(){
 function setCanvasSize(w,h){
   CW=w;CH=h;
   const dpr=(viewMode==='working')?(zoomLevel||1):1;
+  const tw=Math.round(w*dpr), th=Math.round(h*dpr);
+  let failed=false;
   ['mainCanvas','snapCanvas','mainCanvas0','snapCanvas0','mainCanvas1','snapCanvas1'].forEach(id=>{
     const el=document.getElementById(id);
-    if(el){el.width=Math.round(w*dpr);el.height=Math.round(h*dpr);}
+    if(!el)return;
+    el.width=tw;el.height=th;
+    // When Chrome cannot allocate a backing store it does not throw -- it resets
+    // the canvas to its 300x150 default, or keeps the attribute but drops the
+    // pixels. Catching that here turns a blank stage into a visible warning
+    // instead of an unexplained disappearance.
+    if(el.width!==tw||el.height!==th)failed=true;
   });
+  if(failed){
+    console.error('Canvas allocation refused at '+tw+'x'+th+' -- backing store unavailable');
+    if(typeof showToast==='function')showToast('This size is too large for the browser to render — showing a reduced preview');
+  }
   applyZoom();
 }
 
@@ -1766,13 +1811,36 @@ window.addEventListener('touchend',()=>{if(dialDragging){dialDragging=false;rend
 function handleFileInput(e){Array.from(e.target.files).forEach(loadLayerFile);e.target.value='';}
 function handleDropOnZone(e){e.preventDefault();document.getElementById('uploadDrop').classList.remove('drag-over');Array.from(e.dataTransfer.files).forEach(loadLayerFile);}
 async function loadLayerFile(file){
-  // ── EPS: not supported — show guidance modal ──
-  const isEps=file.name.toLowerCase().endsWith('.eps')||
+  // ── EPS / AI ──
+  // EPS is never readable in a browser -- refuse it up front.
+  // AI is different: Illustrator writes a PDF-compatible stream by default, so
+  // pdf.js can usually open a .ai exactly as it opens a .pdf. Try that first and
+  // only show the guidance modal if the file genuinely has no PDF stream.
+  // Note .ai and .eps often share the application/postscript MIME type, so the
+  // filename extension decides, not file.type.
+  const lowerName=file.name.toLowerCase();
+  const isAiFile=lowerName.endsWith('.ai');
+  const isEps=!isAiFile&&(lowerName.endsWith('.eps')||
               file.type==='application/postscript'||
               file.type==='application/eps'||
               file.type==='image/x-eps'||
-              file.type==='application/x-eps';
-  if(isEps){showEpsModal();return;}
+              file.type==='application/x-eps');
+  if(isEps){showEpsModal('eps');return;}
+  if(isAiFile){
+    if(typeof pdfjsLib==='undefined'){alert('PDF preview library not loaded. Please refresh and try again.');return;}
+    try{
+      const res=await renderPdfArrayBuffer(await file.arrayBuffer());
+      captureState('Add layer');
+      const l=addLayer(file.name,res.img,res.srcData,res.mime);
+      if(l){l.pdfNativeW=res.pdfNativeW;l.pdfNativeH=res.pdfNativeH;l.displayDataUrl=res.displayDataUrl;centreOnTemplate(l);}
+      syncControlsToActive();draw();
+      showToast('Illustrator file read via its PDF stream');
+    }catch(e){
+      console.error('Illustrator file has no readable PDF stream',e);
+      showEpsModal('ai');
+    }
+    return;
+  }
   if(file.type==='application/pdf'||file.name.toLowerCase().endsWith('.pdf')){
     if(typeof pdfjsLib==='undefined'){alert('PDF preview library not loaded. Please refresh and try again.');return;}
     try{
@@ -2011,7 +2079,21 @@ function updatePreflight(){
 
 // ── View mode ──────────────────────────────────────────────
 function setViewMode(m){
-  const spec=currentSku?SKU_SPECS[currentSku]:null;if(!spec||!spec.w){viewMode=m;return;}
+  const spec=currentSku?SKU_SPECS[currentSku]:null;
+  // Full Size needs real finished dimensions to mean anything. Previously this
+  // returned early and did nothing at all -- no button state, no redraw, no
+  // message -- so a SKU row with null finished_w_mm made the button look dead.
+  // Say why instead, and stay on Working.
+  if(m==='full'&&(!spec||!spec.w)){
+    document.getElementById('stWorking').classList.add('active');
+    document.getElementById('stFull').classList.remove('active');
+    viewMode='working';
+    showToast(spec
+      ? 'No finished size on record for this SKU — Full Size needs template dimensions'
+      : 'Select a SKU before switching to Full Size');
+    return;
+  }
+  if(!spec||!spec.w){viewMode=m;return;}
   document.getElementById('stWorking').classList.toggle('active',m==='working');
   document.getElementById('stFull').classList.toggle('active',m==='full');
   const spinner=document.getElementById('canvasSpinner');
@@ -2029,7 +2111,13 @@ const oTW=TW,oTH=TH,oTX=TX,oTY=TY;viewMode=m;
 }
 function updateViewInfo(){
   const spec=currentSku?SKU_SPECS[currentSku]:null;const info=document.getElementById('ctInfo');
-  if(viewMode==='full'&&spec&&spec.w){const mmPx=25.4/spec.dpi;info.textContent=`Actual size: ${spec.w}×${spec.h}mm · ${Math.round(spec.w/mmPx)}×${Math.round(spec.h/mmPx)}px at ${spec.dpi}dpi`;}
+  if(viewMode==='full'&&spec&&spec.w){
+    const eff=fullSizeEffDpi||spec.dpi;
+    const mmPx=25.4/eff;
+    const capped=eff<spec.dpi-1;
+    info.textContent=`Actual size: ${spec.w}×${spec.h}mm · ${Math.round(spec.w/mmPx)}×${Math.round(spec.h/mmPx)}px at ${eff}dpi`
+      +(capped?` (preview reduced from ${spec.dpi}dpi — export is unaffected)`:'');
+  }
   else info.textContent='Scaled to fit screen';
 }
 
@@ -2508,41 +2596,113 @@ function loadImageFromDataUrl(dataUrl){
 // Fetches + decodes the immutable original artwork file from storage. Pure fetch/decode —
 // does not touch layers/canvas. Shared by first-ever load and by restoreWorkingVersion/revert,
 // so both always decode the source file the same way.
-async function fetchArtworkImage(storagePath, fileName){
+// Reads the raw bytes of a stored file. /api/file now hands back a short-lived
+// Supabase signed URL rather than the file inlined as base64 in a JSON body, so
+// the bytes travel browser<->Supabase directly and never pass through a Vercel
+// function response. That removes the size ceiling on artwork entirely.
+// The legacy {b64} shape is still honoured so an older /api/file deployment
+// keeps working during a rollout.
+async function fetchStoredBlob(storagePath){
   const r=await fetch('/api/file?path='+encodeURIComponent(storagePath));
-  if(!r.ok){console.warn('Artwork file not in storage yet:',storagePath);return null;}
+  if(!r.ok){
+    let detail='';
+    try{detail=(await r.json()).error||'';}catch(e){}
+    console.warn('Artwork file unavailable:',storagePath,r.status,detail);
+    return null;
+  }
   const d=await r.json();
-  if(!d?.b64)return null;
-  const isPdf=d.mediaType==='application/pdf'||(fileName||'').toLowerCase().endsWith('.pdf');
-  if(isPdf){
+  if(d&&d.url){
+    const fr=await fetch(d.url);
+    if(!fr.ok){console.error('Signed URL fetch failed',fr.status,storagePath);return null;}
+    const blob=await fr.blob();
+    return {blob,mediaType:d.mediaType||blob.type||'application/octet-stream'};
+  }
+  if(d&&d.b64){
+    const bin=atob(d.b64);
+    const arr=new Uint8Array(bin.length);
+    for(let k=0;k<bin.length;k++)arr[k]=bin.charCodeAt(k);
+    const mediaType=d.mediaType||'application/octet-stream';
+    return {blob:new Blob([arr],{type:mediaType}),mediaType};
+  }
+  return null;
+}
+
+function blobToDataUrl(blob){
+  return new Promise((resolve,reject)=>{
+    const fr=new FileReader();
+    fr.onload=()=>resolve(fr.result);
+    fr.onerror=()=>reject(new Error('FileReader failed'));
+    fr.readAsDataURL(blob);
+  });
+}
+
+// Shared PDF render path. Also used for Illustrator files, which are normally
+// saved PDF-compatible and so carry a PDF stream pdf.js can read directly.
+async function renderPdfArrayBuffer(ab){
+  const pdf=await pdfjsLib.getDocument({data:ab}).promise;
+  const page=await pdf.getPage(1);
+  const nativeViewport=page.getViewport({scale:1.0});
+  const pdfNativeW=nativeViewport.width*(25.4/72);
+  const pdfNativeH=nativeViewport.height*(25.4/72);
+  const MAX_DISPLAY_PX=3000;
+  const displayScale=Math.min(2.0,MAX_DISPLAY_PX/Math.max(nativeViewport.width,nativeViewport.height));
+  const viewport=page.getViewport({scale:displayScale});
+  const oc=document.createElement('canvas');
+  oc.width=Math.round(viewport.width);oc.height=Math.round(viewport.height);
+  const ctx=oc.getContext('2d',{willReadFrequently:true});
+  await page.render({canvasContext:ctx,viewport}).promise;
+  const displayDataUrl=oc.toDataURL('image/png');
+  const vpUp=page.getViewport({scale:1.0});
+  const ocUp=document.createElement('canvas');
+  ocUp.width=vpUp.width;ocUp.height=vpUp.height;
+  await page.render({canvasContext:ocUp.getContext('2d',{willReadFrequently:true}),viewport:vpUp}).promise;
+  const upscaleDataUrl=ocUp.toDataURL('image/png');
+  const img=await loadImageFromDataUrl(displayDataUrl);
+  return {img,isPdf:true,pdfNativeW,pdfNativeH,displayDataUrl,srcData:upscaleDataUrl,mime:'image/png'};
+}
+
+// Fetches + decodes the immutable original artwork file from storage. Pure fetch/decode --
+// does not touch layers/canvas. Shared by first-ever load and by restoreWorkingVersion/revert,
+// so both always decode the source file the same way.
+async function fetchArtworkImage(storagePath, fileName){
+  let got=null;
+  try{ got=await fetchStoredBlob(storagePath); }
+  catch(e){ console.error('artwork fetch failed',storagePath,e); return null; }
+  if(!got)return null;
+  const {blob,mediaType}=got;
+
+  const name=(fileName||storagePath||'').toLowerCase();
+  const isAi  = name.endsWith('.ai');
+  const isEps = name.endsWith('.eps');
+  const isPdf = mediaType==='application/pdf' || name.endsWith('.pdf');
+
+  // EPS carries no PDF stream and no browser can decode it. Say so rather than
+  // failing into a blank canvas the way this used to.
+  if(isEps){ showEpsModal('eps'); return null; }
+
+  if(isPdf||isAi){
     if(typeof pdfjsLib==='undefined'){console.error('pdfjsLib not loaded');return null;}
-    const binary=atob(d.b64);
-    const ab=new Uint8Array(binary.length);
-    for(let i=0;i<binary.length;i++)ab[i]=binary.charCodeAt(i);
-    const pdf=await pdfjsLib.getDocument({data:ab}).promise;
-    const page=await pdf.getPage(1);
-    const nativeViewport=page.getViewport({scale:1.0});
-    const pdfNativeW=nativeViewport.width*(25.4/72);
-    const pdfNativeH=nativeViewport.height*(25.4/72);
-    const MAX_DISPLAY_PX=3000;
-    const displayScale=Math.min(2.0,MAX_DISPLAY_PX/Math.max(nativeViewport.width,nativeViewport.height));
-    const viewport=page.getViewport({scale:displayScale});
-    const oc=document.createElement('canvas');
-    oc.width=Math.round(viewport.width);oc.height=Math.round(viewport.height);
-    const ctx=oc.getContext('2d',{willReadFrequently:true});
-    await page.render({canvasContext:ctx,viewport}).promise;
-    const displayDataUrl=oc.toDataURL('image/png');
-    const vpUp=page.getViewport({scale:1.0});
-    const ocUp=document.createElement('canvas');
-    ocUp.width=vpUp.width;ocUp.height=vpUp.height;
-    await page.render({canvasContext:ocUp.getContext('2d',{willReadFrequently:true}),viewport:vpUp}).promise;
-    const upscaleDataUrl=ocUp.toDataURL('image/png');
-    const img=await loadImageFromDataUrl(displayDataUrl);
-    return {img,isPdf:true,pdfNativeW,pdfNativeH,displayDataUrl,srcData:upscaleDataUrl,mime:'image/png'};
-  }else{
-    const dataUrl='data:'+d.mediaType+';base64,'+d.b64;
+    try{
+      return await renderPdfArrayBuffer(await blob.arrayBuffer());
+    }catch(e){
+      console.error((isAi?'Illustrator':'PDF')+' render failed',storagePath,e);
+      // An .ai saved without "Create PDF Compatible File" has no readable PDF
+      // stream. That is the only case the guidance modal should fire for .ai.
+      showEpsModal(isAi?'ai':'pdf');
+      return null;
+    }
+  }
+
+  // Raster. srcData stays a data URL because the storage-upload path in
+  // submitDesign() splits it on ',' to recover the base64 payload.
+  try{
+    const dataUrl=await blobToDataUrl(blob);
     const img=await loadImageFromDataUrl(dataUrl);
-    return {img,isPdf:false,srcData:dataUrl,mime:d.mediaType};
+    return {img,isPdf:false,srcData:dataUrl,mime:mediaType};
+  }catch(e){
+    console.error('Image decode failed for',storagePath,'declared as',mediaType,e);
+    showToast('Artwork could not be decoded — the file may be corrupt, or not the format its extension claims');
+    return null;
   }
 }
 
@@ -2620,7 +2780,12 @@ async function revertToOriginal(){
 async function resolveSkuKey(raw){
   // raw may be a Magento SKU like "ABC7A1-BRANDED" or a sku_file or sku_family
   // Strip -PRINTED / -BRANDED suffix to get the base family
-  const base=raw.replace(/-(PRINTED|BRANDED)$/i,'').trim();
+  // An empty SKU used to sail through: /api/sku?search= returned an unfiltered
+  // page of rows, and the "sku_family starts with base" branch below matches
+  // everything when base is '', so an arbitrary template got applied. Refuse.
+  if(!raw||!String(raw).trim())return null;
+  const base=String(raw).replace(/-(PRINTED|BRANDED)$/i,'').trim();
+  if(!base)return null;
   // Try API search — exact family first, then file match
   try{
     const r=await fetch('/api/sku?search='+encodeURIComponent(base)+'&limit=20');
@@ -2640,7 +2805,7 @@ async function resolveSkuKey(raw){
       }
       // sku_family starts-with base (e.g. family ABC7A1 matches base ABC7A) — prefer the
       // shortest (closest) match for the same reason, in reverse.
-      const sw2Matches=rows.filter(x=>(x.sku_family||'').toLowerCase().startsWith(bl));
+      const sw2Matches=bl?rows.filter(x=>(x.sku_family||'').toLowerCase().startsWith(bl)):[];
       if(sw2Matches.length){
         sw2Matches.sort((a,b)=>(a.sku_family||'').length-(b.sku_family||'').length);
         return sw2Matches[0];
@@ -2878,8 +3043,14 @@ function applySkuRow(row){
   const isDS=(row.single_or_double_sided||'').toLowerCase().includes('double');
   const spec={
     label:row.product_name||row.sku_file,
-    w:row.finished_w_mm?Math.round(parseFloat(row.finished_w_mm)):null,
-    h:row.finished_h_mm?Math.round(parseFloat(row.finished_h_mm)):null,
+    // 146 live sku_specs rows carry template_w_mm/template_h_mm but no
+    // finished_*_mm. Reading finished_* alone left spec.w null, which killed
+    // Full Size and dropped computeLayout() onto its 360x460 placeholder box.
+    // Fall back to the template size, which is the outer size including bleed.
+    w:row.finished_w_mm?Math.round(parseFloat(row.finished_w_mm))
+      :(row.template_w_mm?Math.round(parseFloat(row.template_w_mm)):null),
+    h:row.finished_h_mm?Math.round(parseFloat(row.finished_h_mm))
+      :(row.template_h_mm?Math.round(parseFloat(row.template_h_mm)):null),
     dpi:parseInt(row.required_dpi)||300,
     colour:row.colour_profile||'CMYK',
     sides:isDS?2:1,
@@ -2987,7 +3158,21 @@ function onTmplOpacity(){
 }
 
 // ── EPS modal ────────────────────────────────────────────────
-function showEpsModal(){document.getElementById('epsModalBg').classList.add('open');}
+function showEpsModal(kind){
+  const t=document.getElementById('epsModalTitle');
+  const p=document.getElementById('epsModalIntro');
+  if(kind==='ai'){
+    if(t)t.textContent="This Illustrator file can't be read";
+    if(p)p.innerHTML='We can normally open <strong>.ai</strong> files directly, but this one was saved without a PDF-compatible stream so there is nothing we can render. Please re-save it with <strong>Create PDF Compatible File</strong> ticked, or export it as a <strong>PDF</strong>.';
+  }else if(kind==='pdf'){
+    if(t)t.textContent="This PDF can't be read";
+    if(p)p.innerHTML='The file is a PDF but we could not render it \u2014 it may be damaged, password-protected, or use an unsupported feature. Please re-export it as a standard print PDF.';
+  }else{
+    if(t)t.textContent="EPS files aren't supported";
+    if(p)p.innerHTML='We can\u2019t preview or process EPS files in the designer. Please re-export your artwork as a <strong>PDF</strong> \u2014 it only takes a moment and gives you better results.';
+  }
+  document.getElementById('epsModalBg').classList.add('open');
+}
 function closeEpsModal(){document.getElementById('epsModalBg').classList.remove('open');}
 
 // ── Upscale modal ───────────────────────────────────────────
@@ -3117,7 +3302,7 @@ document.addEventListener('click',e=>{
       <h2 id="epsModalTitle">EPS files aren't supported</h2>
     </div>
     <div class="eps-modal-body">
-      <p>We can't preview or process EPS files in the designer. Please re-export your artwork as a <strong>PDF</strong> — it only takes a moment and gives you better results.</p>
+      <p id="epsModalIntro">We can't preview or process EPS files in the designer. Please re-export your artwork as a <strong>PDF</strong> — it only takes a moment and gives you better results.</p>
       <div class="eps-modal-why">
         <div class="eps-modal-why-title">Why PDF instead of EPS?</div>
         <div class="eps-modal-reason">
@@ -3135,7 +3320,7 @@ document.addEventListener('click',e=>{
       </div>
       <div class="eps-modal-steps">
         <div class="eps-modal-steps-title">How to re-export as PDF</div>
-        <div class="eps-modal-step"><div class="eps-modal-step-num">1</div><span><strong>Illustrator:</strong> File → Save a Copy → Format: Adobe PDF → Save</span></div>
+        <div class="eps-modal-step"><div class="eps-modal-step-num">1</div><span><strong>Illustrator:</strong> File → Save a Copy → Format: Adobe PDF → Save. If saving as .ai, tick <strong>Create PDF Compatible File</strong>.</span></div>
         <div class="eps-modal-step"><div class="eps-modal-step-num">2</div><span><strong>InDesign:</strong> File → Export → Adobe PDF (Print) → Export</span></div>
         <div class="eps-modal-step"><div class="eps-modal-step-num">3</div><span><strong>CorelDRAW:</strong> File → Publish to PDF → PDF for Print → Save</span></div>
       </div>
