@@ -1350,9 +1350,22 @@ function setCanvasSize(w,h){
 }
 
 function remapLayersToNewLayout(oTW,oTH,oTX,oTY,nTW,nTH,nTX,nTY){
-  if(!oTW||!nTW)return;
+  if(!oTW||!nTW||!oTH||!nTH)return;
+  if(oTW===nTW&&oTH===nTH&&oTX===nTX&&oTY===nTY)return; // nothing moved
   const sx=nTW/oTW,sy=nTH/oTH;
-  S().layers.forEach(l=>{const rx=l.offsetX-oTX-oTW/2,ry=l.offsetY-oTY-oTH/2;l.offsetX=nTX+nTW/2+rx*sx;l.offsetY=nTY+nTH/2+ry*sy;l.scale*=sx;});
+  // Every side, not just the active one. This used to remap S().layers only, so
+  // on a double-sided job the inactive side's layers kept the previous layout's
+  // scale and offsets -- a layer fitted in Working mode stayed at its Working
+  // scale (~10% of template width) inside a Full Size canvas, parked near the
+  // top-left corner instead of centred.
+  sides.forEach(sd=>{
+    (sd.layers||[]).forEach(l=>{
+      const rx=l.offsetX-oTX-oTW/2, ry=l.offsetY-oTY-oTH/2;
+      l.offsetX=nTX+nTW/2+rx*sx;
+      l.offsetY=nTY+nTH/2+ry*sy;
+      l.scale*=sx;
+    });
+  });
 }
 
 // ── Zoom ───────────────────────────────────────────────────
@@ -1362,7 +1375,12 @@ function applyZoom(){
     // Canvas holds true print pixels; CSS scales it down to true PHYSICAL size on screen.
     // 1 CSS px = 1/96 inch, so shrink by screenDPI/printDPI.
     const spec=currentSku?SKU_SPECS[currentSku]:null;
-    const printDpi=(spec&&spec.dpi)?spec.dpi:300;
+    // Must be the dpi the canvas was ACTUALLY rendered at, not the SKU's nominal
+    // dpi. Once computeLayout()'s memory budget reduces a large double-sided
+    // sheet from 300dpi to (say) 211dpi, dividing by 300 here shrinks the stage
+    // to ~70% of true physical size -- so "Actual size" stops being actual size.
+    // fullSizeEffDpi is set by computeLayout() and equals spec.dpi when uncapped.
+    const printDpi=fullSizeEffDpi||((spec&&spec.dpi)?spec.dpi:300);
     const physScale=(SCREEN_DPI/printDpi)*dpr;
     ['canvasTransform','canvasTransform0','canvasTransform1'].forEach(id=>{
       const t=document.getElementById(id);if(!t)return;
