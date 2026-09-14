@@ -27,10 +27,6 @@ body{font-family:'Inter',-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;
 .tb-sku{height:18px;padding:0 7px;background:#FFF0E6;border-radius:4px;font-size:10px;font-weight:600;color:#C75E0A;display:flex;align-items:center;flex-shrink:0}
 .tb-sp{flex:1}
 /* Undo buttons */
-.tb-undo-group{display:flex;gap:3px}
-.tb-undo-btn{width:26px;height:26px;border-radius:6px;border:1px solid #B4B2A9;background:#E8E6DE;display:flex;align-items:center;justify-content:center;color:#2C2C2A;cursor:pointer;font-size:12px}
-.tb-undo-btn:disabled{opacity:0.35;cursor:not-allowed}
-.tb-undo-btn:not(:disabled):hover{background:#D3D1C7}
 /* View toggle */
 .tb-view{display:flex;border:1px solid #888780;border-radius:6px;overflow:hidden;height:26px}
 .tb-vbtn{padding:0 10px;font-size:11px;font-weight:600;cursor:pointer;background:#D3D1C7;color:#2C2C2A;border:none;height:100%;font-family:'Inter',sans-serif}
@@ -308,7 +304,7 @@ canvas{display:block}
 .li-btn.vis-on{color:#F47920}
 
 /* Add layer button */
-.lp-add-bottom{display:flex;align-items:center;justify-content:center;gap:6px;padding:8px;cursor:pointer;font-size:11px;font-weight:600;color:#C75E0A;background:#FFF3EB;border:none;border-bottom:1.5px dashed #FAC795;width:100%;transition:background 0.12s;flex-shrink:0}
+.lp-add-bottom{display:flex;align-items:center;justify-content:center;gap:6px;padding:10px;cursor:pointer;font-size:11px;font-weight:600;color:#C75E0A;background:#FFF3EB;border:none;border-bottom:1.5px dashed #FAC795;width:100%;transition:background 0.12s;flex-shrink:0}
 .lp-add-bottom:hover{background:#FAC795;color:#7A3A00}
 
 /* Fixed layers */
@@ -323,21 +319,21 @@ canvas{display:block}
 .preflight-section::-webkit-scrollbar{width:2px}
 .preflight-section::-webkit-scrollbar-thumb{background:#D3D1C7}
 .pf-title{font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:0.08em;color:#888780;margin-bottom:7px}
-.pf-item{border-radius:7px;padding:0;margin-bottom:5px;border:0.5px solid transparent;overflow:hidden}
+.pf-item{border-radius:7px;padding:0;margin-bottom:8px;border:0.5px solid transparent;overflow:hidden}
 .pf-item.pass{background:#EAF3DE;border-color:#C0DD97}
 .pf-item.warn{background:#FAEEDA;border-color:#FAC775}
 .pf-item.fail{background:#FCEBEB;border-color:#F09595}
 .pf-item.idle{background:#F7F6F2;border-color:#D3D1C7}
-.pf-item-top{display:flex;align-items:center;gap:6px;padding:9px;cursor:pointer;user-select:none}
-.pf-dot{width:7px;height:7px;border-radius:50%;flex-shrink:0}
+.pf-item-top{display:flex;align-items:center;gap:8px;padding:14px;cursor:pointer;user-select:none}
+.pf-dot{width:9px;height:9px;border-radius:50%;flex-shrink:0}
 .pf-dot.pass{background:#639922}.pf-dot.warn{background:#D4890A}.pf-dot.fail{background:#C0392B}.pf-dot.idle{background:#B4B2A9}
-.pf-label{font-size:13px;font-weight:600;flex:1}
+.pf-label{font-size:14px;font-weight:600;flex:1}
 .pf-item.pass .pf-label,.pf-item.pass .pf-val,.pf-item.pass .pf-detail{color:#173404}
 .pf-item.warn .pf-label,.pf-item.warn .pf-val,.pf-item.warn .pf-detail{color:#412402}
 .pf-item.fail .pf-label,.pf-item.fail .pf-val,.pf-item.fail .pf-detail{color:#501313}
 .pf-item.idle .pf-label,.pf-item.idle .pf-val,.pf-item.idle .pf-detail{color:#5F5E5A}
-.pf-val{font-size:13px;font-weight:700}
-.pf-caret{width:14px;height:14px;flex-shrink:0;opacity:0.55;transition:transform 0.15s ease}
+.pf-val{font-size:14px;font-weight:700}
+.pf-caret{width:16px;height:16px;flex-shrink:0;opacity:0.55;transition:transform 0.15s ease}
 .pf-item.open .pf-caret{transform:rotate(90deg)}
 .pf-body{max-height:0;overflow:hidden;transition:max-height 0.2s ease}
 .pf-item.open .pf-body{max-height:480px}
@@ -484,11 +480,6 @@ canvas{display:block}
   <span class="tb-ref" id="topbarRef" style="position:relative;z-index:2">Designer</span>
   <span class="tb-sku" id="topbarSku" style="display:none"></span>
   <div class="tb-sp"></div>
-  <!-- Undo/redo mirrored in topbar -->
-    <div class="tb-undo-group" style="position:relative;z-index:2">
-    <button class="tb-undo-btn" id="undoBtn" onclick="undo()" disabled title="Undo (Ctrl+Z)">↩</button>
-    <button class="tb-undo-btn" id="redoBtn" onclick="redo()" disabled title="Redo (Ctrl+Y)">↪</button>
-  </div>
 </div>
 
 <div class="workspace">
@@ -730,8 +721,8 @@ canvas{display:block}
   <div class="canvas-toolbar">
     <span style="font-size:10px;font-weight:600;color:#888780;letter-spacing:0.04em;text-transform:uppercase;flex-shrink:0">View</span>
     <div class="tb-view">
-      <button class="tb-vbtn active" id="stWorking" onclick="setViewMode('working')">Working</button>
-      <button class="tb-vbtn" id="stFull" onclick="setViewMode('full')">Full size</button>
+      <button class="tb-vbtn active" id="stWorking" onclick="setViewMode('working')">See Working Size</button>
+      <button class="tb-vbtn" id="stFull" onclick="setViewMode('full')">Full Size</button>
     </div>
     <div class="ct-sep"></div>
     <div class="zoom-group">
@@ -789,8 +780,8 @@ canvas{display:block}
   <div class="layers-list" id="layersList">
     <div class="panel-empty">No layers yet.<br>Upload artwork to begin.</div>
   </div>
-  <button class="lp-add-bottom" onclick="document.getElementById('fileIn').click()">
-    <span style="font-size:14px;line-height:1">＋</span><span>Add layer</span>
+  <button class="lp-add-bottom" onclick="document.getElementById('fileIn').click()" title="Add layer">
+    <span style="font-size:22px;line-height:1;font-weight:400">＋</span>
   </button>
   <div class="lp-fixed">
     <div class="lp-fixed-title">Fixed</div>
@@ -1212,8 +1203,8 @@ function updateUndoUI(){
   const s=S();
   const disabled=!s.undoStack.length;
   const rdisabled=!s.redoStack.length;
-  ['undoBtn','undoBtnPanel'].forEach(id=>{const el=document.getElementById(id);if(el)el.disabled=disabled;});
-  ['redoBtn','redoBtnPanel'].forEach(id=>{const el=document.getElementById(id);if(el)el.disabled=rdisabled;});
+  const el=document.getElementById('undoBtnPanel');if(el)el.disabled=disabled;
+  const rel=document.getElementById('redoBtnPanel');if(rel)rel.disabled=rdisabled;
   const last=s.undoStack[s.undoStack.length-1];
   const lbl=document.getElementById('undoLabel');if(lbl)lbl.textContent=last?last.label:'';
 }
@@ -1440,8 +1431,12 @@ function drawToContext(ctx, layers, bgColor, drawHandlesFlag, tmplA, sideIdx, sh
   // Trim line
   if(showTrim){ ctx.save(); ctx.strokeStyle='rgba(30,100,220,0.85)'; ctx.lineWidth=1.5; ctx.stroke(trimPath); ctx.restore(); }
 
-    // ── Guide labels: scale with canvas so they stay readable when zoomed ──
-    const gFS = Math.max(5, Math.min(9, Math.round(TW/116)));
+    // ── Guide labels: scale with canvas so they stay readable when zoomed.
+    // Full Size renders at native print pixel dimensions (often thousands of px), so the
+    // working-mode cap of 9px would be nearly invisible there — scale unbounded instead.
+    const gFS = (viewMode==='full')
+      ? Math.max(10, Math.round(TW/90))
+      : Math.max(5, Math.min(9, Math.round(TW/116)));
   const gPad = Math.round(gFS*0.5);
   // Bare text, no pill. rot = 0 | -90 (reads bottom-to-top on side edges)
   function guideTag(text, sub, x, y, colour, align, rot){
@@ -1958,10 +1953,7 @@ function setPF(id,state,val,detail){
   const item=document.getElementById(id);
   const prevState=item.dataset.pfState||'idle';
   const wasOpen=item.classList.contains('open');
-  // Auto-expand the first time an item newly becomes a warning/failure, so it's not missed —
-  // but never force-close something the user already opened themselves.
-  const autoOpen=(state==='warn'||state==='fail')&&state!==prevState;
-  item.className='pf-item '+state+((wasOpen||autoOpen)?' open':'');
+  item.className='pf-item '+state+(wasOpen?' open':'');
   item.dataset.pfState=state;
   item.querySelector('.pf-dot').className='pf-dot '+state;
   item.querySelector('.pf-val').textContent=val;
