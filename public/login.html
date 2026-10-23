@@ -153,34 +153,63 @@ const sb = supabase.createClient(
   'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImZxYXh1aGJjd29pa2VsZG54dXZ2Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODExNjk2NTQsImV4cCI6MjA5Njc0NTY1NH0.0XtMq5p6L9pnRilG5GUI5j72zPNuhl4PnD9ihDxeT1c'
 );
 
-// Handle invite / password-reset links (Supabase appends #access_token=...&type=invite or type=recovery)
+// Handle invite / password-reset links.
+// Supabase sends these two ways depending on project settings:
+//   PKCE flow (default in newer projects): ?code=<code> in query string
+//   Implicit flow (older):                 #access_token=<t>&type=invite|recovery in hash
 (async function handleAuthRedirect() {
-  const hash = window.location.hash;
-  if (hash && hash.includes('access_token')) {
-    const params = new URLSearchParams(hash.substring(1));
-    const type = params.get('type'); // 'invite' or 'recovery'
-    if (type === 'invite' || type === 'recovery') {
-      // Exchange the hash tokens for a session so we can call updateUser
-      const { error } = await sb.auth.exchangeCodeForSession
-        ? sb.auth.exchangeCodeForSession(hash)  // newer SDK
-        : Promise.resolve({});                   // older SDK sets session automatically
-      // Show the set-password card
-      document.getElementById('auth-card').style.display = 'none';
-      document.getElementById('setpw-card').style.display = '';
-      if (type === 'invite') {
-        document.getElementById('setpw-title').textContent = 'Welcome! Set Your Password';
-        document.getElementById('setpw-sub').textContent = 'Choose a password to activate your UKPOS account';
-      } else {
-        document.getElementById('setpw-title').textContent = 'Reset Your Password';
-        document.getElementById('setpw-sub').textContent = 'Choose a new password for your UKPOS account';
+  let linkType = null; // 'invite' or 'recovery'
+
+  // ── 1. PKCE: ?code= in query string ────────────────────────────────────────
+  const searchParams = new URLSearchParams(window.location.search);
+  const code = searchParams.get('code');
+  if (code) {
+    try {
+      const { data, error } = await sb.auth.exchangeCodeForSession(code);
+      if (!error && data?.session) {
+        // Determine type from URL param or default to recovery
+        linkType = searchParams.get('type') || 'recovery';
       }
-      return;
+    } catch (e) {
+      console.warn('exchangeCodeForSession failed:', e);
     }
   }
-  // Redirect if already logged in
-  sb.auth.getSession().then(({ data: { session } }) => {
-    if (session) window.location.href = '/';
-  });
+
+  // ── 2. Implicit: #access_token in hash ─────────────────────────────────────
+  if (!linkType) {
+    const hash = window.location.hash;
+    if (hash && hash.includes('access_token')) {
+      const hashParams = new URLSearchParams(hash.substring(1));
+      const type = hashParams.get('type');
+      if (type === 'invite' || type === 'recovery') {
+        // SDK v2 processes the hash automatically on createClient;
+        // wait briefly for the session to be set
+        await new Promise(r => setTimeout(r, 200));
+        const { data: { session } } = await sb.auth.getSession();
+        if (session) linkType = type;
+      }
+    }
+  }
+
+  // ── 3. Show set-password card if we detected a link ────────────────────────
+  if (linkType) {
+    // Clean up the URL so a refresh doesn't re-trigger
+    history.replaceState(null, '', window.location.pathname);
+    document.getElementById('auth-card').style.display = 'none';
+    document.getElementById('setpw-card').style.display = '';
+    if (linkType === 'invite') {
+      document.getElementById('setpw-title').textContent = 'Welcome! Set Your Password';
+      document.getElementById('setpw-sub').textContent = 'Choose a password to activate your UKPOS account';
+    } else {
+      document.getElementById('setpw-title').textContent = 'Reset Your Password';
+      document.getElementById('setpw-sub').textContent = 'Choose a new password for your UKPOS account';
+    }
+    return;
+  }
+
+  // ── 4. No link — redirect if already logged in ─────────────────────────────
+  const { data: { session } } = await sb.auth.getSession();
+  if (session) window.location.href = '/';
 })();
 
 function showAlert(msg, type='error') {
