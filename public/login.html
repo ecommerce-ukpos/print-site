@@ -146,6 +146,22 @@ body{
   </div>
 </div>
 
+<!-- MUST run before Supabase SDK loads — SDK clears the hash on createClient() init -->
+<script>
+(function() {
+  var s = window.location.search;
+  var h = window.location.hash;
+  if (s && new URLSearchParams(s).get('code')) {
+    window.location.replace('/set-password.html' + s + h); return;
+  }
+  if (h && h.indexOf('access_token') !== -1) {
+    var t = new URLSearchParams(h.substring(1)).get('type');
+    if (t === 'recovery' || t === 'invite') {
+      window.location.replace('/set-password.html' + s + h); return;
+    }
+  }
+})();
+</script>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
 <script>
 const sb = supabase.createClient(
@@ -153,34 +169,10 @@ const sb = supabase.createClient(
   'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImZxYXh1aGJjd29pa2VsZG54dXZ2Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODExNjk2NTQsImV4cCI6MjA5Njc0NTY1NH0.0XtMq5p6L9pnRilG5GUI5j72zPNuhl4PnD9ihDxeT1c'
 );
 
-// Handle invite / password-reset links.
-// Supabase may land users here (Site URL) with a token in the URL.
-// In all cases we immediately forward to /set-password.html which is
-// purpose-built for this flow — preserving the full URL so the token arrives intact.
-(function handleAuthRedirect() {
-  const search = window.location.search;
-  const hash   = window.location.hash;
-
-  // PKCE flow: ?code= present
-  if (search && new URLSearchParams(search).get('code')) {
-    window.location.replace('/set-password.html' + search + hash);
-    return;
-  }
-
-  // Implicit flow: #access_token with type=recovery or type=invite
-  if (hash && hash.includes('access_token')) {
-    const type = new URLSearchParams(hash.substring(1)).get('type');
-    if (type === 'recovery' || type === 'invite') {
-      window.location.replace('/set-password.html' + search + hash);
-      return;
-    }
-  }
-
-  // No token — redirect if already logged in
-  sb.auth.getSession().then(({ data: { session } }) => {
-    if (session) window.location.href = '/';
-  });
-})();
+// No token — redirect if already logged in
+sb.auth.getSession().then(({ data: { session } }) => {
+  if (session) window.location.href = '/';
+});
 
 function showAlert(msg, type='error') {
   const el = document.getElementById('alert');

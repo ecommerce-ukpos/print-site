@@ -318,14 +318,29 @@
   </main>
 </div><!-- end shell -->
 
+<!-- MUST run before Supabase SDK loads — SDK clears the hash on createClient() init -->
+<script>
+(function() {
+  var s = window.location.search;
+  var h = window.location.hash;
+  if (s && new URLSearchParams(s).get('code')) {
+    window.location.replace('/set-password.html' + s + h); return;
+  }
+  if (h && h.indexOf('access_token') !== -1) {
+    var t = new URLSearchParams(h.substring(1)).get('type');
+    if (t === 'recovery' || t === 'invite') {
+      window.location.replace('/set-password.html' + s + h); return;
+    }
+  }
+})();
+</script>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
 <script>
 const SUPA_URL = 'https://fqaxuhbcwoikeldnxuvv.supabase.co';
 const SUPA_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImZxYXh1aGJjd29pa2VsZG54dXZ2Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODExNjk2NTQsImV4cCI6MjA5Njc0NTY1NH0.0XtMq5p6L9pnRilG5GUI5j72zPNuhl4PnD9ihDxeT1c';
 const sb = supabase.createClient(SUPA_URL, SUPA_KEY);
 
-// Forward recovery/invite tokens to the dedicated set-password page
-// before the auth guard runs (Supabase may land users here via Site URL)
+// (Redundant safety check — token already handled above before SDK loaded)
 (function forwardAuthToken() {
   const search = window.location.search;
   const hash   = window.location.hash;
