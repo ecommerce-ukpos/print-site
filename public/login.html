@@ -154,62 +154,32 @@ const sb = supabase.createClient(
 );
 
 // Handle invite / password-reset links.
-// Supabase sends these two ways depending on project settings:
-//   PKCE flow (default in newer projects): ?code=<code> in query string
-//   Implicit flow (older):                 #access_token=<t>&type=invite|recovery in hash
-(async function handleAuthRedirect() {
-  let linkType = null; // 'invite' or 'recovery'
+// Supabase may land users here (Site URL) with a token in the URL.
+// In all cases we immediately forward to /set-password.html which is
+// purpose-built for this flow — preserving the full URL so the token arrives intact.
+(function handleAuthRedirect() {
+  const search = window.location.search;
+  const hash   = window.location.hash;
 
-  // ── 1. PKCE: ?code= in query string ────────────────────────────────────────
-  const searchParams = new URLSearchParams(window.location.search);
-  const code = searchParams.get('code');
-  if (code) {
-    try {
-      const { data, error } = await sb.auth.exchangeCodeForSession(code);
-      if (!error && data?.session) {
-        // Determine type from URL param or default to recovery
-        linkType = searchParams.get('type') || 'recovery';
-      }
-    } catch (e) {
-      console.warn('exchangeCodeForSession failed:', e);
-    }
-  }
-
-  // ── 2. Implicit: #access_token in hash ─────────────────────────────────────
-  if (!linkType) {
-    const hash = window.location.hash;
-    if (hash && hash.includes('access_token')) {
-      const hashParams = new URLSearchParams(hash.substring(1));
-      const type = hashParams.get('type');
-      if (type === 'invite' || type === 'recovery') {
-        // SDK v2 processes the hash automatically on createClient;
-        // wait briefly for the session to be set
-        await new Promise(r => setTimeout(r, 200));
-        const { data: { session } } = await sb.auth.getSession();
-        if (session) linkType = type;
-      }
-    }
-  }
-
-  // ── 3. Show set-password card if we detected a link ────────────────────────
-  if (linkType) {
-    // Clean up the URL so a refresh doesn't re-trigger
-    history.replaceState(null, '', window.location.pathname);
-    document.getElementById('auth-card').style.display = 'none';
-    document.getElementById('setpw-card').style.display = '';
-    if (linkType === 'invite') {
-      document.getElementById('setpw-title').textContent = 'Welcome! Set Your Password';
-      document.getElementById('setpw-sub').textContent = 'Choose a password to activate your UKPOS account';
-    } else {
-      document.getElementById('setpw-title').textContent = 'Reset Your Password';
-      document.getElementById('setpw-sub').textContent = 'Choose a new password for your UKPOS account';
-    }
+  // PKCE flow: ?code= present
+  if (search && new URLSearchParams(search).get('code')) {
+    window.location.replace('/set-password.html' + search + hash);
     return;
   }
 
-  // ── 4. No link — redirect if already logged in ─────────────────────────────
-  const { data: { session } } = await sb.auth.getSession();
-  if (session) window.location.href = '/';
+  // Implicit flow: #access_token with type=recovery or type=invite
+  if (hash && hash.includes('access_token')) {
+    const type = new URLSearchParams(hash.substring(1)).get('type');
+    if (type === 'recovery' || type === 'invite') {
+      window.location.replace('/set-password.html' + search + hash);
+      return;
+    }
+  }
+
+  // No token — redirect if already logged in
+  sb.auth.getSession().then(({ data: { session } }) => {
+    if (session) window.location.href = '/';
+  });
 })();
 
 function showAlert(msg, type='error') {
