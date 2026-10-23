@@ -314,7 +314,7 @@ async function doForgot() {
     return;
   }
   const { error } = await sb.auth.resetPasswordForEmail(email, {
-    redirectTo: window.location.origin + '/login.html'
+    redirectTo: window.location.origin + '/set-password.html'
   });
   const alertEl = document.getElementById('forgot-alert');
   if (error) {
