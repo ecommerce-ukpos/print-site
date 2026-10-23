@@ -98,6 +98,12 @@ const sb = supabase.createClient(SUPA_URL, SUPA_KEY);
   if (!session.user.email.endsWith('@ukpos.com')) {
     await sb.auth.signOut(); window.location.href = '/login.html'; return;
   }
+  // Check profile status
+  const { data: profile } = await sb.from('profiles').select('status').eq('id', session.user.id).single();
+  if (!profile || profile.status !== 'approved') {
+    window.location.href = '/pending.html';
+    return;
+  }
   document.getElementById('user-email').textContent = session.user.email;
   document.getElementById('display-email').value = session.user.email;
 })();

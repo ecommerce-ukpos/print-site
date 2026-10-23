@@ -280,7 +280,13 @@ const sb = supabase.createClient(SUPA_URL, SUPA_KEY);
     return;
   }
   document.getElementById('user-email').textContent = session.user.email;
-  if (['apritchard@ukpos.com','ecommerce@ukpos.com'].includes(session.user.email)) {
+  // Check profile status and role
+  const { data: profile } = await sb.from('profiles').select('role,status').eq('id', session.user.id).single();
+  if (!profile || profile.status !== 'approved') {
+    window.location.href = '/pending.html';
+    return;
+  }
+  if (profile.role === 'super_admin') {
     document.getElementById('admin-link').style.display = '';
   }
   loadStats();

@@ -223,6 +223,13 @@ async function doSignIn() {
     return;
   }
 
+  // Check profile approval status
+  const { data: profile } = await sb.from('profiles').select('status').eq('id', user.id).single();
+  if (!profile || profile.status !== 'approved') {
+    window.location.href = '/pending.html';
+    return;
+  }
+
   window.location.href = '/';
 }
 
@@ -258,7 +265,14 @@ async function doSetPassword() {
   }
   alertEl.textContent = 'Password set! Signing you in…';
   alertEl.className = 'alert success show';
-  setTimeout(() => { window.location.href = '/'; }, 1200);
+  setTimeout(async () => {
+    const { data: { user } } = await sb.auth.getUser();
+    if (user) {
+      const { data: profile } = await sb.from('profiles').select('status').eq('id', user.id).single();
+      if (!profile || profile.status !== 'approved') { window.location.href = '/pending.html'; return; }
+    }
+    window.location.href = '/';
+  }, 1200);
 }
 
 async function doForgot() {

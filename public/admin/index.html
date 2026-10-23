@@ -16,10 +16,9 @@ header{border-bottom:1px solid #E8E6DE;padding:16px 40px;background:#fff;display
 .hdr-btn{font-size:12px;padding:5px 12px;border:1px solid #E8E6DE;border-radius:6px;background:#fff;cursor:pointer;color:#5F5E5A;font-family:inherit;text-decoration:none;display:inline-block}
 .hdr-btn:hover{border-color:#D3D1C7}
 
-main{max-width:760px;margin:0 auto;padding:48px 40px 80px}
+main{max-width:860px;margin:0 auto;padding:48px 40px 80px}
 .page-title{font-size:22px;font-weight:600;margin-bottom:4px;letter-spacing:-.02em}
 .page-sub{font-size:14px;color:#5F5E5A;margin-bottom:36px}
-
 .back-link{display:inline-flex;align-items:center;gap:6px;font-size:13px;color:#888780;text-decoration:none;margin-bottom:24px}
 .back-link:hover{color:#2C2C2A}
 
@@ -28,39 +27,66 @@ main{max-width:760px;margin:0 auto;padding:48px 40px 80px}
 .section-title{font-size:14px;font-weight:600}
 .section-sub{font-size:12px;color:#888780;margin-top:2px}
 
+.tabs{display:flex;gap:2px;border-bottom:1px solid #E8E6DE;margin-bottom:24px}
+.tab{padding:8px 16px;font-size:13px;font-weight:500;cursor:pointer;border:none;background:none;color:#888780;border-bottom:2px solid transparent;font-family:inherit;margin-bottom:-1px}
+.tab:hover{color:#2C2C2A}
+.tab.active{color:#F47920;border-bottom-color:#F47920}
+.tab-count{display:inline-block;font-size:10px;font-weight:700;padding:1px 5px;border-radius:10px;background:#F5F4F0;color:#888780;margin-left:5px;vertical-align:middle}
+.tab.active .tab-count{background:#FFF0E6;color:#F47920}
+
 .btn{padding:8px 16px;border-radius:8px;font-size:13px;font-weight:600;cursor:pointer;transition:all .15s;border:none;font-family:inherit}
 .btn-primary{background:#F47920;color:#fff}
 .btn-primary:hover{background:#d96810}
 .btn-primary:disabled{opacity:.5;cursor:not-allowed}
+.btn-success{background:#F0FDF4;color:#16A34A;border:1px solid #BBF7D0}
+.btn-success:hover{background:#DCFCE7}
 .btn-danger{background:#FEF2F2;color:#DC2626;border:1px solid #FECACA}
 .btn-danger:hover{background:#FECACA}
-.btn-sm{padding:5px 10px;font-size:12px}
+.btn-neutral{background:#F5F4F0;color:#5F5E5A;border:1px solid #E8E6DE}
+.btn-neutral:hover{background:#EEECEA}
+.btn-sm{padding:4px 10px;font-size:12px}
+.btn-xs{padding:3px 8px;font-size:11px}
 
 .alert{padding:10px 14px;border-radius:8px;font-size:13px;margin-bottom:16px;display:none}
 .alert.error{background:#FEF2F2;border:1px solid #FECACA;color:#DC2626}
 .alert.success{background:#F0FDF4;border:1px solid #BBF7D0;color:#16A34A}
 .alert.show{display:block}
 
-/* Invite form */
 .invite-row{display:flex;gap:10px;align-items:flex-start}
-.form-input{flex:1;background:#F5F4F0;border:1px solid #E8E6DE;border-radius:8px;color:#2C2C2A;font-family:inherit;font-size:13.5px;padding:9px 12px;outline:none;transition:border-color .15s}
+.invite-row .form-input{flex:1}
+.role-select{background:#F5F4F0;border:1px solid #E8E6DE;border-radius:8px;color:#2C2C2A;font-family:inherit;font-size:13px;padding:9px 10px;outline:none;cursor:pointer}
+.form-input{background:#F5F4F0;border:1px solid #E8E6DE;border-radius:8px;color:#2C2C2A;font-family:inherit;font-size:13.5px;padding:9px 12px;outline:none;transition:border-color .15s}
 .form-input:focus{border-color:#F47920}
 .form-input::placeholder{color:#888780}
 
-/* Users table */
 .users-table{width:100%;border-collapse:collapse}
 .users-table th{text-align:left;font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:.06em;color:#888780;padding:0 0 10px;border-bottom:1px solid #E8E6DE}
 .users-table td{padding:12px 0;border-bottom:1px solid #F2F1EE;font-size:13px;vertical-align:middle}
 .users-table tr:last-child td{border-bottom:none}
-.users-table td:last-child{text-align:right}
+.actions-col{text-align:right;white-space:nowrap}
+.actions-col .btn+.btn{margin-left:4px}
 .user-email{font-weight:500}
-.badge{display:inline-block;font-size:11px;font-weight:600;padding:2px 8px;border-radius:20px;letter-spacing:.02em}
-.badge-admin{background:#FFF0E6;color:#F47920}
-.badge-confirmed{background:#F0FDF4;color:#16A34A}
-.badge-pending{background:#FFF7ED;color:#92400E}
 .user-date{font-size:12px;color:#888780}
+
+.badge{display:inline-block;font-size:11px;font-weight:600;padding:2px 8px;border-radius:20px;letter-spacing:.02em;margin-right:4px}
+.badge-admin{background:#FFF0E6;color:#F47920}
+.badge-user{background:#F5F4F0;color:#5F5E5A}
+.badge-approved{background:#F0FDF4;color:#16A34A}
+.badge-pending{background:#FFFBEB;color:#92400E}
+.badge-rejected{background:#FEF2F2;color:#DC2626}
+
 .loading{text-align:center;padding:32px;color:#888780;font-size:13px}
 .forbidden{text-align:center;padding:48px;color:#DC2626;font-size:14px}
+.empty-row td{text-align:center;color:#888780;padding:24px 0;font-size:13px}
+
+.modal-backdrop{display:none;position:fixed;inset:0;background:rgba(0,0,0,.35);z-index:100;align-items:center;justify-content:center}
+.modal-backdrop.show{display:flex}
+.modal{background:#fff;border-radius:14px;padding:28px;width:100%;max-width:400px;box-shadow:0 20px 60px rgba(0,0,0,.15)}
+.modal-title{font-size:16px;font-weight:600;margin-bottom:6px}
+.modal-sub{font-size:13px;color:#5F5E5A;margin-bottom:20px;line-height:1.5}
+.modal-input{width:100%;background:#F5F4F0;border:1px solid #E8E6DE;border-radius:8px;color:#2C2C2A;font-family:inherit;font-size:13.5px;padding:9px 12px;outline:none;margin-bottom:16px}
+.modal-input:focus{border-color:#F47920}
+.modal-actions{display:flex;gap:8px;justify-content:flex-end}
 </style>
 </head>
 <body>
@@ -91,168 +117,351 @@ main{max-width:760px;margin:0 auto;padding:48px 40px 80px}
       <div class="section-head">
         <div>
           <div class="section-title">Invite user</div>
-          <div class="section-sub">Sends an invite email with a link to set their password</div>
+          <div class="section-sub">Sends an invite email — invited users are auto-approved</div>
         </div>
       </div>
       <div id="invite-alert" class="alert"></div>
       <div class="invite-row">
         <input type="email" class="form-input" id="invite-email" placeholder="name@ukpos.com" onkeydown="if(event.key==='Enter')doInvite()">
+        <select class="role-select" id="invite-role">
+          <option value="user">User</option>
+          <option value="super_admin">Super Admin</option>
+        </select>
         <button class="btn btn-primary" onclick="doInvite()" id="invite-btn">Send Invite</button>
       </div>
     </div>
 
-    <!-- Users list -->
+    <!-- Users tabs -->
     <div class="section">
       <div class="section-head">
         <div>
           <div class="section-title">Users</div>
-          <div class="section-sub" id="user-count">Loading…</div>
         </div>
-        <button class="btn hdr-btn" onclick="loadUsers()">↻ Refresh</button>
+        <button class="btn hdr-btn" onclick="loadProfiles()">↻ Refresh</button>
       </div>
-      <div id="users-alert" class="alert"></div>
-      <div id="users-container">
-        <div class="loading">Loading users…</div>
+      <div id="global-alert" class="alert"></div>
+
+      <div class="tabs">
+        <button class="tab active" onclick="switchTab('approved')" id="tab-approved">Approved <span class="tab-count" id="count-approved">—</span></button>
+        <button class="tab" onclick="switchTab('pending')" id="tab-pending">Pending <span class="tab-count" id="count-pending">—</span></button>
+        <button class="tab" onclick="switchTab('rejected')" id="tab-rejected">Rejected <span class="tab-count" id="count-rejected">—</span></button>
+        <button class="tab" onclick="switchTab('audit')" id="tab-audit">Audit Log <span class="tab-count" id="count-audit">—</span></button>
       </div>
+
+      <div id="tab-content-approved"><div class="loading">Loading…</div></div>
+      <div id="tab-content-pending" style="display:none"><div class="loading">Loading…</div></div>
+      <div id="tab-content-rejected" style="display:none"><div class="loading">Loading…</div></div>
+      <div id="tab-content-audit" style="display:none"><div class="loading">Loading…</div></div>
     </div>
 
   </div>
 </main>
 
+<!-- Set password modal -->
+<div class="modal-backdrop" id="pw-modal">
+  <div class="modal">
+    <div class="modal-title">Set Password</div>
+    <div class="modal-sub" id="pw-modal-sub">Set a new password for this user</div>
+    <div id="pw-modal-alert" class="alert"></div>
+    <input type="password" class="modal-input" id="pw-modal-input" placeholder="New password (min 8 chars)" autocomplete="new-password">
+    <div class="modal-actions">
+      <button class="btn btn-neutral" onclick="closePwModal()">Cancel</button>
+      <button class="btn btn-primary" onclick="confirmSetPassword()" id="pw-modal-btn">Set Password</button>
+    </div>
+  </div>
+</div>
+
+<!-- Reason modal (for reject / revoke) -->
+<div class="modal-backdrop" id="reason-modal">
+  <div class="modal">
+    <div class="modal-title" id="reason-modal-title">Reason</div>
+    <div class="modal-sub" id="reason-modal-sub"></div>
+    <div id="reason-modal-alert" class="alert"></div>
+    <input type="text" class="modal-input" id="reason-modal-input" placeholder="Reason (optional)">
+    <div class="modal-actions">
+      <button class="btn btn-neutral" onclick="closeReasonModal()">Cancel</button>
+      <button class="btn btn-danger" onclick="confirmReason()" id="reason-modal-btn">Confirm</button>
+    </div>
+  </div>
+</div>
+
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
 <script>
 const SUPA_URL = 'https://fqaxuhbcwoikeldnxuvv.supabase.co';
 const SUPA_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImZxYXh1aGJjd29pa2VsZG54dXZ2Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODExNjk2NTQsImV4cCI6MjA5Njc0NTY1NH0.0XtMq5p6L9pnRilG5GUI5j72zPNuhl4PnD9ihDxeT1c';
-const SUPERADMINS = ['apritchard@ukpos.com', 'ecommerce@ukpos.com'];
 const sb = supabase.createClient(SUPA_URL, SUPA_KEY);
 
 let accessToken = null;
+let myId = null;
+let allProfiles = [];
+let currentTab = 'approved';
+
+// Modal state
+let pendingAction = null; // { action, userId, email }
 
 (async function authGuard() {
   const { data: { session } } = await sb.auth.getSession();
   if (!session) { window.location.href = '/login.html'; return; }
-  if (!session.user.email.endsWith('@ukpos.com')) {
-    await sb.auth.signOut(); window.location.href = '/login.html'; return;
-  }
-  document.getElementById('user-email').textContent = session.user.email;
-  accessToken = session.access_token;
+  if (!session.user.email.endsWith('@ukpos.com')) { await sb.auth.signOut(); window.location.href = '/login.html'; return; }
 
-  if (!SUPERADMINS.includes(session.user.email)) {
+  accessToken = session.access_token;
+  myId = session.user.id;
+  document.getElementById('user-email').textContent = session.user.email;
+
+  // Check profile
+  const { data: profile } = await sb.from('profiles').select('role,status').eq('id', myId).single();
+  if (!profile || profile.status !== 'approved') { window.location.href = '/pending.html'; return; }
+  if (profile.role !== 'super_admin') {
     document.getElementById('forbidden').style.display = '';
     return;
   }
 
   document.getElementById('admin-content').style.display = '';
-  loadUsers();
+  loadProfiles();
 })();
 
-async function doSignOut() {
-  await sb.auth.signOut();
-  window.location.href = '/login.html';
-}
+async function doSignOut() { await sb.auth.signOut(); window.location.href = '/login.html'; }
 
 async function apiCall(method, body) {
-  const opts = {
-    method,
-    headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${accessToken}` }
-  };
+  const opts = { method, headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${accessToken}` } };
   if (body) opts.body = JSON.stringify(body);
   const r = await fetch('/api/admin-users', opts);
   const data = await r.json();
   return { ok: r.ok, data };
 }
 
-async function loadUsers() {
-  document.getElementById('users-container').innerHTML = '<div class="loading">Loading users…</div>';
-  document.getElementById('user-count').textContent = 'Loading…';
+// ── Load ─────────────────────────────────────────────────────────────────────
+
+async function loadProfiles() {
   const { ok, data } = await apiCall('GET');
-  if (!ok) {
-    document.getElementById('users-container').innerHTML = `<div class="loading" style="color:#DC2626">${data.error || 'Failed to load users.'}</div>`;
-    return;
-  }
-  const users = data.users || [];
-  document.getElementById('user-count').textContent = `${users.length} user${users.length !== 1 ? 's' : ''}`;
-  if (!users.length) {
-    document.getElementById('users-container').innerHTML = '<div class="loading">No users found.</div>';
-    return;
-  }
-  // Sort: admins first, then alphabetical
-  users.sort((a, b) => {
-    const aA = SUPERADMINS.includes(a.email), bA = SUPERADMINS.includes(b.email);
-    if (aA !== bA) return aA ? -1 : 1;
-    return a.email.localeCompare(b.email);
-  });
-  const rows = users.map(u => {
-    const isAdmin = SUPERADMINS.includes(u.email);
-    const confirmed = !!u.confirmed_at;
-    const lastSeen = u.last_sign_in_at ? formatDate(u.last_sign_in_at) : '—';
-    const status = confirmed
-      ? `<span class="badge badge-confirmed">Active</span>`
-      : `<span class="badge badge-pending">Invite pending</span>`;
-    const adminBadge = isAdmin ? `<span class="badge badge-admin" style="margin-right:6px">Admin</span>` : '';
-    const deleteBtn = isAdmin
-      ? ''
-      : `<button class="btn btn-danger btn-sm" onclick="doDelete('${u.id}','${u.email}')">Remove</button>`;
-    return `<tr>
-      <td><div class="user-email">${adminBadge}${u.email}</div><div class="user-date">Joined ${formatDate(u.created_at)}</div></td>
-      <td>${status}</td>
-      <td class="user-date">${lastSeen}</td>
-      <td>${deleteBtn}</td>
-    </tr>`;
-  }).join('');
-  document.getElementById('users-container').innerHTML = `
-    <table class="users-table">
-      <thead><tr>
-        <th>Email</th><th>Status</th><th>Last sign in</th><th></th>
-      </tr></thead>
-      <tbody>${rows}</tbody>
-    </table>`;
+  if (!ok) { showGlobalAlert(data.error || 'Failed to load users.', 'error'); return; }
+  allProfiles = data.profiles || [];
+  renderTab(currentTab);
+  updateCounts();
 }
+
+function updateCounts() {
+  const groups = { approved: 0, pending: 0, rejected: 0 };
+  allProfiles.forEach(p => { if (groups[p.status] !== undefined) groups[p.status]++; });
+  document.getElementById('count-approved').textContent = groups.approved;
+  document.getElementById('count-pending').textContent  = groups.pending;
+  document.getElementById('count-rejected').textContent = groups.rejected;
+}
+
+function switchTab(tab) {
+  currentTab = tab;
+  ['approved','pending','rejected','audit'].forEach(t => {
+    document.getElementById(`tab-${t}`).classList.toggle('active', t === tab);
+    document.getElementById(`tab-content-${t}`).style.display = t === tab ? '' : 'none';
+  });
+  if (tab === 'audit') loadAuditLog();
+  else renderTab(tab);
+}
+
+function renderTab(tab) {
+  const rows = allProfiles.filter(p => p.status === tab);
+  const el = document.getElementById(`tab-content-${tab}`);
+
+  if (tab === 'approved') {
+    // Sort: super_admin first, then alphabetical
+    rows.sort((a, b) => {
+      if (a.role === 'super_admin' && b.role !== 'super_admin') return -1;
+      if (b.role === 'super_admin' && a.role !== 'super_admin') return 1;
+      return a.email.localeCompare(b.email);
+    });
+    if (!rows.length) { el.innerHTML = '<p class="loading">No approved users.</p>'; return; }
+    el.innerHTML = `<table class="users-table">
+      <thead><tr><th>User</th><th>Role</th><th>Approved</th><th>Last sign in</th><th></th></tr></thead>
+      <tbody>${rows.map(p => {
+        const isMe = p.id === myId;
+        const roleBadge = p.role === 'super_admin'
+          ? '<span class="badge badge-admin">super_admin</span>'
+          : '<span class="badge badge-user">user</span>';
+        const roleBtn = p.role === 'super_admin'
+          ? `<button class="btn btn-neutral btn-xs" onclick="setRole('${p.id}','${p.email}','user')" ${isMe ? 'disabled title="Cannot demote yourself"' : ''}>Demote</button>`
+          : `<button class="btn btn-neutral btn-xs" onclick="setRole('${p.id}','${p.email}','super_admin')">Promote</button>`;
+        const setPwBtn = `<button class="btn btn-neutral btn-xs" onclick="openPwModal('${p.id}','${p.email}')">Set PW</button>`;
+        const revokeBtn = isMe ? '' : `<button class="btn btn-danger btn-xs" onclick="openReasonModal('revoke','${p.id}','${p.email}')">Revoke</button>`;
+        return `<tr>
+          <td><div class="user-email">${p.email}${isMe ? ' <em style="color:#888780;font-weight:400">(you)</em>' : ''}</div>
+              <div class="user-date">Since ${fmtDate(p.approved_at || p.created_at)}</div></td>
+          <td>${roleBadge}</td>
+          <td class="user-date">${fmtDate(p.approved_at)}</td>
+          <td class="user-date">${fmtDate(p.last_sign_in_at) || '—'}</td>
+          <td class="actions-col">${roleBtn}${setPwBtn}${revokeBtn}</td>
+        </tr>`;
+      }).join('')}</tbody></table>`;
+  }
+
+  if (tab === 'pending') {
+    if (!rows.length) { el.innerHTML = '<p class="loading">No pending requests.</p>'; return; }
+    el.innerHTML = `<table class="users-table">
+      <thead><tr><th>User</th><th>Requested</th><th></th></tr></thead>
+      <tbody>${rows.map(p => `<tr>
+        <td><div class="user-email">${p.email}</div></td>
+        <td class="user-date">${fmtDate(p.requested_at)}</td>
+        <td class="actions-col">
+          <button class="btn btn-success btn-sm" onclick="doAction('approve','${p.id}','${p.email}')">Approve</button>
+          <button class="btn btn-danger btn-sm" onclick="openReasonModal('reject','${p.id}','${p.email}')">Reject</button>
+        </td>
+      </tr>`).join('')}</tbody></table>`;
+  }
+
+  if (tab === 'rejected') {
+    if (!rows.length) { el.innerHTML = '<p class="loading">No rejected/revoked users.</p>'; return; }
+    el.innerHTML = `<table class="users-table">
+      <thead><tr><th>User</th><th>Rejected</th><th>Reason</th><th></th></tr></thead>
+      <tbody>${rows.map(p => `<tr>
+        <td><div class="user-email">${p.email}</div></td>
+        <td class="user-date">${fmtDate(p.rejected_at)}</td>
+        <td class="user-date">${p.rejection_reason || '—'}</td>
+        <td class="actions-col">
+          <button class="btn btn-success btn-sm" onclick="doAction('approve','${p.id}','${p.email}')">Reinstate</button>
+          <button class="btn btn-danger btn-sm" onclick="doDelete('${p.id}','${p.email}')">Delete</button>
+        </td>
+      </tr>`).join('')}</tbody></table>`;
+  }
+}
+
+async function loadAuditLog() {
+  const el = document.getElementById('tab-content-audit');
+  el.innerHTML = '<div class="loading">Loading audit log…</div>';
+  const { data: logs, error } = await sb.from('admin_audit_log')
+    .select('*').order('created_at', { ascending: false }).limit(200);
+  if (error) { el.innerHTML = `<div class="loading" style="color:#DC2626">Failed to load audit log: ${error.message}</div>`; return; }
+  if (!logs?.length) { el.innerHTML = '<p class="loading">No audit log entries yet.</p>'; document.getElementById('count-audit').textContent = '0'; return; }
+  document.getElementById('count-audit').textContent = logs.length;
+  el.innerHTML = `<table class="users-table">
+    <thead><tr><th>When</th><th>Actor</th><th>Action</th><th>Target</th><th>Details</th></tr></thead>
+    <tbody>${logs.map(l => `<tr>
+      <td class="user-date">${fmtDatetime(l.created_at)}</td>
+      <td><div class="user-email" style="font-size:12px">${l.actor_email || '—'}</div></td>
+      <td><span class="badge badge-${l.action === 'approve' || l.action === 'invite' ? 'approved' : l.action === 'delete' || l.action === 'reject' || l.action === 'revoke' ? 'rejected' : 'user'}">${l.action}</span></td>
+      <td class="user-date">${l.target_email || '—'}</td>
+      <td class="user-date">${l.details ? JSON.stringify(l.details) : '—'}</td>
+    </tr>`).join('')}</tbody></table>`;
+}
+
+// ── Actions ──────────────────────────────────────────────────────────────────
 
 async function doInvite() {
   const email = document.getElementById('invite-email').value.trim().toLowerCase();
+  const role  = document.getElementById('invite-role').value;
   const alertEl = document.getElementById('invite-alert');
   alertEl.className = 'alert';
   if (!email) return;
-  if (!email.endsWith('@ukpos.com')) {
-    alertEl.textContent = 'Only @ukpos.com email addresses can be invited.';
-    alertEl.className = 'alert error show'; return;
-  }
+  if (!email.endsWith('@ukpos.com')) { alertEl.textContent = 'Only @ukpos.com addresses can be invited.'; alertEl.className = 'alert error show'; return; }
   const btn = document.getElementById('invite-btn');
   btn.disabled = true; btn.textContent = 'Sending…';
-  const { ok, data } = await apiCall('POST', { email });
-  if (!ok) {
-    alertEl.textContent = data.error || 'Failed to send invite.';
-    alertEl.className = 'alert error show';
-  } else {
-    alertEl.textContent = `Invite sent to ${data.email}.`;
-    alertEl.className = 'alert success show';
-    document.getElementById('invite-email').value = '';
-    loadUsers();
-  }
+  const { ok, data } = await apiCall('POST', { action: 'invite', email, role });
+  if (!ok) { alertEl.textContent = data.error || 'Failed to send invite.'; alertEl.className = 'alert error show'; }
+  else { alertEl.textContent = `Invite sent to ${email}.`; alertEl.className = 'alert success show'; document.getElementById('invite-email').value = ''; loadProfiles(); }
   btn.disabled = false; btn.textContent = 'Send Invite';
 }
 
-async function doDelete(userId, email) {
-  if (!confirm(`Remove ${email} from the Print Site?\n\nThis will delete their account. They will need to be re-invited to regain access.`)) return;
-  const alertEl = document.getElementById('users-alert');
-  alertEl.className = 'alert';
-  const { ok, data } = await apiCall('DELETE', { userId });
-  if (!ok) {
-    alertEl.textContent = data.error || 'Failed to remove user.';
-    alertEl.className = 'alert error show';
-  } else {
-    alertEl.textContent = `${email} has been removed.`;
-    alertEl.className = 'alert success show';
-    loadUsers();
-  }
+async function doAction(action, userId, email) {
+  const { ok, data } = await apiCall('PATCH', { action, userId });
+  if (!ok) { showGlobalAlert(data.error || `Failed: ${action}.`, 'error'); return; }
+  showGlobalAlert(`Done: ${action} for ${email}.`, 'success');
+  loadProfiles();
 }
 
-function formatDate(iso) {
-  if (!iso) return '—';
-  const d = new Date(iso);
-  return d.toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' });
+async function setRole(userId, email, role) {
+  const label = role === 'super_admin' ? 'promote' : 'demote';
+  if (!confirm(`${label === 'promote' ? 'Promote' : 'Demote'} ${email} to ${role}?`)) return;
+  const { ok, data } = await apiCall('PATCH', { action: 'set_role', userId, role });
+  if (!ok) { showGlobalAlert(data.error || 'Failed to change role.', 'error'); return; }
+  showGlobalAlert(`${email} is now ${role}.`, 'success');
+  loadProfiles();
 }
+
+async function doDelete(userId, email) {
+  if (!confirm(`Permanently delete ${email}?\n\nThis removes their account entirely. They will need to be re-invited.`)) return;
+  const { ok, data } = await apiCall('DELETE', { userId });
+  if (!ok) { showGlobalAlert(data.error || 'Failed to delete user.', 'error'); return; }
+  showGlobalAlert(`${email} deleted.`, 'success');
+  loadProfiles();
+}
+
+// ── Password modal ────────────────────────────────────────────────────────────
+
+function openPwModal(userId, email) {
+  pendingAction = { action: 'set_password', userId, email };
+  document.getElementById('pw-modal-sub').textContent = `Set a new password for ${email}`;
+  document.getElementById('pw-modal-input').value = '';
+  document.getElementById('pw-modal-alert').className = 'alert';
+  document.getElementById('pw-modal').classList.add('show');
+  setTimeout(() => document.getElementById('pw-modal-input').focus(), 50);
+}
+function closePwModal() { document.getElementById('pw-modal').classList.remove('show'); pendingAction = null; }
+
+async function confirmSetPassword() {
+  const pw = document.getElementById('pw-modal-input').value;
+  const alertEl = document.getElementById('pw-modal-alert');
+  alertEl.className = 'alert';
+  if (pw.length < 8) { alertEl.textContent = 'Password must be at least 8 characters.'; alertEl.className = 'alert error show'; return; }
+  const btn = document.getElementById('pw-modal-btn');
+  btn.disabled = true; btn.textContent = 'Setting…';
+  const { ok, data } = await apiCall('PATCH', { action: 'set_password', userId: pendingAction.userId, password: pw });
+  btn.disabled = false; btn.textContent = 'Set Password';
+  if (!ok) { alertEl.textContent = data.error || 'Failed.'; alertEl.className = 'alert error show'; return; }
+  closePwModal();
+  showGlobalAlert(`Password set for ${pendingAction?.email || 'user'}.`, 'success');
+}
+
+// ── Reason modal (reject / revoke) ────────────────────────────────────────────
+
+function openReasonModal(action, userId, email) {
+  pendingAction = { action, userId, email };
+  document.getElementById('reason-modal-title').textContent = action === 'reject' ? 'Reject User' : 'Revoke Access';
+  document.getElementById('reason-modal-sub').textContent = action === 'reject'
+    ? `Reject access request from ${email}?`
+    : `Revoke access for ${email}?`;
+  document.getElementById('reason-modal-input').value = '';
+  document.getElementById('reason-modal-alert').className = 'alert';
+  document.getElementById('reason-modal').classList.add('show');
+  setTimeout(() => document.getElementById('reason-modal-input').focus(), 50);
+}
+function closeReasonModal() { document.getElementById('reason-modal').classList.remove('show'); pendingAction = null; }
+
+async function confirmReason() {
+  const reason = document.getElementById('reason-modal-input').value.trim() || null;
+  const btn = document.getElementById('reason-modal-btn');
+  btn.disabled = true;
+  const { ok, data } = await apiCall('PATCH', { action: pendingAction.action, userId: pendingAction.userId, reason });
+  btn.disabled = false;
+  if (!ok) {
+    document.getElementById('reason-modal-alert').textContent = data.error || 'Failed.';
+    document.getElementById('reason-modal-alert').className = 'alert error show';
+    return;
+  }
+  const email = pendingAction.email;
+  closeReasonModal();
+  showGlobalAlert(`${pendingAction?.action === 'reject' ? 'Rejected' : 'Revoked'}: ${email}.`, 'success');
+  loadProfiles();
+}
+
+// ── Helpers ───────────────────────────────────────────────────────────────────
+
+function showGlobalAlert(msg, type) {
+  const el = document.getElementById('global-alert');
+  el.textContent = msg;
+  el.className = `alert ${type} show`;
+  setTimeout(() => { el.className = 'alert'; }, 5000);
+}
+
+function fmtDate(iso) {
+  if (!iso) return '—';
+  return new Date(iso).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' });
+}
+function fmtDatetime(iso) {
+  if (!iso) return '—';
+  return new Date(iso).toLocaleString('en-GB', { day: 'numeric', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit' });
+}
+
+// Close modals on backdrop click
+document.getElementById('pw-modal').addEventListener('click', e => { if (e.target === e.currentTarget) closePwModal(); });
+document.getElementById('reason-modal').addEventListener('click', e => { if (e.target === e.currentTarget) closeReasonModal(); });
 </script>
 </body>
 </html>
