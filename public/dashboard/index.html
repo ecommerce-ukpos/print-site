@@ -434,6 +434,22 @@ input[type=file]{display:none}
 
 <div class="toast" id="toast"></div>
 
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
+<script>
+// ── Auth guard ───────────────────────────────────────────────────────────────
+(async function authGuard() {
+  const sb = supabase.createClient(
+    'https://fqaxuhbcwoikeldnxuvv.supabase.co',
+    'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImZxYXh1aGJjd29pa2VsZG54dXZ2Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODExNjk2NTQsImV4cCI6MjA5Njc0NTY1NH0.0XtMq5p6L9pnRilG5GUI5j72zPNuhl4PnD9ihDxeT1c'
+  );
+  const { data: { session } } = await sb.auth.getSession();
+  if (!session) { window.location.href = '/login.html'; return; }
+  if (!session.user.email.endsWith('@ukpos.com')) {
+    await sb.auth.signOut(); window.location.href = '/login.html'; return;
+  }
+})();
+</script>
+
 <script>
 /* ══════════════════════════════════════════════════
    ALL JS BELOW IS TRANSPLANTED UNCHANGED FROM THE

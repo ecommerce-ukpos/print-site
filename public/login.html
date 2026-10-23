@@ -1,0 +1,219 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Sign In — Print Site</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --bg:#FAFAF8;--bg2:#fff;--bg3:#F5F4F0;--bg4:#EEECEA;
+  --border:#E8E6DE;--border2:#D3D1C7;
+  --text:#2C2C2A;--text2:#5F5E5A;--text3:#888780;
+  --orange:#F47920;--orange-bg:#FFF0E6;--orange-border:#FDD4AF;
+  --red:#DC2626;--red-bg:#FEF2F2;--red-border:#FECACA;
+  --green:#16A34A;--green-bg:#F0FDF4;--green-border:#BBF7D0;
+  --radius:8px;--radius-lg:12px;
+  --font:'Inter',system-ui,sans-serif;
+}
+body{
+  font-family:var(--font);background:var(--bg);color:var(--text);
+  min-height:100vh;display:flex;align-items:center;justify-content:center;
+  font-size:14px;line-height:1.5;-webkit-font-smoothing:antialiased;
+}
+.wrap{
+  width:100%;max-width:380px;padding:0 20px;
+}
+.logo-row{
+  display:flex;align-items:center;justify-content:center;gap:10px;margin-bottom:32px;
+}
+.logo-icon{
+  width:36px;height:36px;border-radius:9px;
+  background:var(--orange);
+  display:flex;align-items:center;justify-content:center;font-size:17px;
+}
+.logo-text{font-size:17px;font-weight:700;letter-spacing:-.02em;color:var(--text)}
+.logo-divider{color:var(--border2);font-weight:300}
+.logo-sub{font-size:14px;color:var(--text3);font-weight:400}
+
+.card{
+  background:var(--bg2);border:1px solid var(--border);border-radius:var(--radius-lg);
+  padding:28px;box-shadow:0 1px 4px rgba(0,0,0,0.05);
+}
+.card-title{font-size:17px;font-weight:600;text-align:center;margin-bottom:4px;letter-spacing:-.01em}
+.card-sub{font-size:13px;color:var(--text3);text-align:center;margin-bottom:24px}
+
+.form-group{margin-bottom:14px}
+.form-label{display:block;font-size:12px;font-weight:500;color:var(--text2);margin-bottom:5px}
+.form-input{
+  width:100%;background:var(--bg3);border:1px solid var(--border);border-radius:var(--radius);
+  color:var(--text);font-family:var(--font);font-size:13.5px;padding:9px 12px;
+  outline:none;transition:border-color .15s;
+}
+.form-input:focus{border-color:var(--orange)}
+.form-input::placeholder{color:var(--text3)}
+
+.btn{
+  width:100%;padding:10px;border-radius:var(--radius);font-size:14px;font-weight:600;
+  cursor:pointer;transition:all .15s;border:none;font-family:var(--font);margin-top:4px;
+}
+.btn-primary{background:var(--orange);color:#fff}
+.btn-primary:hover{background:#d96810}
+.btn-primary:disabled{opacity:.5;cursor:not-allowed}
+
+.alert{
+  padding:10px 14px;border-radius:var(--radius);font-size:13px;
+  margin-bottom:14px;display:none;
+}
+.alert.error{background:var(--red-bg);border:1px solid var(--red-border);color:var(--red)}
+.alert.success{background:var(--green-bg);border:1px solid var(--green-border);color:var(--green)}
+.alert.show{display:block}
+
+.footer-link{text-align:center;margin-top:12px;font-size:12px;color:var(--text3)}
+.footer-link a{color:var(--orange);text-decoration:none;cursor:pointer}
+.footer-link a:hover{text-decoration:underline}
+
+.back-link{text-align:center;margin-top:14px;font-size:12px;cursor:pointer;color:var(--orange)}
+.back-link:hover{text-decoration:underline}
+
+.invite-note{
+  text-align:center;margin-top:16px;font-size:12px;color:var(--text3);line-height:1.5;
+  border-top:1px solid var(--border);padding-top:16px;
+}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="logo-row">
+    <div class="logo-icon">🖨️</div>
+    <div class="logo-text">UKPOS <span class="logo-divider">/</span> <span class="logo-sub">Print Site</span></div>
+  </div>
+
+  <!-- Sign In card -->
+  <div class="card" id="auth-card">
+    <div class="card-title">Welcome back</div>
+    <div class="card-sub">Sign in with your UKPOS account</div>
+
+    <div id="alert" class="alert"></div>
+
+    <div id="signin-form">
+      <div class="form-group">
+        <label class="form-label">Email address</label>
+        <input type="email" class="form-input" id="signin-email" placeholder="you@ukpos.com" autocomplete="email">
+      </div>
+      <div class="form-group">
+        <label class="form-label">Password</label>
+        <input type="password" class="form-input" id="signin-password" placeholder="••••••••" autocomplete="current-password" onkeydown="if(event.key==='Enter')doSignIn()">
+      </div>
+      <button class="btn btn-primary" onclick="doSignIn()" id="signin-btn">Sign In</button>
+      <div class="footer-link">
+        <a onclick="showForgot()">Forgot password?</a>
+      </div>
+    </div>
+
+    <div class="invite-note">Access is restricted to @ukpos.com accounts only.<br>Contact an admin if you need access.</div>
+  </div>
+
+  <!-- Forgot password card -->
+  <div class="card" id="forgot-card" style="display:none">
+    <div class="card-title">Reset Password</div>
+    <div class="card-sub">We'll send a reset link to your email</div>
+    <div id="forgot-alert" class="alert"></div>
+    <div class="form-group">
+      <label class="form-label">Email address</label>
+      <input type="email" class="form-input" id="forgot-email" placeholder="you@ukpos.com">
+    </div>
+    <button class="btn btn-primary" onclick="doForgot()">Send Reset Link</button>
+    <div class="back-link" onclick="hideForgot()">← Back to sign in</div>
+  </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
+<script>
+const sb = supabase.createClient(
+  'https://fqaxuhbcwoikeldnxuvv.supabase.co',
+  'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImZxYXh1aGJjd29pa2VsZG54dXZ2Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODExNjk2NTQsImV4cCI6MjA5Njc0NTY1NH0.0XtMq5p6L9pnRilG5GUI5j72zPNuhl4PnD9ihDxeT1c'
+);
+
+// Redirect if already logged in
+sb.auth.getSession().then(({ data: { session } }) => {
+  if (session) window.location.href = '/';
+});
+
+function showAlert(msg, type='error') {
+  const el = document.getElementById('alert');
+  el.textContent = msg;
+  el.className = `alert ${type} show`;
+}
+function clearAlert() {
+  document.getElementById('alert').className = 'alert';
+}
+
+async function doSignIn() {
+  clearAlert();
+  const email = document.getElementById('signin-email').value.trim().toLowerCase();
+  const pass  = document.getElementById('signin-password').value;
+  if (!email || !pass) { showAlert('Please fill in all fields'); return; }
+
+  // Domain check before even attempting sign-in
+  if (!email.endsWith('@ukpos.com')) {
+    showAlert('Access is restricted to @ukpos.com accounts only.');
+    return;
+  }
+
+  const btn = document.getElementById('signin-btn');
+  btn.disabled = true; btn.textContent = 'Signing in…';
+
+  const { error } = await sb.auth.signInWithPassword({ email, password: pass });
+  if (error) {
+    showAlert('Invalid email or password.');
+    btn.disabled = false; btn.textContent = 'Sign In';
+    return;
+  }
+
+  // Double-check domain on the returned user (defence in depth)
+  const { data: { user } } = await sb.auth.getUser();
+  if (!user || !user.email.endsWith('@ukpos.com')) {
+    await sb.auth.signOut();
+    showAlert('Access is restricted to @ukpos.com accounts only.');
+    btn.disabled = false; btn.textContent = 'Sign In';
+    return;
+  }
+
+  window.location.href = '/';
+}
+
+function showForgot() {
+  document.getElementById('auth-card').style.display = 'none';
+  document.getElementById('forgot-card').style.display = '';
+}
+function hideForgot() {
+  document.getElementById('forgot-card').style.display = 'none';
+  document.getElementById('auth-card').style.display = '';
+}
+async function doForgot() {
+  const email = document.getElementById('forgot-email').value.trim().toLowerCase();
+  if (!email) return;
+  if (!email.endsWith('@ukpos.com')) {
+    const el = document.getElementById('forgot-alert');
+    el.textContent = 'Please enter your @ukpos.com email address.';
+    el.className = 'alert error show';
+    return;
+  }
+  const { error } = await sb.auth.resetPasswordForEmail(email, {
+    redirectTo: window.location.origin + '/login.html'
+  });
+  const alertEl = document.getElementById('forgot-alert');
+  if (error) {
+    alertEl.textContent = error.message;
+    alertEl.className = 'alert error show';
+  } else {
+    alertEl.textContent = 'Reset link sent — check your inbox.';
+    alertEl.className = 'alert success show';
+  }
+}
+</script>
+</body>
+</html>

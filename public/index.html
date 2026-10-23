@@ -126,6 +126,9 @@
   <span class="wordmark">UKPOS</span>
   <span class="divider">/</span>
   <span class="subtitle">Print Site</span>
+  <span style="flex:1"></span>
+  <span id="user-email" style="font-size:12px;color:#888780;margin-right:12px"></span>
+  <button onclick="doSignOut()" style="font-size:12px;padding:5px 12px;border:1px solid #E8E6DE;border-radius:6px;background:#fff;cursor:pointer;color:#5F5E5A;font-family:inherit">Sign out</button>
 </header>
 
 <main>
@@ -258,13 +261,36 @@
   </div><!-- end flow -->
 </main>
 
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
 <script>
 const SUPA_URL = 'https://fqaxuhbcwoikeldnxuvv.supabase.co';
 const SUPA_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImZxYXh1aGJjd29pa2VsZG54dXZ2Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODExNjk2NTQsImV4cCI6MjA5Njc0NTY1NH0.0XtMq5p6L9pnRilG5GUI5j72zPNuhl4PnD9ihDxeT1c';
 
+const sb = supabase.createClient(SUPA_URL, SUPA_KEY);
+
+// ── Auth guard ──────────────────────────────────────────────────────────────
+(async function authGuard() {
+  const { data: { session } } = await sb.auth.getSession();
+  if (!session) { window.location.href = '/login.html'; return; }
+  if (!session.user.email.endsWith('@ukpos.com')) {
+    await sb.auth.signOut();
+    window.location.href = '/login.html';
+    return;
+  }
+  document.getElementById('user-email').textContent = session.user.email;
+  loadStats();
+})();
+
+async function doSignOut() {
+  await sb.auth.signOut();
+  window.location.href = '/login.html';
+}
+
 async function sf(path) {
+  const { data: { session } } = await sb.auth.getSession();
+  const token = session ? session.access_token : SUPA_KEY;
   const r = await fetch(SUPA_URL + path, {
-    headers: { apikey: SUPA_KEY, Authorization: 'Bearer ' + SUPA_KEY }
+    headers: { apikey: SUPA_KEY, Authorization: 'Bearer ' + token }
   });
   return r.json();
 }
@@ -310,8 +336,6 @@ async function loadStats() {
     console.warn('Stats load failed:', e.message);
   }
 }
-
-loadStats();
 </script>
 </body>
 </html>
