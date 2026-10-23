@@ -127,7 +127,9 @@
   <span class="divider">/</span>
   <span class="subtitle">Print Site</span>
   <span style="flex:1"></span>
-  <span id="user-email" style="font-size:12px;color:#888780;margin-right:12px"></span>
+  <span id="user-email" style="font-size:12px;color:#888780;margin-right:8px"></span>
+  <a href="/account/" style="font-size:12px;padding:5px 12px;border:1px solid #E8E6DE;border-radius:6px;background:#fff;color:#5F5E5A;font-family:inherit;text-decoration:none;margin-right:4px">My account</a>
+  <a href="/admin/" id="admin-link" style="font-size:12px;padding:5px 12px;border:1px solid #E8E6DE;border-radius:6px;background:#fff;color:#5F5E5A;font-family:inherit;text-decoration:none;margin-right:4px;display:none">Admin</a>
   <button onclick="doSignOut()" style="font-size:12px;padding:5px 12px;border:1px solid #E8E6DE;border-radius:6px;background:#fff;cursor:pointer;color:#5F5E5A;font-family:inherit">Sign out</button>
 </header>
 
@@ -278,6 +280,9 @@ const sb = supabase.createClient(SUPA_URL, SUPA_KEY);
     return;
   }
   document.getElementById('user-email').textContent = session.user.email;
+  if (['apritchard@ukpos.com','ecommerce@ukpos.com'].includes(session.user.email)) {
+    document.getElementById('admin-link').style.display = '';
+  }
   loadStats();
 })();
 

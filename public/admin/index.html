@@ -1,0 +1,258 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Admin — Print Site</title>
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",system-ui,sans-serif;background:#FAFAF8;color:#2C2C2A;min-height:100vh;font-size:14px;-webkit-font-smoothing:antialiased}
+header{border-bottom:1px solid #E8E6DE;padding:16px 40px;background:#fff;display:flex;align-items:center;gap:12px}
+.wordmark{font-size:15px;font-weight:600;color:#2C2C2A;letter-spacing:-.01em}
+.divider{color:#D3D1C7}
+.subtitle{font-size:14px;color:#888780}
+.header-right{margin-left:auto;display:flex;align-items:center;gap:10px}
+.hdr-email{font-size:12px;color:#888780}
+.hdr-btn{font-size:12px;padding:5px 12px;border:1px solid #E8E6DE;border-radius:6px;background:#fff;cursor:pointer;color:#5F5E5A;font-family:inherit;text-decoration:none;display:inline-block}
+.hdr-btn:hover{border-color:#D3D1C7}
+
+main{max-width:760px;margin:0 auto;padding:48px 40px 80px}
+.page-title{font-size:22px;font-weight:600;margin-bottom:4px;letter-spacing:-.02em}
+.page-sub{font-size:14px;color:#5F5E5A;margin-bottom:36px}
+
+.back-link{display:inline-flex;align-items:center;gap:6px;font-size:13px;color:#888780;text-decoration:none;margin-bottom:24px}
+.back-link:hover{color:#2C2C2A}
+
+.section{background:#fff;border:1px solid #E8E6DE;border-radius:12px;padding:24px;margin-bottom:20px}
+.section-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:20px}
+.section-title{font-size:14px;font-weight:600}
+.section-sub{font-size:12px;color:#888780;margin-top:2px}
+
+.btn{padding:8px 16px;border-radius:8px;font-size:13px;font-weight:600;cursor:pointer;transition:all .15s;border:none;font-family:inherit}
+.btn-primary{background:#F47920;color:#fff}
+.btn-primary:hover{background:#d96810}
+.btn-primary:disabled{opacity:.5;cursor:not-allowed}
+.btn-danger{background:#FEF2F2;color:#DC2626;border:1px solid #FECACA}
+.btn-danger:hover{background:#FECACA}
+.btn-sm{padding:5px 10px;font-size:12px}
+
+.alert{padding:10px 14px;border-radius:8px;font-size:13px;margin-bottom:16px;display:none}
+.alert.error{background:#FEF2F2;border:1px solid #FECACA;color:#DC2626}
+.alert.success{background:#F0FDF4;border:1px solid #BBF7D0;color:#16A34A}
+.alert.show{display:block}
+
+/* Invite form */
+.invite-row{display:flex;gap:10px;align-items:flex-start}
+.form-input{flex:1;background:#F5F4F0;border:1px solid #E8E6DE;border-radius:8px;color:#2C2C2A;font-family:inherit;font-size:13.5px;padding:9px 12px;outline:none;transition:border-color .15s}
+.form-input:focus{border-color:#F47920}
+.form-input::placeholder{color:#888780}
+
+/* Users table */
+.users-table{width:100%;border-collapse:collapse}
+.users-table th{text-align:left;font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:.06em;color:#888780;padding:0 0 10px;border-bottom:1px solid #E8E6DE}
+.users-table td{padding:12px 0;border-bottom:1px solid #F2F1EE;font-size:13px;vertical-align:middle}
+.users-table tr:last-child td{border-bottom:none}
+.users-table td:last-child{text-align:right}
+.user-email{font-weight:500}
+.badge{display:inline-block;font-size:11px;font-weight:600;padding:2px 8px;border-radius:20px;letter-spacing:.02em}
+.badge-admin{background:#FFF0E6;color:#F47920}
+.badge-confirmed{background:#F0FDF4;color:#16A34A}
+.badge-pending{background:#FFF7ED;color:#92400E}
+.user-date{font-size:12px;color:#888780}
+.loading{text-align:center;padding:32px;color:#888780;font-size:13px}
+.forbidden{text-align:center;padding:48px;color:#DC2626;font-size:14px}
+</style>
+</head>
+<body>
+<header>
+  <div class="wordmark">UKPOS</div>
+  <div class="divider">/</div>
+  <div class="subtitle">Print Site</div>
+  <div class="header-right">
+    <span class="hdr-email" id="user-email"></span>
+    <a href="/" class="hdr-btn">← Hub</a>
+    <button onclick="doSignOut()" class="hdr-btn">Sign out</button>
+  </div>
+</header>
+
+<main>
+  <a href="/" class="back-link">← Back to hub</a>
+  <div class="page-title">Admin</div>
+  <div class="page-sub">Manage user access to the Print Site</div>
+
+  <div id="forbidden" class="forbidden" style="display:none">
+    🔒 You don't have permission to access this page.
+  </div>
+
+  <div id="admin-content" style="display:none">
+
+    <!-- Invite -->
+    <div class="section">
+      <div class="section-head">
+        <div>
+          <div class="section-title">Invite user</div>
+          <div class="section-sub">Sends an invite email with a link to set their password</div>
+        </div>
+      </div>
+      <div id="invite-alert" class="alert"></div>
+      <div class="invite-row">
+        <input type="email" class="form-input" id="invite-email" placeholder="name@ukpos.com" onkeydown="if(event.key==='Enter')doInvite()">
+        <button class="btn btn-primary" onclick="doInvite()" id="invite-btn">Send Invite</button>
+      </div>
+    </div>
+
+    <!-- Users list -->
+    <div class="section">
+      <div class="section-head">
+        <div>
+          <div class="section-title">Users</div>
+          <div class="section-sub" id="user-count">Loading…</div>
+        </div>
+        <button class="btn hdr-btn" onclick="loadUsers()">↻ Refresh</button>
+      </div>
+      <div id="users-alert" class="alert"></div>
+      <div id="users-container">
+        <div class="loading">Loading users…</div>
+      </div>
+    </div>
+
+  </div>
+</main>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
+<script>
+const SUPA_URL = 'https://fqaxuhbcwoikeldnxuvv.supabase.co';
+const SUPA_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImZxYXh1aGJjd29pa2VsZG54dXZ2Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODExNjk2NTQsImV4cCI6MjA5Njc0NTY1NH0.0XtMq5p6L9pnRilG5GUI5j72zPNuhl4PnD9ihDxeT1c';
+const SUPERADMINS = ['apritchard@ukpos.com', 'ecommerce@ukpos.com'];
+const sb = supabase.createClient(SUPA_URL, SUPA_KEY);
+
+let accessToken = null;
+
+(async function authGuard() {
+  const { data: { session } } = await sb.auth.getSession();
+  if (!session) { window.location.href = '/login.html'; return; }
+  if (!session.user.email.endsWith('@ukpos.com')) {
+    await sb.auth.signOut(); window.location.href = '/login.html'; return;
+  }
+  document.getElementById('user-email').textContent = session.user.email;
+  accessToken = session.access_token;
+
+  if (!SUPERADMINS.includes(session.user.email)) {
+    document.getElementById('forbidden').style.display = '';
+    return;
+  }
+
+  document.getElementById('admin-content').style.display = '';
+  loadUsers();
+})();
+
+async function doSignOut() {
+  await sb.auth.signOut();
+  window.location.href = '/login.html';
+}
+
+async function apiCall(method, body) {
+  const opts = {
+    method,
+    headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${accessToken}` }
+  };
+  if (body) opts.body = JSON.stringify(body);
+  const r = await fetch('/api/admin-users', opts);
+  const data = await r.json();
+  return { ok: r.ok, data };
+}
+
+async function loadUsers() {
+  document.getElementById('users-container').innerHTML = '<div class="loading">Loading users…</div>';
+  document.getElementById('user-count').textContent = 'Loading…';
+  const { ok, data } = await apiCall('GET');
+  if (!ok) {
+    document.getElementById('users-container').innerHTML = `<div class="loading" style="color:#DC2626">${data.error || 'Failed to load users.'}</div>`;
+    return;
+  }
+  const users = data.users || [];
+  document.getElementById('user-count').textContent = `${users.length} user${users.length !== 1 ? 's' : ''}`;
+  if (!users.length) {
+    document.getElementById('users-container').innerHTML = '<div class="loading">No users found.</div>';
+    return;
+  }
+  // Sort: admins first, then alphabetical
+  users.sort((a, b) => {
+    const aA = SUPERADMINS.includes(a.email), bA = SUPERADMINS.includes(b.email);
+    if (aA !== bA) return aA ? -1 : 1;
+    return a.email.localeCompare(b.email);
+  });
+  const rows = users.map(u => {
+    const isAdmin = SUPERADMINS.includes(u.email);
+    const confirmed = !!u.confirmed_at;
+    const lastSeen = u.last_sign_in_at ? formatDate(u.last_sign_in_at) : '—';
+    const status = confirmed
+      ? `<span class="badge badge-confirmed">Active</span>`
+      : `<span class="badge badge-pending">Invite pending</span>`;
+    const adminBadge = isAdmin ? `<span class="badge badge-admin" style="margin-right:6px">Admin</span>` : '';
+    const deleteBtn = isAdmin
+      ? ''
+      : `<button class="btn btn-danger btn-sm" onclick="doDelete('${u.id}','${u.email}')">Remove</button>`;
+    return `<tr>
+      <td><div class="user-email">${adminBadge}${u.email}</div><div class="user-date">Joined ${formatDate(u.created_at)}</div></td>
+      <td>${status}</td>
+      <td class="user-date">${lastSeen}</td>
+      <td>${deleteBtn}</td>
+    </tr>`;
+  }).join('');
+  document.getElementById('users-container').innerHTML = `
+    <table class="users-table">
+      <thead><tr>
+        <th>Email</th><th>Status</th><th>Last sign in</th><th></th>
+      </tr></thead>
+      <tbody>${rows}</tbody>
+    </table>`;
+}
+
+async function doInvite() {
+  const email = document.getElementById('invite-email').value.trim().toLowerCase();
+  const alertEl = document.getElementById('invite-alert');
+  alertEl.className = 'alert';
+  if (!email) return;
+  if (!email.endsWith('@ukpos.com')) {
+    alertEl.textContent = 'Only @ukpos.com email addresses can be invited.';
+    alertEl.className = 'alert error show'; return;
+  }
+  const btn = document.getElementById('invite-btn');
+  btn.disabled = true; btn.textContent = 'Sending…';
+  const { ok, data } = await apiCall('POST', { email });
+  if (!ok) {
+    alertEl.textContent = data.error || 'Failed to send invite.';
+    alertEl.className = 'alert error show';
+  } else {
+    alertEl.textContent = `Invite sent to ${data.email}.`;
+    alertEl.className = 'alert success show';
+    document.getElementById('invite-email').value = '';
+    loadUsers();
+  }
+  btn.disabled = false; btn.textContent = 'Send Invite';
+}
+
+async function doDelete(userId, email) {
+  if (!confirm(`Remove ${email} from the Print Site?\n\nThis will delete their account. They will need to be re-invited to regain access.`)) return;
+  const alertEl = document.getElementById('users-alert');
+  alertEl.className = 'alert';
+  const { ok, data } = await apiCall('DELETE', { userId });
+  if (!ok) {
+    alertEl.textContent = data.error || 'Failed to remove user.';
+    alertEl.className = 'alert error show';
+  } else {
+    alertEl.textContent = `${email} has been removed.`;
+    alertEl.className = 'alert success show';
+    loadUsers();
+  }
+}
+
+function formatDate(iso) {
+  if (!iso) return '—';
+  const d = new Date(iso);
+  return d.toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' });
+}
+</script>
+</body>
+</html>

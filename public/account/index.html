@@ -1,0 +1,144 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>My Account — Print Site</title>
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",system-ui,sans-serif;background:#FAFAF8;color:#2C2C2A;min-height:100vh;font-size:14px;-webkit-font-smoothing:antialiased}
+header{border-bottom:1px solid #E8E6DE;padding:16px 40px;background:#fff;display:flex;align-items:center;gap:12px}
+.wordmark{font-size:15px;font-weight:600;color:#2C2C2A;letter-spacing:-.01em}
+.divider{color:#D3D1C7}
+.subtitle{font-size:14px;color:#888780}
+.header-right{margin-left:auto;display:flex;align-items:center;gap:10px}
+.hdr-email{font-size:12px;color:#888780}
+.hdr-btn{font-size:12px;padding:5px 12px;border:1px solid #E8E6DE;border-radius:6px;background:#fff;cursor:pointer;color:#5F5E5A;font-family:inherit;text-decoration:none;display:inline-block}
+.hdr-btn:hover{border-color:#D3D1C7}
+
+main{max-width:520px;margin:0 auto;padding:48px 40px 80px}
+.page-title{font-size:22px;font-weight:600;margin-bottom:4px;letter-spacing:-.02em}
+.page-sub{font-size:14px;color:#5F5E5A;margin-bottom:36px}
+
+.section{background:#fff;border:1px solid #E8E6DE;border-radius:12px;padding:24px;margin-bottom:20px}
+.section-title{font-size:14px;font-weight:600;margin-bottom:4px}
+.section-sub{font-size:12px;color:#888780;margin-bottom:20px}
+
+.form-group{margin-bottom:14px}
+.form-label{display:block;font-size:12px;font-weight:500;color:#5F5E5A;margin-bottom:5px}
+.form-input{width:100%;background:#F5F4F0;border:1px solid #E8E6DE;border-radius:8px;color:#2C2C2A;font-family:inherit;font-size:13.5px;padding:9px 12px;outline:none;transition:border-color .15s}
+.form-input:focus{border-color:#F47920}
+.form-input[readonly]{color:#888780;cursor:default}
+
+.btn{padding:9px 18px;border-radius:8px;font-size:13.5px;font-weight:600;cursor:pointer;transition:all .15s;border:none;font-family:inherit}
+.btn-primary{background:#F47920;color:#fff}
+.btn-primary:hover{background:#d96810}
+.btn-primary:disabled{opacity:.5;cursor:not-allowed}
+
+.alert{padding:10px 14px;border-radius:8px;font-size:13px;margin-bottom:14px;display:none}
+.alert.error{background:#FEF2F2;border:1px solid #FECACA;color:#DC2626}
+.alert.success{background:#F0FDF4;border:1px solid #BBF7D0;color:#16A34A}
+.alert.show{display:block}
+
+.back-link{display:inline-flex;align-items:center;gap:6px;font-size:13px;color:#888780;text-decoration:none;margin-bottom:24px}
+.back-link:hover{color:#2C2C2A}
+</style>
+</head>
+<body>
+<header>
+  <div class="wordmark">UKPOS</div>
+  <div class="divider">/</div>
+  <div class="subtitle">Print Site</div>
+  <div class="header-right">
+    <span class="hdr-email" id="user-email"></span>
+    <a href="/" class="hdr-btn">← Hub</a>
+    <button onclick="doSignOut()" class="hdr-btn">Sign out</button>
+  </div>
+</header>
+
+<main>
+  <a href="/" class="back-link">← Back to hub</a>
+  <div class="page-title">My Account</div>
+  <div class="page-sub" id="account-sub">Manage your Print Site account</div>
+
+  <div class="section">
+    <div class="section-title">Account details</div>
+    <div class="section-sub">Your UKPOS login information</div>
+    <div class="form-group">
+      <label class="form-label">Email address</label>
+      <input type="email" class="form-input" id="display-email" readonly>
+    </div>
+  </div>
+
+  <div class="section">
+    <div class="section-title">Change password</div>
+    <div class="section-sub">Choose a new password for your account</div>
+    <div id="pw-alert" class="alert"></div>
+    <div class="form-group">
+      <label class="form-label">New password</label>
+      <input type="password" class="form-input" id="new-password" placeholder="••••••••" autocomplete="new-password">
+    </div>
+    <div class="form-group">
+      <label class="form-label">Confirm new password</label>
+      <input type="password" class="form-input" id="confirm-password" placeholder="••••••••" autocomplete="new-password">
+    </div>
+    <button class="btn btn-primary" onclick="doChangePassword()" id="pw-btn">Update Password</button>
+  </div>
+</main>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
+<script>
+const SUPA_URL = 'https://fqaxuhbcwoikeldnxuvv.supabase.co';
+const SUPA_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImZxYXh1aGJjd29pa2VsZG54dXZ2Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODExNjk2NTQsImV4cCI6MjA5Njc0NTY1NH0.0XtMq5p6L9pnRilG5GUI5j72zPNuhl4PnD9ihDxeT1c';
+const sb = supabase.createClient(SUPA_URL, SUPA_KEY);
+
+(async function authGuard() {
+  const { data: { session } } = await sb.auth.getSession();
+  if (!session) { window.location.href = '/login.html'; return; }
+  if (!session.user.email.endsWith('@ukpos.com')) {
+    await sb.auth.signOut(); window.location.href = '/login.html'; return;
+  }
+  document.getElementById('user-email').textContent = session.user.email;
+  document.getElementById('display-email').value = session.user.email;
+})();
+
+async function doSignOut() {
+  await sb.auth.signOut();
+  window.location.href = '/login.html';
+}
+
+async function doChangePassword() {
+  const newPw  = document.getElementById('new-password').value;
+  const confPw = document.getElementById('confirm-password').value;
+  const alertEl = document.getElementById('pw-alert');
+  alertEl.className = 'alert';
+
+  if (newPw.length < 8) {
+    alertEl.textContent = 'Password must be at least 8 characters.';
+    alertEl.className = 'alert error show'; return;
+  }
+  if (newPw !== confPw) {
+    alertEl.textContent = 'Passwords do not match.';
+    alertEl.className = 'alert error show'; return;
+  }
+
+  const btn = document.getElementById('pw-btn');
+  btn.disabled = true; btn.textContent = 'Updating…';
+
+  const { error } = await sb.auth.updateUser({ password: newPw });
+  if (error) {
+    alertEl.textContent = error.message;
+    alertEl.className = 'alert error show';
+    btn.disabled = false; btn.textContent = 'Update Password';
+    return;
+  }
+
+  alertEl.textContent = 'Password updated successfully.';
+  alertEl.className = 'alert success show';
+  document.getElementById('new-password').value = '';
+  document.getElementById('confirm-password').value = '';
+  btn.disabled = false; btn.textContent = 'Update Password';
+}
+</script>
+</body>
+</html>
