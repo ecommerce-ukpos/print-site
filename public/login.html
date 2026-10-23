@@ -128,6 +128,22 @@ body{
     <button class="btn btn-primary" onclick="doForgot()">Send Reset Link</button>
     <div class="back-link" onclick="hideForgot()">← Back to sign in</div>
   </div>
+
+  <!-- Set password card (invite / password reset flow) -->
+  <div class="card" id="setpw-card" style="display:none">
+    <div class="card-title" id="setpw-title">Set Your Password</div>
+    <div class="card-sub" id="setpw-sub">Choose a password for your UKPOS account</div>
+    <div id="setpw-alert" class="alert"></div>
+    <div class="form-group">
+      <label class="form-label">New password</label>
+      <input type="password" class="form-input" id="setpw-password" placeholder="••••••••" autocomplete="new-password" onkeydown="if(event.key==='Enter')doSetPassword()">
+    </div>
+    <div class="form-group">
+      <label class="form-label">Confirm password</label>
+      <input type="password" class="form-input" id="setpw-confirm" placeholder="••••••••" autocomplete="new-password" onkeydown="if(event.key==='Enter')doSetPassword()">
+    </div>
+    <button class="btn btn-primary" onclick="doSetPassword()" id="setpw-btn">Set Password</button>
+  </div>
 </div>
 
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
@@ -137,10 +153,35 @@ const sb = supabase.createClient(
   'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImZxYXh1aGJjd29pa2VsZG54dXZ2Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODExNjk2NTQsImV4cCI6MjA5Njc0NTY1NH0.0XtMq5p6L9pnRilG5GUI5j72zPNuhl4PnD9ihDxeT1c'
 );
 
-// Redirect if already logged in
-sb.auth.getSession().then(({ data: { session } }) => {
-  if (session) window.location.href = '/';
-});
+// Handle invite / password-reset links (Supabase appends #access_token=...&type=invite or type=recovery)
+(async function handleAuthRedirect() {
+  const hash = window.location.hash;
+  if (hash && hash.includes('access_token')) {
+    const params = new URLSearchParams(hash.substring(1));
+    const type = params.get('type'); // 'invite' or 'recovery'
+    if (type === 'invite' || type === 'recovery') {
+      // Exchange the hash tokens for a session so we can call updateUser
+      const { error } = await sb.auth.exchangeCodeForSession
+        ? sb.auth.exchangeCodeForSession(hash)  // newer SDK
+        : Promise.resolve({});                   // older SDK sets session automatically
+      // Show the set-password card
+      document.getElementById('auth-card').style.display = 'none';
+      document.getElementById('setpw-card').style.display = '';
+      if (type === 'invite') {
+        document.getElementById('setpw-title').textContent = 'Welcome! Set Your Password';
+        document.getElementById('setpw-sub').textContent = 'Choose a password to activate your UKPOS account';
+      } else {
+        document.getElementById('setpw-title').textContent = 'Reset Your Password';
+        document.getElementById('setpw-sub').textContent = 'Choose a new password for your UKPOS account';
+      }
+      return;
+    }
+  }
+  // Redirect if already logged in
+  sb.auth.getSession().then(({ data: { session } }) => {
+    if (session) window.location.href = '/';
+  });
+})();
 
 function showAlert(msg, type='error') {
   const el = document.getElementById('alert');
@@ -193,6 +234,33 @@ function hideForgot() {
   document.getElementById('forgot-card').style.display = 'none';
   document.getElementById('auth-card').style.display = '';
 }
+async function doSetPassword() {
+  const pass    = document.getElementById('setpw-password').value;
+  const confirm = document.getElementById('setpw-confirm').value;
+  const alertEl = document.getElementById('setpw-alert');
+  alertEl.className = 'alert';
+  if (pass.length < 8) {
+    alertEl.textContent = 'Password must be at least 8 characters.';
+    alertEl.className = 'alert error show'; return;
+  }
+  if (pass !== confirm) {
+    alertEl.textContent = 'Passwords do not match.';
+    alertEl.className = 'alert error show'; return;
+  }
+  const btn = document.getElementById('setpw-btn');
+  btn.disabled = true; btn.textContent = 'Saving…';
+  const { error } = await sb.auth.updateUser({ password: pass });
+  if (error) {
+    alertEl.textContent = error.message;
+    alertEl.className = 'alert error show';
+    btn.disabled = false; btn.textContent = 'Set Password';
+    return;
+  }
+  alertEl.textContent = 'Password set! Signing you in…';
+  alertEl.className = 'alert success show';
+  setTimeout(() => { window.location.href = '/'; }, 1200);
+}
+
 async function doForgot() {
   const email = document.getElementById('forgot-email').value.trim().toLowerCase();
   if (!email) return;
