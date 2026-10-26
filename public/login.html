@@ -215,7 +215,8 @@ async function doSignIn() {
   }
 
   // Check profile approval status
-  const { data: profile } = await sb.from('profiles').select('status').eq('id', user.id).single();
+  const { data: profile, error: profileErr } = await sb.from('profiles').select('status').eq('id', user.id).maybeSingle();
+  if (profileErr) console.error('Profile fetch error:', profileErr);
   if (!profile || profile.status !== 'approved') {
     window.location.href = '/pending.html';
     return;

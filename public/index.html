@@ -356,6 +356,8 @@ const sb = supabase.createClient(SUPA_URL, SUPA_KEY);
 })();
 
 (async function authGuard() {
+  // Refresh session first to ensure JWT is current (important after password reset flow)
+  await sb.auth.refreshSession();
   const { data: { session } } = await sb.auth.getSession();
   if (!session) { window.location.href = '/login.html'; return; }
   if (!session.user.email.endsWith('@ukpos.com')) {
@@ -364,7 +366,8 @@ const sb = supabase.createClient(SUPA_URL, SUPA_KEY);
     return;
   }
   document.getElementById('user-email').textContent = session.user.email;
-  const { data: profile } = await sb.from('profiles').select('role,status').eq('id', session.user.id).single();
+  const { data: profile, error: profileErr } = await sb.from('profiles').select('role,status').eq('id', session.user.id).maybeSingle();
+  if (profileErr) console.error('Profile fetch error:', profileErr);
   if (!profile || profile.status !== 'approved') {
     window.location.href = '/pending.html';
     return;
