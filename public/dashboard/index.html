@@ -38,11 +38,11 @@ body{font-family:'Inter',-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;
 .sb-spacer{flex:1}
 .sb-divider{height:0.5px;background:#E8E6DE;margin:6px 10px;flex-shrink:0;width:calc(100% - 20px)}
 
-/* ── Main content ── */
+/* ── Main content ── shell.js adds margin-left:52px and margin-top:48px */
 .main{flex:1;margin-left:52px;display:flex;flex-direction:column;min-height:100vh;min-width:0}
 
-/* ── Topbar ── */
-.topbar{height:52px;background:#fff;border-bottom:0.5px solid #D3D1C7;display:flex;align-items:center;padding:0 20px;gap:10px;position:sticky;top:0;z-index:40;flex-shrink:0}
+/* ── Topbar ── shell topbar is at z-index:200; page topbar sits below it */
+.topbar{height:52px;background:#fff;border-bottom:0.5px solid #D3D1C7;display:flex;align-items:center;padding:0 20px;gap:10px;position:sticky;top:48px;z-index:40;flex-shrink:0}
 .topbar-title{font-size:15px;font-weight:600;color:#2C2C2A;letter-spacing:-0.01em;flex-shrink:0}
 .topbar-search{position:relative;flex:1;max-width:300px}
 .topbar-search input{width:100%;height:32px;border:0.5px solid #D3D1C7;border-radius:8px;background:#F2F1F6;padding:0 10px 0 32px;font-size:12px;font-family:'Inter',sans-serif;color:#2C2C2A;outline:none}
@@ -220,41 +220,6 @@ input[type=file]{display:none}
 </style>
 </head>
 <body>
-
-<!-- ══ SIDEBAR ══ -->
-<nav class="sidebar" id="sidebar">
-  <div class="sb-logo">
-    <div class="sb-logo-inner">
-      <svg viewBox="0 0 24 24"><path d="M3 6h18v2H3zm0 5h18v2H3zm0 5h18v2H3z"/></svg>
-    </div>
-  </div>
-  <a class="sb-item active" href="/dashboard">
-    <span class="sb-icon">☰</span>
-    <span class="sb-label">Artwork list</span>
-  </a>
-  <a class="sb-item" href="/designer">
-    <span class="sb-icon">✏️</span>
-    <span class="sb-label">Designer</span>
-  </a>
-  <a class="sb-item" href="/artwork-assessor">
-    <span class="sb-icon">✓</span>
-    <span class="sb-label">Assessor</span>
-  </a>
-  <a class="sb-item" href="/print-jobs">
-    <span class="sb-icon">🖨</span>
-    <span class="sb-label">Print jobs</span>
-  </a>
-  <a class="sb-item" href="/reporting">
-    <span class="sb-icon">📊</span>
-    <span class="sb-label">Reporting</span>
-  </a>
-  <div class="sb-spacer"></div>
-  <div class="sb-divider"></div>
-  <a class="sb-item" href="/">
-    <span class="sb-icon">⚙</span>
-    <span class="sb-label">Settings</span>
-  </a>
-</nav>
 
 <!-- ══ MAIN ══ -->
 <div class="main">
@@ -436,19 +401,14 @@ input[type=file]{display:none}
 
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
 <script>
-// ── Auth guard ───────────────────────────────────────────────────────────────
-(async function authGuard() {
-  const sb = supabase.createClient(
-    'https://fqaxuhbcwoikeldnxuvv.supabase.co',
-    'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImZxYXh1aGJjd29pa2VsZG54dXZ2Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODExNjk2NTQsImV4cCI6MjA5Njc0NTY1NH0.0XtMq5p6L9pnRilG5GUI5j72zPNuhl4PnD9ihDxeT1c'
-  );
-  const { data: { session } } = await sb.auth.getSession();
-  if (!session) { window.location.href = '/login.html'; return; }
-  if (!session.user.email.endsWith('@ukpos.com')) {
-    await sb.auth.signOut(); window.location.href = '/login.html'; return;
-  }
-})();
+const sb = supabase.createClient(
+  'https://fqaxuhbcwoikeldnxuvv.supabase.co',
+  'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImZxYXh1aGJjd29pa2VsZG54dXZ2Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODExNjk2NTQsImV4cCI6MjA5Njc0NTY1NH0.0XtMq5p6L9pnRilG5GUI5j72zPNuhl4PnD9ihDxeT1c'
+);
 </script>
+<script src="/shell.js"></script>
+<script>
+/* shell.js handles auth guard, persistent topbar, and nav sidebar */</script>
 
 <script>
 /* ══════════════════════════════════════════════════

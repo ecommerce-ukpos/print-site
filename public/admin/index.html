@@ -7,16 +7,7 @@
 <style>
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
 body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",system-ui,sans-serif;background:#FAFAF8;color:#2C2C2A;min-height:100vh;font-size:14px;-webkit-font-smoothing:antialiased}
-header{border-bottom:1px solid #E8E6DE;padding:16px 40px;background:#fff;display:flex;align-items:center;gap:12px}
-.wordmark{font-size:15px;font-weight:600;color:#2C2C2A;letter-spacing:-.01em}
-.divider{color:#D3D1C7}
-.subtitle{font-size:14px;color:#888780}
-.header-right{margin-left:auto;display:flex;align-items:center;gap:10px}
-.hdr-email{font-size:12px;color:#888780}
-.hdr-btn{font-size:12px;padding:5px 12px;border:1px solid #E8E6DE;border-radius:6px;background:#fff;cursor:pointer;color:#5F5E5A;font-family:inherit;text-decoration:none;display:inline-block}
-.hdr-btn:hover{border-color:#D3D1C7}
-
-main{max-width:860px;margin:0 auto;padding:48px 40px 80px}
+main{max-width:860px;margin:0 auto;padding:48px 40px 80px;margin-left:72px;margin-top:56px}
 .page-title{font-size:22px;font-weight:600;margin-bottom:4px;letter-spacing:-.02em}
 .page-sub{font-size:14px;color:#5F5E5A;margin-bottom:36px}
 .back-link{display:inline-flex;align-items:center;gap:6px;font-size:13px;color:#888780;text-decoration:none;margin-bottom:24px}
@@ -90,17 +81,6 @@ main{max-width:860px;margin:0 auto;padding:48px 40px 80px}
 </style>
 </head>
 <body>
-<header>
-  <div class="wordmark">UKPOS</div>
-  <div class="divider">/</div>
-  <div class="subtitle">Print Site</div>
-  <div class="header-right">
-    <span class="hdr-email" id="user-email"></span>
-    <a href="/" class="hdr-btn">← Hub</a>
-    <button onclick="doSignOut()" class="hdr-btn">Sign out</button>
-  </div>
-</header>
-
 <main>
   <a href="/" class="back-link">← Back to hub</a>
   <div class="page-title">Admin</div>
@@ -190,6 +170,10 @@ main{max-width:860px;margin:0 auto;padding:48px 40px 80px}
 const SUPA_URL = 'https://fqaxuhbcwoikeldnxuvv.supabase.co';
 const SUPA_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImZxYXh1aGJjd29pa2VsZG54dXZ2Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODExNjk2NTQsImV4cCI6MjA5Njc0NTY1NH0.0XtMq5p6L9pnRilG5GUI5j72zPNuhl4PnD9ihDxeT1c';
 const sb = supabase.createClient(SUPA_URL, SUPA_KEY);
+</script>
+<script src="/shell.js"></script>
+<script>/* shell.js handles persistent topbar and nav sidebar; admin IIFE below does admin-specific auth */</script>
+<script>
 
 let accessToken = null;
 let myId = null;
@@ -199,28 +183,25 @@ let currentTab = 'approved';
 // Modal state
 let pendingAction = null; // { action, userId, email }
 
-(async function authGuard() {
-  const { data: { session } } = await sb.auth.getSession();
-  if (!session) { window.location.href = '/login.html'; return; }
-  if (!session.user.email.endsWith('@ukpos.com')) { await sb.auth.signOut(); window.location.href = '/login.html'; return; }
-
-  accessToken = session.access_token;
-  myId = session.user.id;
-  document.getElementById('user-email').textContent = session.user.email;
-
-  // Check profile
-  const { data: profile } = await sb.from('profiles').select('role,status').eq('id', myId).single();
-  if (!profile || profile.status !== 'approved') { window.location.href = '/pending.html'; return; }
-  if (profile.role !== 'super_admin') {
-    document.getElementById('forbidden').style.display = '';
-    return;
-  }
-
-  document.getElementById('admin-content').style.display = '';
-  loadProfiles();
+/* shell.js handles auth guard, domain check, profile check, topbar, and nav sidebar.
+   Intercept __shellInit to run admin-specific logic after shell auth completes. */
+(function() {
+  const orig = window.__shellInit;
+  window.__shellInit = async function() {
+    const result = await orig();
+    if (!result) return result; // shell already redirected
+    const { session, profile } = result;
+    accessToken = session.access_token;
+    myId = session.user.id;
+    if (profile.role !== 'super_admin') {
+      document.getElementById('forbidden').style.display = '';
+      return result;
+    }
+    document.getElementById('admin-content').style.display = '';
+    loadProfiles();
+    return result;
+  };
 })();
-
-async function doSignOut() { await sb.auth.signOut(); window.location.href = '/login.html'; }
 
 async function apiCall(method, body) {
   const opts = { method, headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${accessToken}` } };

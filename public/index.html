@@ -9,62 +9,13 @@
   body {
     font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", system-ui, sans-serif;
     background: #FAFAF8; color: #2C2C2A; min-height: 100vh;
-    display: flex; flex-direction: column;
   }
 
-  /* ── Top bar ── */
-  .topbar {
-    height: 52px; background: #fff; border-bottom: 1px solid #E8E6DE;
-    display: flex; align-items: center; padding: 0 20px; gap: 10px;
-    flex-shrink: 0; position: sticky; top: 0; z-index: 100;
-  }
-  .topbar-logo { font-size: 15px; font-weight: 700; letter-spacing: -0.01em; color: #2C2C2A; }
-  .topbar-divider { color: #D3D1C7; }
-  .topbar-sub { font-size: 13px; color: #888780; }
-
-  /* ── Shell: sidebar + content ── */
-  .shell { display: flex; flex: 1; min-height: 0; }
-
-  /* ── Sidebar ── */
-  .sidebar {
-    width: 220px; flex-shrink: 0;
-    background: #fff; border-right: 1px solid #E8E6DE;
-    display: flex; flex-direction: column;
-    padding: 20px 0; position: sticky; top: 52px; height: calc(100vh - 52px);
-    overflow-y: auto;
-  }
-  .sidebar-section {
-    padding: 0 12px; margin-bottom: 24px;
-  }
-  .sidebar-heading {
-    font-size: 10px; font-weight: 700; text-transform: uppercase;
-    letter-spacing: 0.1em; color: #B4B2A9; padding: 0 8px; margin-bottom: 4px;
-  }
-  .sidebar-user {
-    padding: 10px 8px; border-radius: 8px; margin-bottom: 4px;
-  }
-  .sidebar-email {
-    font-size: 12px; color: #5F5E5A; word-break: break-all; line-height: 1.4;
-  }
-  .sidebar-nav-item {
-    display: flex; align-items: center; gap: 8px;
-    padding: 8px 10px; border-radius: 7px;
-    font-size: 13px; color: #5F5E5A; text-decoration: none;
-    cursor: pointer; transition: background 0.1s, color 0.1s;
-    margin-bottom: 1px; border: none; background: none; width: 100%; text-align: left;
-    font-family: inherit;
-  }
-  .sidebar-nav-item:hover { background: #F5F4F0; color: #2C2C2A; }
-  .sidebar-nav-item.danger { color: #DC2626; }
-  .sidebar-nav-item.danger:hover { background: #FEF2F2; }
-  .sidebar-icon { font-size: 15px; width: 20px; text-align: center; flex-shrink: 0; }
-  .sidebar-divider { height: 1px; background: #E8E6DE; margin: 8px 12px 16px; }
-  .sidebar-spacer { flex: 1; }
-
-  /* ── Main content ── */
-  .content { flex: 1; padding: 40px 40px 80px; overflow-y: auto; max-width: 860px; }
+  /* ── Main content — shell.js adds margin-top:48px and margin-left:52px via body.shell-injected ── */
+  .main { padding: 40px 40px 80px; max-width: 860px; }
   h1 { font-size: 24px; font-weight: 600; margin-bottom: 6px; letter-spacing: -0.02em; }
   .intro { font-size: 14px; color: #5F5E5A; margin-bottom: 40px; line-height: 1.6; }
+  @media (max-width: 700px) { .main { padding: 24px 20px 60px; } }
 
   /* ── Flow ── */
   .flow { display: flex; flex-direction: column; gap: 0; }
@@ -139,56 +90,13 @@
   .sub-card-name { font-weight: 600; margin-bottom: 3px; font-size: 12px; }
   .sub-card-desc { font-size: 11px; color: #888780; line-height: 1.4; }
 
-  @media (max-width: 700px) {
-    .sidebar { display: none; }
-    .content { padding: 24px 20px 60px; }
-  }
+
 </style>
 </head>
 <body>
 
-<!-- Top bar -->
-<div class="topbar">
-  <span class="topbar-logo">UKPOS</span>
-  <span class="topbar-divider">/</span>
-  <span class="topbar-sub">Print Site</span>
-</div>
-
-<!-- Shell -->
-<div class="shell">
-
-  <!-- Left sidebar -->
-  <nav class="sidebar">
-    <div class="sidebar-section">
-      <div class="sidebar-heading">Account</div>
-      <div class="sidebar-user">
-        <div class="sidebar-email" id="user-email">—</div>
-      </div>
-    </div>
-
-    <div class="sidebar-divider"></div>
-
-    <div class="sidebar-section">
-      <div class="sidebar-heading">Settings</div>
-      <a href="/account/" class="sidebar-nav-item">
-        <span class="sidebar-icon">👤</span> My Account
-      </a>
-      <a href="/admin/" class="sidebar-nav-item" id="admin-link" style="display:none">
-        <span class="sidebar-icon">🛡️</span> Admin Panel
-      </a>
-    </div>
-
-    <div class="sidebar-spacer"></div>
-
-    <div class="sidebar-section">
-      <button onclick="doSignOut()" class="sidebar-nav-item danger">
-        <span class="sidebar-icon">↩</span> Sign out
-      </button>
-    </div>
-  </nav>
-
-  <!-- Main content -->
-  <main class="content">
+<!-- Main content — shell.js injects topbar + nav sidebar -->
+<main class="main">
     <h1>Print Site</h1>
     <p class="intro">The end-to-end print workflow — from customer artwork submission through assessment, designer review, and production handoff to the print team.</p>
 
@@ -316,7 +224,6 @@
 
     </div><!-- end flow -->
   </main>
-</div><!-- end shell -->
 
 <!-- MUST run before Supabase SDK loads — SDK clears the hash on createClient() init -->
 <script>
@@ -339,49 +246,19 @@
 const SUPA_URL = 'https://fqaxuhbcwoikeldnxuvv.supabase.co';
 const SUPA_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImZxYXh1aGJjd29pa2VsZG54dXZ2Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODExNjk2NTQsImV4cCI6MjA5Njc0NTY1NH0.0XtMq5p6L9pnRilG5GUI5j72zPNuhl4PnD9ihDxeT1c';
 const sb = supabase.createClient(SUPA_URL, SUPA_KEY);
-
-// (Redundant safety check — token already handled above before SDK loaded)
-(function forwardAuthToken() {
-  const search = window.location.search;
-  const hash   = window.location.hash;
-  if (search && new URLSearchParams(search).get('code')) {
-    window.location.replace('/set-password.html' + search + hash); return;
-  }
-  if (hash && hash.includes('access_token')) {
-    const type = new URLSearchParams(hash.substring(1)).get('type');
-    if (type === 'recovery' || type === 'invite') {
-      window.location.replace('/set-password.html' + search + hash); return;
-    }
-  }
+</script>
+<script src="/shell.js"></script>
+<script>
+// shell.js handles auth guard, topbar, and nav sidebar.
+// After shell auth completes, load stats.
+(function waitForShell() {
+  const orig = window.__shellInit;
+  window.__shellInit = async function() {
+    const result = await orig();
+    if (result) loadStats();
+    return result;
+  };
 })();
-
-(async function authGuard() {
-  // Refresh session first to ensure JWT is current (important after password reset flow)
-  await sb.auth.refreshSession();
-  const { data: { session } } = await sb.auth.getSession();
-  if (!session) { window.location.href = '/login.html'; return; }
-  if (!session.user.email.endsWith('@ukpos.com')) {
-    await sb.auth.signOut();
-    window.location.href = '/login.html';
-    return;
-  }
-  document.getElementById('user-email').textContent = session.user.email;
-  const { data: profile, error: profileErr } = await sb.from('profiles').select('role,status').eq('id', session.user.id).maybeSingle();
-  if (profileErr) console.error('Profile fetch error:', profileErr);
-  if (!profile || profile.status !== 'approved') {
-    window.location.href = '/pending.html';
-    return;
-  }
-  if (profile.role === 'super_admin') {
-    document.getElementById('admin-link').style.display = '';
-  }
-  loadStats();
-})();
-
-async function doSignOut() {
-  await sb.auth.signOut();
-  window.location.href = '/login.html';
-}
 
 async function sf(path) {
   const { data: { session } } = await sb.auth.getSession();

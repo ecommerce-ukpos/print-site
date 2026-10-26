@@ -17,7 +17,7 @@
 <style>
 /* ── Reset & base ── */
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
-body{font-family:'Inter',-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;background:#F2F1F6;color:#2C2C2A;min-height:100vh;font-size:13px;display:flex}
+body{font-family:'Inter',-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;background:#F2F1F6;color:#2C2C2A;min-height:100vh;font-size:13px}
 
 /* ── Sidebar ── */
 .sidebar{width:52px;background:#fff;border-right:0.5px solid #D3D1C7;display:flex;flex-direction:column;align-items:flex-start;padding:12px 0;gap:2px;flex-shrink:0;overflow:hidden;transition:width 0.2s ease;position:fixed;top:0;left:0;bottom:0;z-index:50}
@@ -38,10 +38,10 @@ body{font-family:'Inter',-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;
 .sb-divider{height:0.5px;background:#E8E6DE;margin:6px 10px;width:calc(100% - 20px);flex-shrink:0}
 
 /* ── Main ── */
-.main{flex:1;margin-left:52px;display:flex;flex-direction:column;min-height:100vh;min-width:0}
+.main{flex:1;display:flex;flex-direction:column;min-height:100vh;min-width:0}
 
-/* ── Topbar ── */
-.topbar{height:52px;background:#fff;border-bottom:0.5px solid #D3D1C7;display:flex;align-items:center;padding:0 20px;gap:10px;position:sticky;top:0;z-index:40;flex-shrink:0}
+/* ── Topbar (sits below shell topbar) ── */
+.topbar{height:52px;background:#fff;border-bottom:0.5px solid #D3D1C7;display:flex;align-items:center;padding:0 20px;gap:10px;position:sticky;top:48px;z-index:40;flex-shrink:0}
 .topbar-title{font-size:15px;font-weight:600;color:#2C2C2A;letter-spacing:-0.01em}
 .tb-spacer{flex:1}
 
@@ -237,40 +237,7 @@ input[type=file]{display:none}
   </div>
 </div>
 
-<!-- ══ SIDEBAR ══ -->
-<nav class="sidebar">
-  <div class="sb-logo">
-    <div class="sb-logo-inner">
-      <svg viewBox="0 0 24 24"><path d="M3 6h18v2H3zm0 5h18v2H3zm0 5h18v2H3z"/></svg>
-    </div>
-  </div>
-  <a class="sb-item" href="/dashboard">
-    <span class="sb-icon">☰</span>
-    <span class="sb-label">Artwork list</span>
-  </a>
-  <a class="sb-item" href="/designer">
-    <span class="sb-icon">✏️</span>
-    <span class="sb-label">Designer</span>
-  </a>
-  <a class="sb-item active" href="/artwork-assessor">
-    <span class="sb-icon">✓</span>
-      <span class="sb-label">Assessor</span>
-  </a>
-  <a class="sb-item" href="/print-jobs">
-    <span class="sb-icon">🖨</span>
-    <span class="sb-label">Print jobs</span>
-  </a>
-  <a class="sb-item" href="/reporting">
-    <span class="sb-icon">📊</span>
-    <span class="sb-label">Reporting</span>
-  </a>
-  <div class="sb-spacer"></div>
-  <div class="sb-divider"></div>
-  <a class="sb-item" href="/">
-    <span class="sb-icon">⚙</span>
-    <span class="sb-label">Settings</span>
-  </a>
-</nav>
+<!-- shell.js injects nav sidebar -->
 
 <!-- ══ MAIN ══ -->
 <div class="main">
@@ -435,19 +402,13 @@ input[type=file]{display:none}
 
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
 <script>
-// ── Auth guard ───────────────────────────────────────────────────────────────
-(async function authGuard() {
-  const sb = supabase.createClient(
-    'https://fqaxuhbcwoikeldnxuvv.supabase.co',
-    'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImZxYXh1aGJjd29pa2VsZG54dXZ2Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODExNjk2NTQsImV4cCI6MjA5Njc0NTY1NH0.0XtMq5p6L9pnRilG5GUI5j72zPNuhl4PnD9ihDxeT1c'
-  );
-  const { data: { session } } = await sb.auth.getSession();
-  if (!session) { window.location.href = '/login.html'; return; }
-  if (!session.user.email.endsWith('@ukpos.com')) {
-    await sb.auth.signOut(); window.location.href = '/login.html'; return;
-  }
-})();
+const sb = supabase.createClient(
+  'https://fqaxuhbcwoikeldnxuvv.supabase.co',
+  'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImZxYXh1aGJjd29pa2VsZG54dXZ2Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODExNjk2NTQsImV4cCI6MjA5Njc0NTY1NH0.0XtMq5p6L9pnRilG5GUI5j72zPNuhl4PnD9ihDxeT1c'
+);
 </script>
+<script src="/shell.js"></script>
+<script>/* shell.js handles auth guard, persistent topbar, and nav sidebar */</script>
 
 <script>
 /* ══════════════════════════════════════════════════════════════
