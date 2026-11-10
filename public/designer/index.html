@@ -228,6 +228,10 @@ input[type=range]{width:100%;cursor:pointer;accent-color:#F47920}
 /* Canvas scroll */
 .canvas-scroll{flex:1;overflow:auto;display:flex;align-items:flex-start;justify-content:flex-start;padding:44px 20px 32px;gap:0}
 .canvas-scroll.single-sided{padding:52px 32px 32px}
+/* Centre the artboard when it is smaller than the background (Working view).
+   margin:auto, not justify/align center, so a larger Full Size canvas still
+   starts top-left and scrolls instead of being clipped on the left/top. */
+.canvas-scroll.single-sided>.canvas-outer{margin:auto}
 
 /* Dual sided */
 .dual-side{flex:1;position:relative;display:flex;flex-direction:column;align-items:center;min-width:0}
