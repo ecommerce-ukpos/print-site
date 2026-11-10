@@ -243,7 +243,7 @@ input[type=range]{width:100%;cursor:pointer;accent-color:#F47920}
 .canvas-outer{position:relative;flex-shrink:0}
 .canvas-transform{transform-origin:top left;position:relative;z-index:2}
 canvas{display:block}
-.main-canvas{box-shadow:0 3px 18px rgba(0,0,0,0.22);position:relative;z-index:2}
+.main-canvas{position:relative;z-index:2}
 .snap-canvas{position:absolute;top:0;left:0;pointer-events:none}
 
 /* Status pill */
@@ -1423,6 +1423,20 @@ function drawToContext(ctx, layers, bgColor, drawHandlesFlag, tmplA, sideIdx, sh
   ctx.clearRect(0,0,CW,CH);
   ctx.fillStyle='#EEEDEA'; ctx.fillRect(0,0,CW,CH);
   if(!currentSku) return;
+
+  // ── 1b. White artboard (bleed area / product shape) so it stands apart from the grey surround.
+  // On-screen only — exports pass showBleed=false and are left unchanged.
+  if(showBleed){
+    ctx.save(); ctx.fillStyle='#FFFFFF';
+    if(spec && spec.svg_bleed){
+      const _vbH=parseFloat((spec.svg_viewbox||'0 0 1000 1000').split(' ')[3])||1000;
+      const _sx=TW/1000, _sy=TH/_vbH;
+      ctx.fill(new Path2D(spec.svg_bleed.replace(/(-?\d+\.?\d*)\s+(-?\d+\.?\d*)/g,(m,x,y)=>`${(parseFloat(x)*_sx+TX).toFixed(2)} ${(parseFloat(y)*_sy+TY).toFixed(2)}`)));
+    } else {
+      ctx.fillRect(bx,by,bw,bh);
+    }
+    ctx.restore();
+  }
 
   // ── 2. Template image at tmplA opacity, scaled to fill bleed area ──
   const tmplImg = currentTemplateImg[sideIdx] || currentTemplateImg[0] || null;
