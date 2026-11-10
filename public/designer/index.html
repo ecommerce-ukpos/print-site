@@ -1294,8 +1294,21 @@ function computeLayout(){
     const availW=isDoubleSided?Math.floor((scrollEl.clientWidth-40-12)*0.62):scrollEl.clientWidth-64;
     const availH=scrollEl.clientHeight-80;
     const pad=44, ar=spec.w/spec.h;
-    let tW=Math.min(availW-pad*2,460), tH=tW/ar;
-    if(tH>availH-pad*2){tH=availH-pad*2;tW=tH*ar;}
+    let tW, tH;
+    const bgW=scrollEl.clientWidth, bgH=scrollEl.clientHeight;
+    if(!isDoubleSided && bgW>=300 && bgH>=300){
+      // Single-sided Working view: grow the artboard (trim + bleed) until it reaches
+      // 75% of the background's width OR height, whichever it hits first. Also kept
+      // inside the room left after the 40px canvas margin and the scroll padding.
+      const FILL=0.75;
+      const boxW=spec.w+(spec.bleed||0)*2, boxH=spec.h+(spec.bleed||0)*2;
+      const maxW=Math.min(bgW*FILL, bgW-64-80), maxH=Math.min(bgH*FILL, bgH-84-80);
+      const k=Math.max(0.01, Math.min(maxW/boxW, maxH/boxH));
+      tW=spec.w*k; tH=spec.h*k;
+    }else{
+      tW=Math.min(availW-pad*2,460); tH=tW/ar;
+      if(tH>availH-pad*2){tH=availH-pad*2;tW=tH*ar;}
+    }
     TW=Math.round(tW);TH=Math.round(tH);
     BLEEDPX=Math.round(spec.bleed*(TW/spec.w));
     SAFEPX=Math.round((spec.safe_zone||5)*(TW/spec.w));
