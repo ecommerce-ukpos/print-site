@@ -1,11 +1,16 @@
 const SUPABASE_URL = 'https://fqaxuhbcwoikeldnxuvv.supabase.co';
 const SUPABASE_KEY = process.env.SUPABASE_ANON_KEY;
 
-const SB_HEADERS = {
-  apikey: SUPABASE_KEY,
-  Authorization: `Bearer ${SUPABASE_KEY}`,
-  'Content-Type': 'application/json',
-};
+// Forward the signed-in user's Supabase token so RLS applies as that user
+// (artwork_analysis / order_manifest are readable by approved users only).
+function buildHeaders(req) {
+  const auth = req.headers.authorization || req.headers.Authorization;
+  return {
+    apikey: SUPABASE_KEY,
+    Authorization: auth && /^Bearer\s+\S+/.test(auth) ? auth : `Bearer ${SUPABASE_KEY}`,
+    'Content-Type': 'application/json'
+  };
+}
 
 // Normalise an artwork_analysis row into the shape the dashboard expects
 function normaliseAA(row) {
@@ -96,8 +101,9 @@ function normaliseJob(row) {
 export default async function handler(req, res) {
   res.setHeader('Access-Control-Allow-Origin', '*');
   res.setHeader('Access-Control-Allow-Methods', 'GET, POST, OPTIONS');
-  res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
+  res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization');
   if (req.method === 'OPTIONS') return res.status(200).end();
+  const SB_HEADERS = buildHeaders(req);
 
   if (req.method === 'GET') {
     // Fetch from both tables in parallel

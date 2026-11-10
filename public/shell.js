@@ -19,6 +19,43 @@
  * to the left of it (the nav), and the existing icon-bar shifts right.
  */
 
+/* ── Signed-in requests ──
+ * artwork_analysis and order_manifest are readable by approved users only (RLS).
+ * Pages still call /api/* and Supabase /rest/v1/* with the anon key, so attach the
+ * signed-in user's access token to those requests. Other requests are untouched.
+ */
+(function () {
+  'use strict';
+  if (window.__shellFetchPatched) return;
+  window.__shellFetchPatched = true;
+  const REST_PREFIX = 'https://fqaxuhbcwoikeldnxuvv.supabase.co/rest/v1/';
+  const origFetch = window.fetch.bind(window);
+
+  async function userToken() {
+    try {
+      if (typeof sb === 'undefined' || !sb.auth) return null;
+      const { data: { session } } = await sb.auth.getSession();
+      return session ? session.access_token : null;
+    } catch (e) { return null; }
+  }
+
+  window.fetch = async function (input, init) {
+    try {
+      const url = typeof input === 'string' ? input : (input && input.url) || '';
+      const isApi = url.startsWith('/api/') || url.startsWith(location.origin + '/api/');
+      if (isApi || url.startsWith(REST_PREFIX)) {
+        const token = await userToken();
+        if (token) {
+          const headers = new Headers((init && init.headers) || (input instanceof Request ? input.headers : undefined));
+          headers.set('Authorization', 'Bearer ' + token);
+          init = Object.assign({}, init, { headers });
+        }
+      }
+    } catch (e) { /* fall through with the original request */ }
+    return origFetch(input, init);
+  };
+})();
+
 (function () {
   'use strict';
 
